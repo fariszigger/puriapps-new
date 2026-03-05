@@ -78,24 +78,26 @@
         </div>
 
         <!-- Chart Area -->
-        <div x-show="activeChart" x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 -translate-y-4"
-            class="p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-900" x-text="activeChartTitle"></h3>
-                <button @click="activeChart = null" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                </button>
+        <template x-if="activeChart">
+            <div x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-4"
+                class="p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900" x-text="activeChartTitle"></h3>
+                    <button @click="destroyAndClose()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="relative" style="height: 300px;">
+                    <canvas x-ref="statsChart" x-init="$nextTick(() => renderChart())"></canvas>
+                </div>
             </div>
-            <div class="relative" style="height: 300px;">
-                <canvas id="statsChart"></canvas>
-            </div>
-        </div>
+        </template>
     </div>
 
     @push('scripts')
@@ -159,90 +161,94 @@
                         this.loading = false;
                     },
 
+                    destroyAndClose() {
+                        if (this.chartInstance) {
+                            this.chartInstance.destroy();
+                            this.chartInstance = null;
+                        }
+                        this.activeChart = null;
+                    },
+
                     toggleChart(key) {
                         if (this.activeChart === key) {
-                            if (this.chartInstance) {
-                                this.chartInstance.destroy();
-                                this.chartInstance = null;
-                            }
-                            this.activeChart = null;
+                            this.destroyAndClose();
                             return;
                         }
+                        // Destroy old chart first, then switch
                         if (this.chartInstance) {
                             this.chartInstance.destroy();
                             this.chartInstance = null;
                         }
                         this.activeChart = key;
-                        // Wait for the x-show transition to finish before rendering
-                        setTimeout(() => this.renderChart(), 50);
+                        // renderChart is auto-called by x-init on the canvas
                     },
 
                     renderChart() {
                         const card = this.cards.find(c => c.key === this.activeChart);
                         if (!card || !this.chartData.labels) return;
 
-                        const ctx = document.getElementById('statsChart');
-                        if (!ctx) {
-                            // Canvas not in DOM yet, retry once more after animation
-                            setTimeout(() => this.renderChart(), 100);
-                            return;
-                        }
+                        try {
+                            const ctx = this.$refs.statsChart;
+                            if (!ctx) return;
 
-                        if (this.chartInstance) {
-                            this.chartInstance.destroy();
-                            this.chartInstance = null;
-                        }
+                            if (this.chartInstance) {
+                                this.chartInstance.destroy();
+                                this.chartInstance = null;
+                            }
 
-                        const colorMap = {
-                            blue: { bg: 'rgba(59, 130, 246, 0.15)', border: 'rgb(59, 130, 246)' },
-                            purple: { bg: 'rgba(147, 51, 234, 0.15)', border: 'rgb(147, 51, 234)' },
-                            green: { bg: 'rgba(34, 197, 94, 0.15)', border: 'rgb(34, 197, 94)' },
-                            red: { bg: 'rgba(239, 68, 68, 0.15)', border: 'rgb(239, 68, 68)' },
-                            pink: { bg: 'rgba(236, 72, 153, 0.15)', border: 'rgb(236, 72, 153)' },
-                        };
+                            const colorMap = {
+                                blue: { bg: 'rgba(59, 130, 246, 0.15)', border: 'rgb(59, 130, 246)' },
+                                purple: { bg: 'rgba(147, 51, 234, 0.15)', border: 'rgb(147, 51, 234)' },
+                                green: { bg: 'rgba(34, 197, 94, 0.15)', border: 'rgb(34, 197, 94)' },
+                                red: { bg: 'rgba(239, 68, 68, 0.15)', border: 'rgb(239, 68, 68)' },
+                                pink: { bg: 'rgba(236, 72, 153, 0.15)', border: 'rgb(236, 72, 153)' },
+                            };
 
-                        const colors = colorMap[card.color] || colorMap.blue;
+                            const colors = colorMap[card.color] || colorMap.blue;
 
-                        this.chartInstance = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: this.chartData.labels,
-                                datasets: [{
-                                    label: card.label,
-                                    data: this.chartData[card.chartKey],
-                                    backgroundColor: colors.bg,
-                                    borderColor: colors.border,
-                                    borderWidth: 2,
-                                    borderRadius: 8,
-                                    borderSkipped: false,
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: {
-                                        backgroundColor: 'rgba(0,0,0,0.8)',
-                                        padding: 12,
-                                        cornerRadius: 8,
-                                        titleFont: { size: 13, weight: 'bold' },
-                                        bodyFont: { size: 12 },
-                                    }
+                            this.chartInstance = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: this.chartData.labels,
+                                    datasets: [{
+                                        label: card.label,
+                                        data: this.chartData[card.chartKey],
+                                        backgroundColor: colors.bg,
+                                        borderColor: colors.border,
+                                        borderWidth: 2,
+                                        borderRadius: 8,
+                                        borderSkipped: false,
+                                    }]
                                 },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: { precision: 0, font: { size: 11 } },
-                                        grid: { color: 'rgba(0,0,0,0.05)' },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { display: false },
+                                        tooltip: {
+                                            backgroundColor: 'rgba(0,0,0,0.8)',
+                                            padding: 12,
+                                            cornerRadius: 8,
+                                            titleFont: { size: 13, weight: 'bold' },
+                                            bodyFont: { size: 12 },
+                                        }
                                     },
-                                    x: {
-                                        ticks: { font: { size: 10 }, maxRotation: 45 },
-                                        grid: { display: false },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: { precision: 0, font: { size: 11 } },
+                                            grid: { color: 'rgba(0,0,0,0.05)' },
+                                        },
+                                        x: {
+                                            ticks: { font: { size: 10 }, maxRotation: 45 },
+                                            grid: { display: false },
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        } catch (e) {
+                            console.warn('Chart render skipped:', e.message);
+                        }
                     }
                 }
             }

@@ -62,10 +62,12 @@ Route::get('/media/customer-visits/{type}/{filename}', [\App\Http\Controllers\Me
     ->name('media.customer-visits');
 
 Route::get('/fix-permissions', function () {
+    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+    
     $p = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'view performance reports', 'guard_name' => 'web']);
     \Spatie\Permission\Models\Role::findByName('Admin')->givePermissionTo($p);
     \Spatie\Permission\Models\Role::findByName('Kabag')->givePermissionTo($p);
     \Spatie\Permission\Models\Role::findByName('Direksi')->givePermissionTo($p);
     
-    return 'Permissions fixed successfully! You can now close this tab, refresh your dashboard, and you will see the Hasil Kinerja menu.';
+    return 'Permissions fixed and cache cleared successfully! You can refresh your dashboard now.';
 });

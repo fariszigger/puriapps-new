@@ -98,6 +98,7 @@
     </div>
 
     {{-- ═══════════════ 7 HARI KE DEPAN ═══════════════ --}}
+    {{-- ═══════════════ 7 HARI KE DEPAN ═══════════════ --}}
     <div
         class="mt-6 bg-gradient-to-r from-teal-50/80 to-blue-50/80 backdrop-blur-md rounded-xl border border-teal-200/50 shadow-xl p-6"
         x-data="{ showAll7Days: false }">
@@ -110,47 +111,65 @@
                 </div>
                 <h2 class="text-xl font-bold text-gray-900">7 Hari Ke Depan</h2>
                 @if($next7Events->count() > 0)
-                    <span class="px-2.5 py-0.5 text-xs font-bold text-teal-700 bg-teal-100 rounded-full">{{ $next7Events->count() }} jadwal</span>
+                    <span class="hidden sm:inline-block px-2.5 py-0.5 text-xs font-bold text-teal-700 bg-teal-100 rounded-full">{{ $next7Events->count() }} jadwal</span>
                 @endif
             </div>
             @if($next7Events->count() > 6)
                 <button @click="showAll7Days = !showAll7Days"
-                    class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white/80 border border-teal-200 text-teal-700 hover:bg-teal-50">
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white/80 border border-teal-200 text-teal-700 hover:bg-teal-50 shadow-sm">
                     <span x-text="showAll7Days ? 'Tampilkan Sedikit' : 'Lihat Semua ({{ $next7Events->count() }})'"></span>
                 </button>
             @endif
         </div>
         @if($next7Events->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                @foreach($next7Events as $index => $event)
-                    <div x-show="showAll7Days || {{ $index }} < 6" x-transition
-                        class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-4 hover:shadow-md transition-shadow">
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
-                                        @if($event['type'] === 'dob') bg-blue-100 text-blue-700
-                                        @elseif($event['type'] === 'visit') bg-green-100 text-green-700
-                                        @else bg-orange-100 text-orange-700 @endif">
-                                @if($event['type'] === 'dob') Ulang Tahun
-                                @elseif($event['type'] === 'visit') Kunjungan
-                                @else Janji Bayar @endif
-                            </span>
-                            <span class="text-xs text-gray-500">
-                                @if($event['type'] === 'dob')
-                                    {{ \Carbon\Carbon::parse($event['date'])->setYear(now()->year)->format('d M') }}
-                                @else
-                                    {{ \Carbon\Carbon::parse($event['date'])->format('d M') }}
-                                @endif
-                            </span>
+            @php 
+                $groupedNext7 = $next7Events->groupBy(function($e) {
+                    return $e['type'] === 'dob' 
+                        ? \Carbon\Carbon::parse($e['date'])->setYear(now()->year)->format('Y-m-d')
+                        : \Carbon\Carbon::parse($e['date'])->format('Y-m-d');
+                })->sortKeys();
+                $globalCount = 0;
+            @endphp
+            
+            <div class="flex flex-col gap-6">
+                @foreach($groupedNext7 as $dateString => $events)
+                    @php 
+                        $firstItemIndex = $globalCount;
+                        $carbonDate = \Carbon\Carbon::parse($dateString);
+                    @endphp
+                    <div x-show="showAll7Days || {{ $firstItemIndex }} < 6" x-transition class="flex flex-col">
+                        <div class="flex items-center gap-3 mb-3">
+                            <h3 class="font-bold text-teal-800 bg-teal-100/70 px-3 py-1 rounded-lg text-sm shadow-sm border border-teal-200/50">
+                                {{ $carbonDate->translatedFormat('l, d F Y') }}
+                            </h3>
+                            <div class="h-px bg-teal-200/50 flex-grow"></div>
                         </div>
-                        <p class="font-bold text-gray-900 text-sm">{{ $event['name'] }}</p>
-                        @if($event['type'] === 'dob')
-                            <p class="text-xs text-gray-500 mt-1">Usia: {{ now()->year - \Carbon\Carbon::parse($event['date'])->year }}
-                                tahun</p>
-                        @endif
-                        @if($event['type'] === 'janji_bayar' && isset($event['jumlah']))
-                            <p class="text-xs text-orange-600 font-semibold mt-1">Rp {{ number_format($event['jumlah'], 0, ',', '.') }}
-                            </p>
-                        @endif
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            @foreach($events as $event)
+                                <div x-show="showAll7Days || {{ $globalCount }} < 6" x-transition
+                                    class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
+                                                    @if($event['type'] === 'dob') bg-blue-100 text-blue-700
+                                                    @elseif($event['type'] === 'visit') bg-green-100 text-green-700
+                                                    @else bg-orange-100 text-orange-700 @endif">
+                                            @if($event['type'] === 'dob') Ulang Tahun
+                                            @elseif($event['type'] === 'visit') Kunjungan
+                                            @else Janji Bayar @endif
+                                        </span>
+                                    </div>
+                                    <p class="font-bold text-gray-900 text-sm">{{ $event['name'] }}</p>
+                                    @if($event['type'] === 'dob')
+                                        <p class="text-xs text-gray-500 mt-1">Usia: {{ now()->year - \Carbon\Carbon::parse($event['date'])->year }} tahun</p>
+                                    @endif
+                                    @if($event['type'] === 'janji_bayar' && isset($event['jumlah']))
+                                        <p class="text-xs text-orange-600 font-semibold mt-1">Rp {{ number_format($event['jumlah'], 0, ',', '.') }}</p>
+                                    @endif
+                                </div>
+                                @php $globalCount++; @endphp
+                            @endforeach
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -163,33 +182,68 @@
     <div class="mt-6 mb-8 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl p-6"
         x-data="{
             filterType: 'all',
-            currentPage: 1,
-            perPage: 15,
+            currentDateStr: '{{ now()->format('Y-m-d') }}',
+            get allEvents() {
+                const events = {{ Js::from($thisMonthEvents) }};
+                return events.map(e => {
+                    const d = new Date(e.date);
+                    if(e.type === 'dob') d.setFullYear(new Date().getFullYear());
+                    e.dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                    return e;
+                });
+            },
             get filteredEvents() {
-                const allEvents = {{ Js::from($thisMonthEvents) }};
-                if (this.filterType === 'all') return allEvents;
-                return allEvents.filter(e => e.type === this.filterType);
+                if (this.filterType === 'all') return this.allEvents;
+                return this.allEvents.filter(e => e.type === this.filterType);
             },
-            get totalPages() {
-                return Math.ceil(this.filteredEvents.length / this.perPage);
+            get availableDates() {
+                return [...new Set(this.filteredEvents.map(e => e.dateStr))].sort();
             },
-            get paginatedEvents() {
-                const start = (this.currentPage - 1) * this.perPage;
-                return this.filteredEvents.slice(start, start + this.perPage);
+            get currentEvents() {
+                return this.filteredEvents.filter(e => e.dateStr === this.currentDateStr);
             },
             setFilter(type) {
                 this.filterType = type;
-                this.currentPage = 1;
+                if(!this.availableDates.includes(this.currentDateStr) && this.availableDates.length > 0) {
+                     const nextOrEqual = this.availableDates.find(d => d >= this.currentDateStr);
+                     this.currentDateStr = nextOrEqual || this.availableDates[this.availableDates.length - 1];
+                }
             },
-            formatDate(date) {
-                const d = new Date(date);
-                return String(d.getDate()).padStart(2, '0');
+            nextDate() {
+                let idx = this.availableDates.findIndex(d => d > this.currentDateStr);
+                if (idx !== -1) this.currentDateStr = this.availableDates[idx];
+            },
+            prevDate() {
+                let arr = [...this.availableDates].reverse();
+                let idx = arr.findIndex(d => d < this.currentDateStr);
+                if (idx !== -1) this.currentDateStr = arr[idx];
+            },
+            get hasNext() {
+                return this.availableDates.some(d => d > this.currentDateStr);
+            },
+            get hasPrev() {
+                return this.availableDates.some(d => d < this.currentDateStr);
+            },
+            formatDateHeader(dateStr) {
+                if(!dateStr) return '';
+                const parts = dateStr.split('-');
+                const day = parts[2];
+                const monthIdx = parseInt(parts[1], 10) - 1;
+                const year = parts[0];
+                const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                return day + ' ' + months[monthIdx] + ' ' + year;
             },
             getAge(date) {
                 return new Date().getFullYear() - new Date(date).getFullYear();
             },
             formatRupiah(val) {
                 return val ? Number(val).toLocaleString('id-ID') : '-';
+            },
+            init() {
+                if(!this.availableDates.includes(this.currentDateStr) && this.availableDates.length > 0) {
+                     const nextOrEqual = this.availableDates.find(d => d >= this.currentDateStr);
+                     this.currentDateStr = nextOrEqual || this.availableDates[0];
+                }
             }
         }">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
@@ -227,30 +281,47 @@
             </div>
         </div>
         @if($thisMonthEvents->count() > 0)
+            {{-- Date Navigation --}}
+            <div class="flex items-center justify-between bg-white/60 p-2 rounded-xl border border-gray-100 mb-4 shadow-sm" x-show="allEvents.length > 0">
+                <button @click="prevDate()" :disabled="!hasPrev"
+                    class="px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold rounded-lg transition-all flex items-center gap-1 md:gap-2"
+                    :class="!hasPrev ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-white shadow hover:shadow-md'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    <span class="hidden sm:inline">Sebelumnya</span>
+                </button>
+                
+                <div class="flex flex-col items-center justify-center">
+                    <span class="text-xs text-gray-500 font-medium mb-0.5 uppercase tracking-wider text-center">Menampilkan Tanggal</span>
+                    <h3 class="text-base md:text-lg font-bold text-gray-900 text-center px-2 md:px-4" x-text="formatDateHeader(currentDateStr)"></h3>
+                </div>
+                
+                <button @click="nextDate()" :disabled="!hasNext"
+                    class="px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold rounded-lg transition-all flex items-center gap-1 md:gap-2"
+                    :class="!hasNext ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-white shadow hover:shadow-md'">
+                    <span class="hidden sm:inline">Selanjutnya</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+
             <div class="overflow-x-auto rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200" x-show="currentEvents.length > 0">
                     <thead class="bg-gray-50/50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
-                            </th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Keterangan</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        <template x-for="(event, idx) in paginatedEvents" :key="idx">
+                        <template x-for="(event, idx) in currentEvents" :key="idx">
                             <tr class="hover:bg-gray-50/50 transition-colors">
-                                <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap"
-                                    x-text="formatDate(event.date)"></td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                                         :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : event.type === 'visit' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'"
                                         x-text="event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : 'Janji Bayar'"></span>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-700" x-text="event.name"></td>
-                                <td class="px-4 py-3 text-sm text-gray-500">
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-800" x-text="event.name"></td>
+                                <td class="px-4 py-3 text-sm text-gray-600">
                                     <span x-show="event.type === 'dob'" x-text="'Usia ' + getAge(event.date) + ' tahun'"></span>
                                     <span x-show="event.type === 'janji_bayar' && event.jumlah" x-text="'Rp ' + formatRupiah(event.jumlah)"></span>
                                     <span x-show="event.type === 'visit' || (event.type === 'janji_bayar' && !event.jumlah)">-</span>
@@ -259,24 +330,8 @@
                         </template>
                     </tbody>
                 </table>
-            </div>
-
-            {{-- Pagination Controls --}}
-            <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100" x-show="totalPages > 1">
-                <p class="text-xs text-gray-500">
-                    Halaman <span x-text="currentPage" class="font-bold"></span> dari <span x-text="totalPages" class="font-bold"></span>
-                </p>
-                <div class="flex items-center gap-2">
-                    <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1"
-                        class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
-                        :class="currentPage === 1 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
-                        ← Sebelumnya
-                    </button>
-                    <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages"
-                        class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
-                        :class="currentPage === totalPages ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
-                        Selanjutnya →
-                    </button>
+                <div x-show="currentEvents.length === 0" class="py-12 text-center bg-white/30 rounded-lg">
+                    <p class="text-sm text-gray-500">Tidak ada kegiatan yang sesuai pada tanggal ini.</p>
                 </div>
             </div>
         @else

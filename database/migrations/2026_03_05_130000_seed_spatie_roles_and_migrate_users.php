@@ -29,6 +29,7 @@ return new class extends Migration
             'manage roles',
             'manage gps',
             'view all data',
+            'view performance reports',
         ];
 
         foreach ($permissions as $permission) {
@@ -42,7 +43,7 @@ return new class extends Migration
                 'view customers', 'create customers', 'update customers',
                 'view evaluations', 'create evaluations', 'update evaluations', 'approve evaluations',
                 'view customer-visits', 'create customer-visits', 'update customer-visits',
-                'view all data',
+                'view all data', 'view performance reports',
             ],
             'AO' => [
                 'view customers', 'create customers', 'update customers',
@@ -54,6 +55,7 @@ return new class extends Migration
                 'view evaluations',
                 'view customer-visits',
                 'view all data',
+                'view performance reports',
             ],
         ];
 

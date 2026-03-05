@@ -77,27 +77,7 @@
             </template>
         </div>
 
-        <!-- Chart Area -->
-        <template x-if="activeChart">
-            <div x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-                x-transition:leave-end="opacity-0 -translate-y-4"
-                class="p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl mb-8">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-bold text-gray-900" x-text="activeChartTitle"></h3>
-                    <button @click="destroyAndClose()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="relative" style="height: 300px;">
-                    <canvas x-ref="statsChart" x-init="$nextTick(() => renderChart())"></canvas>
-                </div>
-            </div>
-        </template>
+        <!-- Chart Area -->\r\n        <div x-show="activeChart" x-transition:enter="transition ease-out duration-300"\r\n            x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"\r\n            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"\r\n            x-transition:leave-end="opacity-0 -translate-y-4"\r\n            class="p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl mb-8">\r\n            <div class="flex items-center justify-between mb-4">\r\n                <h3 class="text-lg font-bold text-gray-900" x-text="activeChartTitle"></h3>\r\n                <button @click="destroyAndClose()" class="text-gray-400 hover:text-gray-600 transition-colors">\r\n                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">\r\n                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">\r\n                        </path>\r\n                    </svg>\r\n                </button>\r\n            </div>\r\n            <div class="relative" style="height: 300px;">\r\n                <canvas x-ref="statsChart"></canvas>\r\n            </div>\r\n        </div>
     </div>
 
     @push('scripts')
@@ -180,7 +160,8 @@
                             this.chartInstance = null;
                         }
                         this.activeChart = key;
-                        // renderChart is auto-called by x-init on the canvas
+                        // Wait 350ms for x-show enter transition (300ms) to fully complete
+                        setTimeout(() => this.renderChart(), 350);
                     },
 
                     renderChart() {

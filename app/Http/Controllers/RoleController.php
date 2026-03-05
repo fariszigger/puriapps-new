@@ -16,6 +16,9 @@ class RoleController extends Controller
     public function create()
     {
         $permissions = Permission::orderBy('name')->get()->groupBy(function ($permission) {
+            if (str_ends_with($permission->name, 'performance reports')) {
+                return 'laporan kinerja';
+            }
             $parts = explode(' ', $permission->name);
             return count($parts) > 1 ? end($parts) : $permission->name;
         });
@@ -43,6 +46,9 @@ class RoleController extends Controller
     public function edit(Role $role)
     {
         $permissions = Permission::orderBy('name')->get()->groupBy(function ($permission) {
+            if (str_ends_with($permission->name, 'performance reports')) {
+                return 'laporan kinerja';
+            }
             $parts = explode(' ', $permission->name);
             return count($parts) > 1 ? end($parts) : $permission->name;
         });

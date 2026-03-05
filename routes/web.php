@@ -1,0 +1,62 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ReportController;
+
+Route::controller(\App\Http\Controllers\AuthController::class)->group(function () {
+    Route::get('/login', 'index')->name('login')->middleware('guest');
+    Route::post('/login', 'login')->name('login.post')->middleware('guest');
+    Route::get('/captcha-refresh', 'refreshCaptcha')->name('captcha.refresh');
+    Route::post('/logout', 'logout')->name('logout');
+});
+
+Route::middleware(['authentication'])->group(function () {
+    Route::get('/', [\App\Http\Controllers\DashboardController::class, 'index'])->name('home');
+    Route::get('/dashboard/stats', [\App\Http\Controllers\DashboardController::class, 'stats'])->name('dashboard.stats');
+
+    Route::get('/customers/{customer}/print', [App\Http\Controllers\CustomerController::class, 'print'])->name('customers.print');
+    Route::resource('customers', \App\Http\Controllers\CustomerController::class);
+    Route::get('/evaluations/{evaluation}/print', [App\Http\Controllers\EvaluationController::class, 'print'])->name('evaluations.print');
+    Route::post('/evaluations/{evaluation}/approval', [\App\Http\Controllers\EvaluationController::class, 'processApproval'])->name('evaluations.approval');
+    Route::post('/evaluations/{evaluation}/send', [\App\Http\Controllers\EvaluationController::class, 'sendForApproval'])->name('evaluations.send');
+    Route::post('/evaluations/{evaluation}/revoke', [\App\Http\Controllers\EvaluationController::class, 'revokeApproval'])->name('evaluations.revoke');
+    Route::resource('evaluations', \App\Http\Controllers\EvaluationController::class);
+    Route::get('/geocoding/reverse', [\App\Http\Controllers\GeocodingController::class, 'reverse'])->name('geocoding.reverse');
+    Route::get('/geocoding/search', [\App\Http\Controllers\GeocodingController::class, 'search'])->name('geocoding.search');
+
+    Route::get('/global-map', [\App\Http\Controllers\MapController::class, 'index'])->name('map.index');
+
+    Route::get('/calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
+    Route::post('/calendar/toggle-promise/{customerVisit}', [\App\Http\Controllers\CalendarController::class, 'togglePromise'])->name('calendar.toggle-promise');
+    Route::get('/calendar/recap', [\App\Http\Controllers\CalendarController::class, 'recap'])->name('calendar.recap');
+
+    Route::get('/reports/performance', [ReportController::class, 'performance'])->name('reports.performance');
+    Route::get('/reports/performance/recap', [ReportController::class, 'recap'])->name('reports.performance-recap');
+    Route::get('/reports/performance/{user}/detail', [ReportController::class, 'detail'])->name('reports.performance-detail');
+
+    Route::get('/customer-visits/count/{customerId}', [\App\Http\Controllers\CustomerVisitController::class, 'count'])->name('customer-visits.count');
+    Route::get('/customer-visits/{id}/report', [\App\Http\Controllers\CustomerVisitController::class, 'report'])->name('customer-visits.report');
+    Route::resource('customer-visits', \App\Http\Controllers\CustomerVisitController::class);
+
+    Route::controller(\App\Http\Controllers\ProfileController::class)->group(function () {
+        Route::get('/profile', 'edit')->name('profile.edit');
+        Route::patch('/profile', 'update')->name('profile.update');
+    });
+
+    // Admin only routes
+    Route::middleware(['admin'])->group(function () {
+        Route::resource('users', \App\Http\Controllers\UserController::class);
+        Route::resource('roles', \App\Http\Controllers\RoleController::class);
+        Route::resource('gps-trackers', \App\Http\Controllers\GpsTrackerController::class);
+        Route::post('/evaluations/{evaluation}/restore', [\App\Http\Controllers\EvaluationController::class, 'restore'])->name('evaluations.restore');
+    });
+});
+
+Route::get('/media/customers/{type}/{filename}', [\App\Http\Controllers\MediaController::class, 'serveCustomerMedia'])
+    ->name('media.customers');
+
+Route::get('/media/evaluations/{type}/{filename}', [\App\Http\Controllers\MediaController::class, 'serveEvaluationMedia'])
+    ->name('media.evaluations');
+
+Route::get('/media/customer-visits/{type}/{filename}', [\App\Http\Controllers\MediaController::class, 'serveCustomerVisitMedia'])
+    ->name('media.customer-visits');

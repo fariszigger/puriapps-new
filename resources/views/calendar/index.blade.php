@@ -99,19 +99,31 @@
 
     {{-- ═══════════════ 7 HARI KE DEPAN ═══════════════ --}}
     <div
-        class="mt-6 bg-gradient-to-r from-teal-50/80 to-blue-50/80 backdrop-blur-md rounded-xl border border-teal-200/50 shadow-xl p-6">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="p-2 bg-teal-100 rounded-lg text-teal-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+        class="mt-6 bg-gradient-to-r from-teal-50/80 to-blue-50/80 backdrop-blur-md rounded-xl border border-teal-200/50 shadow-xl p-6"
+        x-data="{ showAll7Days: false }">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-teal-100 rounded-lg text-teal-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">7 Hari Ke Depan</h2>
+                @if($next7Events->count() > 0)
+                    <span class="px-2.5 py-0.5 text-xs font-bold text-teal-700 bg-teal-100 rounded-full">{{ $next7Events->count() }} jadwal</span>
+                @endif
             </div>
-            <h2 class="text-xl font-bold text-gray-900">7 Hari Ke Depan</h2>
+            @if($next7Events->count() > 6)
+                <button @click="showAll7Days = !showAll7Days"
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white/80 border border-teal-200 text-teal-700 hover:bg-teal-50">
+                    <span x-text="showAll7Days ? 'Tampilkan Sedikit' : 'Lihat Semua ({{ $next7Events->count() }})'"></span>
+                </button>
+            @endif
         </div>
         @if($next7Events->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                @foreach($next7Events as $event)
-                    <div
+                @foreach($next7Events as $index => $event)
+                    <div x-show="showAll7Days || {{ $index }} < 6" x-transition
                         class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-4 hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between mb-2">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
@@ -149,7 +161,37 @@
 
     {{-- ═══════════════ AGENDA BULAN INI ═══════════════ --}}
     <div class="mt-6 mb-8 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl p-6"
-        x-data="{ filterType: 'all' }">
+        x-data="{
+            filterType: 'all',
+            currentPage: 1,
+            perPage: 15,
+            get filteredEvents() {
+                const allEvents = {{ Js::from($thisMonthEvents) }};
+                if (this.filterType === 'all') return allEvents;
+                return allEvents.filter(e => e.type === this.filterType);
+            },
+            get totalPages() {
+                return Math.ceil(this.filteredEvents.length / this.perPage);
+            },
+            get paginatedEvents() {
+                const start = (this.currentPage - 1) * this.perPage;
+                return this.filteredEvents.slice(start, start + this.perPage);
+            },
+            setFilter(type) {
+                this.filterType = type;
+                this.currentPage = 1;
+            },
+            formatDate(date) {
+                const d = new Date(date);
+                return String(d.getDate()).padStart(2, '0');
+            },
+            getAge(date) {
+                return new Date().getFullYear() - new Date(date).getFullYear();
+            },
+            formatRupiah(val) {
+                return val ? Number(val).toLocaleString('id-ID') : '-';
+            }
+        }">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-purple-100 rounded-lg text-purple-600">
@@ -160,24 +202,24 @@
                 </div>
                 <h2 class="text-xl font-bold text-gray-900">Agenda Bulan Ini</h2>
                 <span
-                    class="px-2.5 py-0.5 text-xs font-bold text-purple-700 bg-purple-100 rounded-full">{{ $thisMonthEvents->count() }}
-                    kegiatan</span>
+                    class="px-2.5 py-0.5 text-xs font-bold text-purple-700 bg-purple-100 rounded-full"
+                    x-text="filteredEvents.length + ' kegiatan'"></span>
             </div>
             {{-- Type Filter --}}
             <div class="flex items-center gap-1.5 flex-wrap">
-                <button @click="filterType = 'all'" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                <button @click="setFilter('all')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
                     :class="filterType === 'all' ? 'bg-gray-800 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
                     Semua
                 </button>
-                <button @click="filterType = 'dob'" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                <button @click="setFilter('dob')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
                     :class="filterType === 'dob' ? 'bg-blue-600 text-white shadow' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'">
                     🎂 Ulang Tahun
                 </button>
-                <button @click="filterType = 'visit'" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                <button @click="setFilter('visit')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
                     :class="filterType === 'visit' ? 'bg-green-600 text-white shadow' : 'bg-green-50 text-green-700 hover:bg-green-100'">
                     📍 Kunjungan
                 </button>
-                <button @click="filterType = 'janji_bayar'"
+                <button @click="setFilter('janji_bayar')"
                     class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
                     :class="filterType === 'janji_bayar' ? 'bg-orange-600 text-white shadow' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'">
                     💰 Janji Bayar
@@ -198,33 +240,44 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @foreach($thisMonthEvents as $event)
-                            <tr class="hover:bg-gray-50/50 transition-colors"
-                                x-show="filterType === 'all' || filterType === '{{ $event['type'] }}'" x-transition>
-                                <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
-                                    {{ \Carbon\Carbon::parse($event['date'])->format('d') }}</td>
+                        <template x-for="(event, idx) in paginatedEvents" :key="idx">
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap"
+                                    x-text="formatDate(event.date)"></td>
                                 <td class="px-4 py-3 whitespace-nowrap">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase
-                                                @if($event['type'] === 'dob') bg-blue-100 text-blue-700
-                                                @elseif($event['type'] === 'visit') bg-green-100 text-green-700
-                                                @else bg-orange-100 text-orange-700 @endif">
-                                        @if($event['type'] === 'dob') Ulang Tahun
-                                        @elseif($event['type'] === 'visit') Kunjungan
-                                        @else Janji Bayar @endif
-                                    </span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                                        :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : event.type === 'visit' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'"
+                                        x-text="event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : 'Janji Bayar'"></span>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-700">{{ $event['name'] }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700" x-text="event.name"></td>
                                 <td class="px-4 py-3 text-sm text-gray-500">
-                                    @if($event['type'] === 'dob')
-                                        Usia {{ now()->year - \Carbon\Carbon::parse($event['date'])->year }} tahun
-                                    @elseif($event['type'] === 'janji_bayar' && isset($event['jumlah']))
-                                        Rp {{ number_format($event['jumlah'], 0, ',', '.') }}
-                                    @else - @endif
+                                    <span x-show="event.type === 'dob'" x-text="'Usia ' + getAge(event.date) + ' tahun'"></span>
+                                    <span x-show="event.type === 'janji_bayar' && event.jumlah" x-text="'Rp ' + formatRupiah(event.jumlah)"></span>
+                                    <span x-show="event.type === 'visit' || (event.type === 'janji_bayar' && !event.jumlah)">-</span>
                                 </td>
                             </tr>
-                        @endforeach
+                        </template>
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Pagination Controls --}}
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100" x-show="totalPages > 1">
+                <p class="text-xs text-gray-500">
+                    Halaman <span x-text="currentPage" class="font-bold"></span> dari <span x-text="totalPages" class="font-bold"></span>
+                </p>
+                <div class="flex items-center gap-2">
+                    <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
+                        :class="currentPage === 1 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
+                        ← Sebelumnya
+                    </button>
+                    <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
+                        :class="currentPage === totalPages ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
+                        Selanjutnya →
+                    </button>
+                </div>
             </div>
         @else
             <p class="text-sm text-gray-400 text-center py-6">Tidak ada agenda di bulan ini.</p>

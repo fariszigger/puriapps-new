@@ -161,23 +161,37 @@
 
                     toggleChart(key) {
                         if (this.activeChart === key) {
+                            if (this.chartInstance) {
+                                this.chartInstance.destroy();
+                                this.chartInstance = null;
+                            }
                             this.activeChart = null;
                             return;
                         }
+                        if (this.chartInstance) {
+                            this.chartInstance.destroy();
+                            this.chartInstance = null;
+                        }
                         this.activeChart = key;
-                        this.$nextTick(() => this.renderChart());
+                        // Wait for the x-show transition to finish before rendering
+                        setTimeout(() => this.renderChart(), 50);
                     },
 
                     renderChart() {
                         const card = this.cards.find(c => c.key === this.activeChart);
                         if (!card || !this.chartData.labels) return;
 
-                        if (this.chartInstance) {
-                            this.chartInstance.destroy();
+                        const ctx = document.getElementById('statsChart');
+                        if (!ctx) {
+                            // Canvas not in DOM yet, retry once more after animation
+                            setTimeout(() => this.renderChart(), 100);
+                            return;
                         }
 
-                        const ctx = document.getElementById('statsChart');
-                        if (!ctx) return;
+                        if (this.chartInstance) {
+                            this.chartInstance.destroy();
+                            this.chartInstance = null;
+                        }
 
                         const colorMap = {
                             blue: { bg: 'rgba(59, 130, 246, 0.15)', border: 'rgb(59, 130, 246)' },

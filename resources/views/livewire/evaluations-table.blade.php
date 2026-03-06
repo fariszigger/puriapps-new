@@ -136,7 +136,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span
                                         class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                                                                                                                                                                                                {{ $evaluation->approval_status === 'approved' ? 'bg-green-100 text-green-800' :
+                                                                                                                                                                                                                                            {{ $evaluation->approval_status === 'approved' ? 'bg-green-100 text-green-800' :
                     ($evaluation->approval_status === 'rejected' ? 'bg-red-100 text-red-800' :
                         ($evaluation->approval_status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')) }}">
                                         {{ $evaluation->approval_status === 'draft' ? 'Draft' : ucfirst($evaluation->approval_status) }}
@@ -148,7 +148,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex items-center justify-end gap-2">
                                         {{-- Send / Revoke Buttons (only for the AO who owns this evaluation) --}}
-                                        @if(auth()->id() === $evaluation->user_id)
+                                        @if(auth()->id() == $evaluation->user_id)
                                             @if($evaluation->approval_status === 'draft')
                                                 <form action="{{ route('evaluations.send', $evaluation->id) }}" method="POST"
                                                     class="inline">
@@ -188,7 +188,7 @@
                                                 </path>
                                             </svg>
                                         </a>
-                                        @if($evaluation->approval_status === 'draft' && (auth()->user()->can('update evaluations') || $evaluation->user_id === auth()->id()))
+                                        @if($evaluation->approval_status === 'draft' && (auth()->user()->can('update evaluations') || $evaluation->user_id == auth()->id()))
                                             <a href="{{ route('evaluations.edit', $evaluation->id) }}"
                                                 class="p-2 text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors"
                                                 title="Edit Evaluasi">

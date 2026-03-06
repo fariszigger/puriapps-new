@@ -229,16 +229,26 @@
 
                     {{-- ================= 5. KONDISI SAAT INI (Rich Text) ================= --}}
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">5. Kondisi Saat Ini
-                        </h2>
+                        <div class="flex items-center justify-between border-b-2 border-gray-100 pb-2">
+                            <h2 class="text-xl font-semibold text-gray-900">5. Kondisi Saat Ini</h2>
+                            <button type="button" @click="openTemplateModal('kondisi')" class="text-xs text-blue-700 hover:text-white hover:bg-blue-600 bg-blue-100 flex items-center gap-1 font-bold px-3 py-1.5 rounded-lg border border-blue-200 transition-colors shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Gunakan Template (10 Contoh)
+                            </button>
+                        </div>
                         <div id="kondisi-editor" class="bg-white rounded-lg">
                             {!! old('kondisi_saat_ini', $visit->kondisi_saat_ini) !!}</div>
                     </div>
 
                     {{-- ================= 6. RENCANA PENYELESAIAN (Rich Text) ================= --}}
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">6. Rencana
-                            Penyelesaian</h2>
+                        <div class="flex items-center justify-between border-b-2 border-gray-100 pb-2">
+                            <h2 class="text-xl font-semibold text-gray-900">6. Rencana Penyelesaian</h2>
+                            <button type="button" @click="openTemplateModal('rencana')" class="text-xs text-blue-700 hover:text-white hover:bg-blue-600 bg-blue-100 flex items-center gap-1 font-bold px-3 py-1.5 rounded-lg border border-blue-200 transition-colors shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Gunakan Template (10 Contoh)
+                            </button>
+                        </div>
                         <div id="rencana-editor" class="bg-white rounded-lg">
                             {!! old('rencana_penyelesaian', $visit->rencana_penyelesaian) !!}</div>
                     </div>
@@ -338,6 +348,44 @@
 
         </div>
 
+        {{-- ================= TEMPLATE MODAL ================= --}}
+        <div x-show="showTemplateModal" style="display: none;" class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="template-modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-4 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" @click="showTemplateModal = false"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full relative z-[100]">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xl leading-6 font-bold text-gray-900" id="template-modal-title" x-text="activeTemplateTarget === 'kondisi' ? 'Template: Kondisi Saat Ini' : 'Template: Rencana Penyelesaian'">
+                            </h3>
+                            <button @click="showTemplateModal = false" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-500">Klik salah satu kotak template di bawah ini untuk digunakan pada form jawaban. Anda masih dapat mengedit teksnya setelah dimasukkan.</p>
+                    </div>
+                    <div class="bg-gray-50 p-6 max-h-[60vh] overflow-y-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <template x-for="(templateText, index) in templates[activeTemplateTarget]" :key="index">
+                                <div @click="applyTemplate(templateText)" class="p-5 bg-white border border-gray-200 rounded-xl hover:bg-blue-50 focus:bg-blue-50 active:bg-blue-100 hover:border-blue-400 cursor-pointer transition-all group flex flex-col justify-between shadow-sm hover:shadow-md h-full">
+                                    <p class="text-[15px] text-gray-700 font-medium group-hover:text-blue-900 leading-relaxed mb-4" x-text="'&quot;' + templateText + '&quot;'"></p>
+                                    <div class="mt-auto pt-3 border-t border-gray-100 border-dashed text-sm font-bold text-blue-600 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Gunakan Kalimat Ini
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 px-4 py-3 sm:px-6 flex flex-row-reverse border-t shadow-inner">
+                        <button type="button" @click="showTemplateModal = false" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- ================= CROPPER MODAL ================= --}}
         <div id="cropper-modal" class="fixed inset-0 z-[9999] hidden" aria-labelledby="cropper-modal-title" role="dialog"
             aria-modal="true">
@@ -390,6 +438,48 @@
         <script>
             function editForm() {
                 return {
+                    showTemplateModal: false,
+                    activeTemplateTarget: 'kondisi',
+                    templates: {
+                        kondisi: [
+                            "Usaha nasabah saat ini sedang mengalami penurunan omset dibandingkan bulan lalu karena...",
+                            "Nasabah dalam kondisi sehat dan usaha berjalan lancar, namun alokasi dana untuk...",
+                            "Tempat usaha nasabah sedang tutup sementara dikarenakan ada keperluan yaitu...",
+                            "Nasabah sedang mengalami musibah sakit sehingga operasional usaha libur beberapa hari akibatnya...",
+                            "Panen / hasil usaha nasabah mengalami kegagalan (penurunan drastis) disebabkan faktor cuaca / kondisi di...",
+                            "Usaha mandek sementara waktu karena nasabah kekurangan modal untuk memutar stok bahan baku di...",
+                            "Nasabah baru merelokasi atau pindah lokasi usaha barunya ke area... sehingga masih tahap adaptasi dengan pelanggan",
+                            "Kondisi di lapangan sepi pembeli dan pendapatan bulanan menurut nasabah tidak mencukupi untuk bayar...",
+                            "Nasabah belum lama ini berhenti bekerja dan masih dalam proses wawancara / pencarian kerja di...",
+                            "Nasabah sedang tidak ada di tempat dan kegiatan rumah / usahanya diserahkan sementara kepada wakil bernama..."
+                        ],
+                        rencana: [
+                            "Nasabah bersedia serta berjanji kuat akan melunasi tunggakannya tepat pada tanggal...",
+                            "Nasabah sepakat dan akan segera menjual properti/aset miliknya yaitu... untuk menutup hutang di koperasi",
+                            "Dilakukan kunjungan / follow up kembali secara intensif dengan atasan pada...",
+                            "Nasabah sedang berupaya menunggu proses pencairan dana dari tempat lain di... untuk melunaskan angsurannya",
+                            "Memberikan peringatan keras lisan/SP-1 jika tidak ada pembayaran paling lambat di penghujung bulan",
+                            "Nasabah secara tertulis memohon kebijakan perpanjangan / restrukturisasi kredit angsurannya karena alasan...",
+                            "Akan dilakukan penyitaan agunan secara baik-baik atau sesuai prosedur apabila janji pada... kembali meleset",
+                            "Nasabah menitipkan sebagian kewajibannya hari ini sejumlah Rp... dan sisanya berjanji akan menyusul di minggu depan",
+                            "Membuat nasabah kembali menandatangani draf surat pernyataan kesanggupan bayar yang lebih mengikat pada...",
+                            "Mendesak nasabah untuk hadir di kantor esok hari agar bisa dilakukan pembicaraan langsung dengan manajer"
+                        ]
+                    },
+                    openTemplateModal(target) {
+                        this.activeTemplateTarget = target;
+                        this.showTemplateModal = true;
+                    },
+                    applyTemplate(text) {
+                        const editor = this.activeTemplateTarget === 'kondisi' ? window.kondisiQuill : window.rencanaQuill;
+                        if (!editor) return;
+                        
+                        const currentHtml = editor.root.innerHTML;
+                        const isEmpty = currentHtml === '<p><br></p>' || currentHtml === '';
+                        editor.root.innerHTML = isEmpty ? `<p>${text}</p>` : `${currentHtml}<p>${text}</p>`;
+                        
+                        this.showTemplateModal = false;
+                    },
                     hasilPenagihan: '{{ old("hasil_penagihan", $visit->hasil_penagihan ?? "") }}',
                     jumlahBayar: {{ old('jumlah_bayar', $visit->jumlah_bayar ?? 0) ?: 0 }},
                     displayJumlahBayar: '',
@@ -409,16 +499,18 @@
                 };
             }
 
-            document.addEventListener('DOMContentLoaded', function () {
-                // Quill editors
-                const kondisiQuill = new Quill('#kondisi-editor', {
+                // Form submit with Swal confirmation (needed to reference quill later)
+                const editFormEl = document.getElementById('edit-form');
+
+                // Quill editors (assign to window to be accessible from Alpine method and form submit block)
+                window.kondisiQuill = new Quill('#kondisi-editor', {
                     theme: 'snow',
                     modules: {
                         toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
                     }
                 });
 
-                const rencanaQuill = new Quill('#rencana-editor', {
+                window.rencanaQuill = new Quill('#rencana-editor', {
                     theme: 'snow',
                     modules: {
                         toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
@@ -521,8 +613,8 @@
                         if (!result.isConfirmed) return;
 
                         // Sync Quill content
-                        document.getElementById('kondisi_saat_ini_hidden').value = kondisiQuill.root.innerHTML;
-                        document.getElementById('rencana_penyelesaian_hidden').value = rencanaQuill.root.innerHTML;
+                        document.getElementById('kondisi_saat_ini_hidden').value = window.kondisiQuill.root.innerHTML;
+                        document.getElementById('rencana_penyelesaian_hidden').value = window.rencanaQuill.root.innerHTML;
 
                         editFormEl.submit();
                     });

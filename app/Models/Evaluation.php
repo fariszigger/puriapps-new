@@ -15,7 +15,20 @@ class Evaluation extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'document_checklist' => 'json'
+        'document_checklist' => 'json',
+        'evaluation_date' => 'date',
+        'loan_amount' => 'float',
+        'loan_term_months' => 'integer',
+        'loan_interest_rate' => 'float',
+        'old_loan_amount' => 'float',
+        'old_loan_term_months' => 'integer',
+        'old_loan_interest_rate' => 'float',
+        'customer_entreprenuership_year' => 'integer',
+        'path_distance' => 'float',
+        'rpc_ratio' => 'float',
+        'approved_amount' => 'float',
+        'approved_tenor' => 'integer',
+        'approved_interest_rate' => 'float',
     ];
 
     public function user(): BelongsTo

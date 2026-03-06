@@ -49,6 +49,7 @@ Route::middleware(['authentication'])->group(function () {
         Route::resource('roles', \App\Http\Controllers\RoleController::class);
         Route::resource('gps-trackers', \App\Http\Controllers\GpsTrackerController::class);
         Route::post('/evaluations/{evaluation}/restore', [\App\Http\Controllers\EvaluationController::class, 'restore'])->name('evaluations.restore');
+        Route::post('/customers/{customer}/restore', [\App\Http\Controllers\CustomerController::class, 'restore'])->name('customers.restore');
     });
 });
 
@@ -68,6 +69,9 @@ Route::get('/fix-permissions', function () {
     \Spatie\Permission\Models\Role::findByName('Admin')->givePermissionTo($p);
     \Spatie\Permission\Models\Role::findByName('Kabag')->givePermissionTo($p);
     \Spatie\Permission\Models\Role::findByName('Direksi')->givePermissionTo($p);
+
+    $pRestoreCustomers = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'restore customers', 'guard_name' => 'web']);
+    \Spatie\Permission\Models\Role::findByName('Admin')->givePermissionTo($pRestoreCustomers);
     
     return 'Permissions fixed and cache cleared successfully! You can refresh your dashboard now.';
 });

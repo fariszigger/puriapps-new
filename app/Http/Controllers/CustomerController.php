@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
     public function index()
     {
-        return view('customers.index');
+        $deletedCustomers = collect();
+        if (auth()->user()->can('restore customers')) {
+            $deletedCustomers = Customer::onlyTrashed()->get();
+        }
+        return view('customers.index', compact('deletedCustomers'));
     }
 
     public function edit(\App\Models\Customer $customer)
@@ -303,5 +308,20 @@ class CustomerController extends Controller
         $distance = $earthRadius * $c; // Distance in km
 
         return $distance;
+    }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore($id)
+    {
+        if (auth()->user()->cannot('restore customers')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $customer = Customer::onlyTrashed()->findOrFail($id);
+        $customer->restore();
+
+        return redirect()->route('customers.index')->with('success', 'Data debitur berhasil dipulihkan.');
     }
 }

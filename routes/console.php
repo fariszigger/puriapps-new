@@ -12,6 +12,6 @@ use App\Models\User;
 
 Schedule::call(function () {
     User::where('is_online', '1')
-        ->where('last_activity_at', '<', now()->subMinutes(60))
+        ->where('last_activity_at', '<', now()->subMinutes(20))
         ->update(['is_online' => '0']);
 })->everyMinute();

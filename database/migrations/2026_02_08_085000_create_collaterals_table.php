@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->string('owner_ktp')->nullable(); // Nomor KTP Pemilik
             $table->string('proof_type'); // BPKB, SHM, SHGB, etc.
             $table->string('proof_number'); // Nomor Sertifikat / BPKB
+            $table->string('proof_number_2')->nullable(); //Nomor Surat Ukur (Sertifikat)
             $table->date('proof_date')->nullable(); // Tanggal Kepemilikan
             $table->string('allocation')->nullable(); // Peruntukan / Penggunaan
 

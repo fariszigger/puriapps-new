@@ -43,6 +43,7 @@ class CustomerVisitController extends Controller
             'jumlah_bayar' => 'nullable|numeric',
             'tanggal_janji_bayar' => 'nullable|date',
             'jumlah_pembayaran' => 'nullable|numeric',
+            'spk_number' => 'nullable|string|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'location_image' => 'nullable|string',
         ]);
@@ -70,6 +71,7 @@ class CustomerVisitController extends Controller
             'jumlah_bayar' => $request->hasil_penagihan === 'bayar' ? $request->jumlah_bayar : null,
             'tanggal_janji_bayar' => $request->hasil_penagihan === 'janji_bayar' ? $request->tanggal_janji_bayar : null,
             'jumlah_pembayaran' => $request->hasil_penagihan === 'janji_bayar' ? $request->jumlah_pembayaran : null,
+            'spk_number' => $request->spk_number,
             'penagihan_ke' => $pengihanKe,
         ];
 
@@ -118,6 +120,7 @@ class CustomerVisitController extends Controller
             'jumlah_bayar' => 'nullable|numeric',
             'tanggal_janji_bayar' => 'nullable|date',
             'jumlah_pembayaran' => 'nullable|numeric',
+            'spk_number' => 'nullable|string|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
@@ -131,6 +134,7 @@ class CustomerVisitController extends Controller
         $visit->jumlah_bayar = $request->hasil_penagihan === 'bayar' ? $request->jumlah_bayar : null;
         $visit->tanggal_janji_bayar = $request->hasil_penagihan === 'janji_bayar' ? $request->tanggal_janji_bayar : null;
         $visit->jumlah_pembayaran = $request->hasil_penagihan === 'janji_bayar' ? $request->jumlah_pembayaran : null;
+        $visit->spk_number = $request->spk_number;
 
         // Handle Photo Upload
         if ($request->hasFile('photo')) {

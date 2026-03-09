@@ -112,6 +112,14 @@
                         </div>
                     </div>
 
+                    {{-- ================= 1.5. SPK NUMBER ================= --}}
+                    <div class="space-y-4">
+                        <label for="spk_number" class="block mb-2 text-sm font-medium text-gray-900">Nomor SPK / Rekening Kredit</label>
+                        <input type="text" id="spk_number" name="spk_number" value="{{ old('spk_number', $visit->spk_number) }}"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm"
+                            placeholder="Masukkan Nomor SPK / Rekening Kredit">
+                    </div>
+
                     {{-- ================= 2. ADDRESS (Read-Only) ================= --}}
                     <div class="space-y-4">
                         <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">2. Alamat & Lokasi
@@ -202,9 +210,9 @@
                         </div>
                     </div>
 
-                    {{-- ================= 4. KETEMU DENGAN ================= --}}
+                    {{-- ================= 4. BERTEMU DENGAN ================= --}}
                     <div class="space-y-4" x-data="{ ketemuDengan: '{{ old('ketemu_dengan', $visit->ketemu_dengan) }}' }">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">4. Ketemu Dengan
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">4. Bertemu Dengan
                         </h2>
                         <select name="ketemu_dengan" required x-model="ketemuDengan"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm">
@@ -321,10 +329,10 @@
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                     <p class="text-xs font-medium">Tap untuk Upload</p>
-                                    <p class="text-[10px] mt-1">JPG, PNG • 16:9</p>
+                                    <p class="text-[10px] mt-1">JPG, PNG • 16:10</p>
                                 </div>
                             </div>
-                            <input class="hidden" id="photo" name="photo" type="file" accept="image/*">
+                            <input class="hidden" id="photo" name="photo" type="file" accept="image/*" capture="environment">
                         </div>
                     </div>
 
@@ -397,7 +405,7 @@
                         <div
                             class="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3 sm:px-6 flex justify-between items-center shadow-sm">
                             <h3 class="text-lg font-semibold leading-6 text-gray-900" id="cropper-modal-title">
-                                Crop Photo (16:9 Ratio)
+                                Crop Photo (16:10 Ratio)
                             </h3>
                             <div class="flex space-x-2">
                                 <button type="button" id="cancel-crop-btn"
@@ -534,7 +542,7 @@
 
                         if (cropper) cropper.destroy();
                         cropper = new Cropper(cropperImage, {
-                            aspectRatio: 16 / 9,
+                            aspectRatio: 16 / 10,
                             viewMode: 1,
                             autoCropArea: 1,
                         });

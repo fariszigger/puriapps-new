@@ -177,6 +177,12 @@
                                                 class="font-bold">{{ $visit->customer->name ?? '-' }}</span> (NIK : {{ $visit->customer->identity_number ?? '-' }})</td>
                                     </tr>
                                     <tr>
+                                        <td class="font-bold pb-1">No. SPK / Rekening</td>
+                                        <td class="w-4 pb-1">:</td>
+                                        <td class="pb-1"><span
+                                                class="font-bold">{{ $visit->spk_number ?? '-' }}</span></td>
+                                    </tr>
+                                    <tr>
                                         <td class="font-bold pb-1">Tanggal Kunjungan</td>
                                         <td class="w-4 pb-1">:</td>
                                         <td class="pb-1">{{ $visit->created_at->format('d F Y, H:i') }} WIB</td>

@@ -181,6 +181,22 @@ class CalendarController extends Controller
 
     public function togglePromise(CustomerVisit $customerVisit)
     {
+        // If a new date is provided, it's a reschedule, not a fulfillment
+        if (request()->has('tanggal_janji_baru') && request()->tanggal_janji_baru) {
+            $customerVisit->update([
+                'tanggal_janji_bayar' => request()->tanggal_janji_baru,
+                'jumlah_pembayaran' => request()->has('jumlah_pembayaran') ? request()->jumlah_pembayaran : $customerVisit->jumlah_pembayaran,
+                'janji_bayar_fulfilled' => false,
+                'janji_bayar_fulfilled_at' => null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'rescheduled' => true,
+                'message' => 'Janji bayar berhasil dijadwalkan ulang.',
+            ]);
+        }
+
         $fulfilled = !$customerVisit->janji_bayar_fulfilled;
 
         $updateData = [

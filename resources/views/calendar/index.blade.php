@@ -784,64 +784,132 @@
 
         // ─── Toggle Promise ───
         async function togglePromise(visitId, eventCardId) {
-            // Find event to show amount in confirmation
             const evt = janjiBayarEvents.find(e => e.visit_id === visitId);
             const existingAmount = evt && evt.jumlah ? Number(evt.jumlah) : 0;
             const custName = evt ? evt.name : '';
 
             const confirm = await Swal.fire({
-                title: 'Konfirmasi Pelunasan',
+                title: 'Konfirmasi Pelunasan / Janji Lagi',
                 html: `<div class="text-left">
-                    <p class="text-gray-600 mb-2">Apakah nasabah berikut sudah membayar?</p>
+                    <p class="text-gray-600 mb-2">Apakah nasabah sudah membayar atau ingin menjadwalkan ulang?</p>
                     <div class="bg-gray-50 rounded-lg p-3 mb-3">
                         <p class="font-bold text-gray-800">${custName}</p>
                     </div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Pembayaran</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-medium text-sm">Rp</span>
-                        <input type="text" id="swal-jumlah-pembayaran" value="${existingAmount ? formatRupiah(existingAmount) : ''}" placeholder="0"
-                            class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            oninput="this.value = this.value.replace(/\\D/g,'').replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.')">
+                    
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Pembayaran / Janji Baru</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-medium text-sm">Rp</span>
+                            <input type="text" id="swal-jumlah-pembayaran" value="${existingAmount ? formatRupiah(existingAmount) : ''}" placeholder="0"
+                                class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                oninput="this.value = this.value.replace(/\\D/g,'').replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.')">
+                        </div>
                     </div>
-                    <p class="text-sm text-gray-500 mt-3">Janji bayar akan dihapus dari kalender setelah dikonfirmasi.</p>
+
+                    <div id="reschedule-container" style="display:none;" class="mb-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Janji Baru</label>
+                        <input type="date" id="swal-tanggal-janji-baru" 
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <p class="text-[10px] text-gray-500 mt-2 italic">* Klik <b>"Sudah Lunas"</b> jika sudah bayar, atau <b>"Jadwalkan Ulang"</b> jika ada janji baru.</p>
                 </div>`,
                 icon: 'question',
                 showCancelButton: true,
+                showDenyButton: true,
                 confirmButtonColor: '#16a34a',
+                denyButtonColor: '#f97316',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Ya, Sudah Lunas',
+                denyButtonText: 'Jadwalkan Ulang',
                 cancelButtonText: 'Batal',
                 reverseButtons: true,
+                didOpen: () => {
+                    const denyBtn = Swal.getDenyButton();
+                    const rescheduleContainer = document.getElementById('reschedule-container');
+                    const dateInput = document.getElementById('swal-tanggal-janji-baru');
+                    
+                    denyBtn.addEventListener('click', () => {
+                        if (rescheduleContainer.style.display === 'none') {
+                            rescheduleContainer.style.display = 'block';
+                            // Focus date input
+                            dateInput.focus();
+                            // Prevent closing
+                            return false;
+                        }
+                    });
+                },
                 preConfirm: () => {
                     const input = document.getElementById('swal-jumlah-pembayaran');
                     const raw = input ? parseInt(input.value.replace(/\D/g, '')) || 0 : 0;
-                    return { jumlah_pembayaran: raw };
+                    return { jumlah_pembayaran: raw, type: 'fulfillment' };
+                },
+                preDeny: () => {
+                    const dateInput = document.getElementById('swal-tanggal-janji-baru');
+                    const amountInput = document.getElementById('swal-jumlah-pembayaran');
+                    
+                    const rescheduleContainer = document.getElementById('reschedule-container');
+                    if (rescheduleContainer.style.display === 'none') {
+                        rescheduleContainer.style.display = 'block';
+                        dateInput.focus();
+                        Swal.showValidationMessage('Silakan pilih tanggal janji baru');
+                        return false;
+                    }
+
+                    if (!dateInput.value) {
+                        Swal.showValidationMessage('Tanggal janji baru wajib diisi');
+                        return false;
+                    }
+                    
+                    const rawAmount = amountInput ? parseInt(amountInput.value.replace(/\D/g, '')) || 0 : 0;
+                    return { 
+                        tanggal_janji_baru: dateInput.value, 
+                        jumlah_pembayaran: rawAmount,
+                        type: 'reschedule' 
+                    };
                 }
             });
 
-            if (!confirm.isConfirmed) return;
+            if (confirm.isDismissed) return;
 
-            const jumlahPembayaran = confirm.value?.jumlah_pembayaran || 0;
+            const payload = {};
+            if (confirm.isConfirmed) {
+                payload.jumlah_pembayaran = confirm.value.jumlah_pembayaran;
+            } else if (confirm.isDenied) {
+                payload.tanggal_janji_baru = confirm.value.tanggal_janji_baru;
+                payload.jumlah_pembayaran = confirm.value.jumlah_pembayaran;
+            }
 
             try {
                 const res = await fetch(`/calendar/toggle-promise/${visitId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                    body: JSON.stringify({ jumlah_pembayaran: jumlahPembayaran }),
+                    body: JSON.stringify(payload),
                 });
                 const data = await res.json();
-                if (data.success && data.fulfilled) {
-                    const el = document.getElementById('pill-' + eventCardId) || document.getElementById('detail-' + eventCardId);
-                    if (el) {
-                        el.style.transition = 'all 0.3s ease';
-                        el.style.opacity = '0';
-                        el.style.transform = 'scale(0.9) translateY(10px)';
+                
+                if (data.success) {
+                    // Update UI: if fulfilled, hide. If rescheduled, refresh calendar.
+                    if (data.fulfilled || data.rescheduled) {
+                        // For simplicity in rescheduling (date might change), we reload or re-render 
+                        // But for UI smoothness, let's just reload page or fetch new data
+                        // Since this is a complex UI, window.location.reload() is safest to ensure all 
+                        // views (weekly/monthly/agenda) are consistent.
+                        
+                        if (data.fulfilled) {
+                             const el = document.getElementById('pill-' + eventCardId) || document.getElementById('detail-' + eventCardId);
+                             if (el) {
+                                el.style.transition = 'all 0.3s ease';
+                                el.style.opacity = '0';
+                                el.style.transform = 'scale(0.9) translateY(10px)';
+                             }
+                             setTimeout(() => {
+                                window.location.reload(); 
+                             }, 300);
+                        } else {
+                            window.location.reload();
+                        }
                     }
-                    setTimeout(() => {
-                        const idx = janjiBayarEvents.findIndex(e => e.visit_id === visitId);
-                        if (idx > -1) janjiBayarEvents.splice(idx, 1);
-                        render();
-                    }, 300);
 
                     if (typeof Swal !== 'undefined') {
                         Swal.mixin({
@@ -852,7 +920,7 @@
                 }
             } catch (err) {
                 console.error('Toggle error:', err);
-                if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Gagal', text: 'Tidak dapat mengubah status.' });
+                if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Gagal', text: 'Tidak dapat memproses permintaan.' });
             }
         }
 

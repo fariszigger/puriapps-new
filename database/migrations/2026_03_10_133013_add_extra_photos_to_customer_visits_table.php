@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('customer_visits', function (Blueprint $table) {
-            if (!Schema::hasColumn('customer_visits', 'spk_number')) {
-                $table->string('spk_number')->nullable()->after('penagihan_ke');
-            }
+            $table->string('photo_rumah_path')->after('photo_path')->nullable();
+            $table->string('photo_orang_path')->after('photo_rumah_path')->nullable();
         });
     }
 
@@ -24,9 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('customer_visits', function (Blueprint $table) {
-            if (Schema::hasColumn('customer_visits', 'spk_number')) {
-                $table->dropColumn('spk_number');
-            }
+            $table->dropColumn(['photo_rumah_path', 'photo_orang_path']);
         });
     }
 };

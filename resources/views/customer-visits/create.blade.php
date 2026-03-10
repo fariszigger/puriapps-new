@@ -83,6 +83,10 @@
                 <input type="hidden" id="province" name="province" value="{{ old('province') }}">
                 <input type="hidden" id="location_image" name="location_image">
                 <input type="hidden" id="photo_base64" name="photo_base64" value="{{ old('photo_base64') }}">
+                <input type="hidden" id="photo_rumah_base64" name="photo_rumah_base64"
+                    value="{{ old('photo_rumah_base64') }}">
+                <input type="hidden" id="photo_orang_base64" name="photo_orang_base64"
+                    value="{{ old('photo_orang_base64') }}">
                 <input type="hidden" id="kondisi_saat_ini_hidden" name="kondisi_saat_ini"
                     value="{{ old('kondisi_saat_ini') }}">
                 <input type="hidden" id="rencana_penyelesaian_hidden" name="rencana_penyelesaian"
@@ -176,7 +180,8 @@
 
                     {{-- ================= 1.5. SPK NUMBER ================= --}}
                     <div class="space-y-4">
-                        <label for="spk_number" class="block mb-2 text-sm font-medium text-gray-900">Nomor SPK / Rekening Kredit</label>
+                        <label for="spk_number" class="block mb-2 text-sm font-medium text-gray-900">Nomor SPK / Rekening
+                            Kredit</label>
                         <input type="text" id="spk_number" name="spk_number" value="{{ old('spk_number') }}"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm"
                             placeholder="Masukkan Nomor SPK / Rekening Kredit">
@@ -184,7 +189,7 @@
 
                     {{-- ================= 2. ADDRESS WITH GEOMAP ================= --}}
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">2. Alamat & Lokasi
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Alamat & Lokasi
                             Kunjungan</h2>
 
                         <div class="space-y-4">
@@ -287,8 +292,8 @@
                     </div>
 
                     {{-- ================= 3. KOLEKTIBILITAS ================= --}}
-                    <div class="space-y-4" x-data="{ kol: '{{ old('kolektibilitas', '') }}' }">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">3. Kolektibilitas
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Kolektibilitas
                         </h2>
                         <select name="kolektibilitas" required x-model="kol"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm">
@@ -302,16 +307,7 @@
                         </select>
 
                         {{-- Baki Debet (only for KL/Diragukan/Macet) --}}
-                        <div x-show="['3','4','5'].includes(kol)" x-transition class="mt-3" x-data="{
-                                        bakiRaw: '{{ old('baki_debet', '') }}',
-                                        bakiDisplay: '',
-                                        init() { if(this.bakiRaw) this.bakiDisplay = new Intl.NumberFormat('id-ID').format(this.bakiRaw); },
-                                        updateBaki(v) {
-                                            const n = parseInt(v.replace(/\D/g,'')) || 0;
-                                            this.bakiRaw = n;
-                                            this.bakiDisplay = n ? new Intl.NumberFormat('id-ID').format(n) : '';
-                                        }
-                                    }">
+                        <div x-show="['3','4','5'].includes(kol)" x-transition class="mt-3">
                             <label for="baki_debet_display" class="block mb-2 text-sm font-medium text-gray-900">Baki Debet
                                 (Rp)</label>
                             <div class="relative">
@@ -327,8 +323,8 @@
                     </div>
 
                     {{-- ================= 4. BERTEMU DENGAN ================= --}}
-                    <div class="space-y-4" x-data="{ ketemuDengan: '{{ old('ketemu_dengan', '') }}' }">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">4. Bertemu Dengan
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Bertemu Dengan
                         </h2>
                         <select name="ketemu_dengan" required x-model="ketemuDengan"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm">
@@ -354,9 +350,9 @@
                     </div>
 
                     {{-- ================= 5. KONDISI SAAT INI (Rich Text) ================= --}}
-                    <div class="space-y-4">
+                    <div class="space-y-4" x-show="!['1','2'].includes(kol)" x-transition>
                         <div class="flex items-center justify-between border-b-2 border-gray-100 pb-2">
-                            <h2 class="text-xl font-semibold text-gray-900">5. Kondisi Saat Ini</h2>
+                            <h2 class="text-xl font-semibold text-gray-900">Kondisi Saat Ini</h2>
                             <button type="button" @click="openTemplateModal('kondisi')"
                                 class="text-xs text-blue-700 hover:text-white hover:bg-blue-600 bg-blue-100 flex items-center gap-1 font-bold px-3 py-1.5 rounded-lg border border-blue-200 transition-colors shadow-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,9 +366,9 @@
                     </div>
 
                     {{-- ================= 6. RENCANA PENYELESAIAN (Rich Text) ================= --}}
-                    <div class="space-y-4">
+                    <div class="space-y-4" x-show="!['1','2'].includes(kol)" x-transition>
                         <div class="flex items-center justify-between border-b-2 border-gray-100 pb-2">
-                            <h2 class="text-xl font-semibold text-gray-900">6. Rencana Penyelesaian</h2>
+                            <h2 class="text-xl font-semibold text-gray-900">Rencana Penyelesaian</h2>
                             <button type="button" @click="openTemplateModal('rencana')"
                                 class="text-xs text-blue-700 hover:text-white hover:bg-blue-600 bg-blue-100 flex items-center gap-1 font-bold px-3 py-1.5 rounded-lg border border-blue-200 transition-colors shadow-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -386,8 +382,8 @@
                     </div>
 
                     {{-- ================= 7. HASIL PENAGIHAN ================= --}}
-                    <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">7. Hasil Penagihan
+                    <div class="space-y-4" x-show="!['1','2'].includes(kol)" x-transition>
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Hasil Penagihan
                         </h2>
 
                         <div class="space-y-4">
@@ -397,7 +393,7 @@
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
                                     <span class="text-sm font-medium text-gray-900">Bayar</span>
                                 </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
+                                <label class="flex items-center gap-2 cursor-pointer" x-show="!['1','2'].includes(kol)">
                                     <input type="radio" name="hasil_penagihan" value="janji_bayar" x-model="hasilPenagihan"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
                                     <span class="text-sm font-medium text-gray-900">Janji Bayar</span>
@@ -442,15 +438,13 @@
                         </div>
                     </div>
 
-                    {{-- ================= 8. PHOTO (CropperJS) ================= --}}
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">8. Foto Kunjungan
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Kunjungan
                         </h2>
 
-                        {{-- Clickable photo upload area --}}
                         <div class="flex justify-center">
                             <div id="photo-upload-area"
-                                class="w-112 h-72 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group relative"
+                                class="w-full max-w-md h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group relative"
                                 onclick="document.getElementById('photo').click()">
                                 <img id="photo-preview" class="w-full h-full object-cover hidden" alt="Photo Preview">
                                 <div id="photo-placeholder"
@@ -463,11 +457,74 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
-                                    <p class="text-xs font-medium">Tap untuk Upload</p>
+                                    <p class="text-xs font-medium">Tap untuk Upload Foto Kunjungan</p>
                                     <p class="text-[10px] mt-1">JPG, PNG • 16:10</p>
                                 </div>
                             </div>
-                            <input class="hidden" id="photo" name="photo" type="file" accept="image/*" capture="environment">
+                            <input class="hidden photo-input" id="photo" name="photo" type="file" accept="image/*"
+                                capture="environment" data-target="photo">
+                        </div>
+                    </div>
+
+                    {{-- ================= 9. FOTO RUMAH DEBITUR ================= --}}
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Rumah
+                            Debitur
+                        </h2>
+
+                        <div class="flex justify-center">
+                            <div id="photo_rumah-upload-area"
+                                class="w-full max-w-md h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group relative"
+                                onclick="document.getElementById('photo_rumah').click()">
+                                <img id="photo_rumah-preview" class="w-full h-full object-cover hidden"
+                                    alt="Photo Rumah Preview">
+                                <div id="photo_rumah-placeholder"
+                                    class="text-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                                    <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <p class="text-xs font-medium">Tap untuk Upload Foto Rumah</p>
+                                    <p class="text-[10px] mt-1">JPG, PNG • 16:10</p>
+                                </div>
+                            </div>
+                            <input class="hidden photo-input" id="photo_rumah" name="photo_rumah" type="file"
+                                accept="image/*" capture="environment" data-target="photo_rumah">
+                        </div>
+                    </div>
+
+                    {{-- ================= 10. FOTO ORANG YANG DITEMUI ================= --}}
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Orang yang
+                            Ditemui
+                        </h2>
+
+                        <div class="flex justify-center">
+                            <div id="photo_orang-upload-area"
+                                class="w-full max-w-md h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group relative"
+                                onclick="document.getElementById('photo_orang').click()">
+                                <img id="photo_orang-preview" class="w-full h-full object-cover hidden"
+                                    alt="Photo Orang Preview">
+                                <div id="photo_orang-placeholder"
+                                    class="text-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                                    <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <p class="text-xs font-medium">Tap untuk Upload Foto Orang</p>
+                                    <p class="text-[10px] mt-1">JPG, PNG • 16:10</p>
+                                </div>
+                            </div>
+                            <input class="hidden photo-input" id="photo_orang" name="photo_orang" type="file"
+                                accept="image/*" capture="environment" data-target="photo_orang">
                         </div>
                     </div>
 
@@ -691,6 +748,10 @@
                     showCustomerModal: true,
                     showTemplateModal: false,
                     activeTemplateTarget: 'kondisi',
+                    kol: '{{ old('kolektibilitas', '') }}',
+                    ketemuDengan: '{{ old('ketemu_dengan', '') }}',
+                    bakiRaw: '{{ old('baki_debet', '0') }}',
+                    bakiDisplay: '',
                     templates: {
                         kondisi: [
                             "Usaha nasabah saat ini sedang mengalami penurunan omset dibandingkan bulan lalu karena...",
@@ -742,6 +803,13 @@
                     init() {
                         this.displayJumlahBayar = this.formatNumber(this.jumlahBayar);
                         this.displayJumlahPembayaran = this.formatNumber(this.jumlahPembayaran);
+                        if (this.bakiRaw > 0) this.bakiDisplay = this.formatNumber(this.bakiRaw);
+                    },
+
+                    updateBaki(v) {
+                        const n = parseInt(v.replace(/\D/g, '')) || 0;
+                        this.bakiRaw = n;
+                        this.bakiDisplay = n ? this.formatNumber(n) : '';
                     },
 
                     get filteredCustomers() {
@@ -811,53 +879,68 @@
                     placeholder: 'Deskripsikan rencana penyelesaian...'
                 });
 
-                // ---- CropperJS Logic ----
-                const photoInput = document.getElementById('photo');
-                const photoPreview = document.getElementById('photo-preview');
-                const photoPlaceholder = document.getElementById('photo-placeholder');
+                // ---- CropperJS Logic (Generic for multiple fields) ----
                 const cropperModal = document.getElementById('cropper-modal');
                 const cropperImage = document.getElementById('cropper-image');
                 const cropBtn = document.getElementById('crop-btn');
                 const cancelCropBtn = document.getElementById('cancel-crop-btn');
                 let cropper = null;
+                let activeTarget = null; // 'photo', 'photo_rumah', or 'photo_orang'
 
-                photoInput.addEventListener('change', function (e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        if (!file.type.match('image.*')) {
-                            Swal.fire('Error', 'Pilih file gambar.', 'error');
-                            return;
+                document.querySelectorAll('.photo-input').forEach(input => {
+                    input.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+                        activeTarget = this.dataset.target;
+
+                        if (file) {
+                            if (!file.type.match('image.*')) {
+                                Swal.fire('Error', 'Pilih file gambar.', 'error');
+                                return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                cropperModal.classList.remove('hidden');
+                                cropperImage.src = e.target.result;
+                                if (cropper) cropper.destroy();
+                                cropper = new Cropper(cropperImage, {
+                                    aspectRatio: 16 / 10,
+                                    viewMode: 1,
+                                    dragMode: 'move',
+                                    autoCropArea: 1,
+                                    background: false
+                                });
+                            }
+                            reader.readAsDataURL(file);
                         }
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            cropperModal.classList.remove('hidden');
-                            cropperImage.src = e.target.result;
-                            if (cropper) cropper.destroy();
-                            cropper = new Cropper(cropperImage, {
-                                aspectRatio: 16 / 10,
-                                viewMode: 1,
-                                dragMode: 'move',
-                                autoCropArea: 1,
-                                background: false
-                            });
-                        }
-                        reader.readAsDataURL(file);
-                    }
+                    });
                 });
 
                 cancelCropBtn.addEventListener('click', function () {
                     cropperModal.classList.add('hidden');
                     if (cropper) { cropper.destroy(); cropper = null; }
-                    photoInput.value = '';
-                    photoPreview.classList.add('hidden');
-                    photoPlaceholder.classList.remove('hidden');
+                    if (activeTarget) {
+                        const input = document.getElementById(activeTarget);
+                        const preview = document.getElementById(activeTarget + '-preview');
+                        const placeholder = document.getElementById(activeTarget + '-placeholder');
+                        input.value = '';
+                        // Only hide if there's no previous base64
+                        if (!document.getElementById(activeTarget + '_base64').value) {
+                            preview.classList.add('hidden');
+                            placeholder.classList.remove('hidden');
+                        }
+                    }
+                    activeTarget = null;
                 });
 
                 cropBtn.addEventListener('click', function () {
-                    if (cropper) {
+                    if (cropper && activeTarget) {
                         const canvas = cropper.getCroppedCanvas();
+                        const input = document.getElementById(activeTarget);
+                        const preview = document.getElementById(activeTarget + '-preview');
+                        const placeholder = document.getElementById(activeTarget + '-placeholder');
+                        const base64Input = document.getElementById(activeTarget + '_base64');
 
-                        // Add watermark with AO name and datetime
+                        // Add watermark for all photos
                         const ctx = canvas.getContext('2d');
                         const aoName = '{{ auth()->user()->name }}';
                         const now = new Date();
@@ -869,43 +952,46 @@
                         ctx.textAlign = 'right';
                         ctx.textBaseline = 'bottom';
 
-                        // Semi-transparent background strip
                         const textWidth = ctx.measureText(watermarkText).width;
                         const padding = 10;
                         const stripHeight = fontSize + padding * 2;
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                         ctx.fillRect(canvas.width - textWidth - padding * 3, canvas.height - stripHeight, textWidth + padding * 3, stripHeight);
 
-                        // White text
                         ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
                         ctx.fillText(watermarkText, canvas.width - padding, canvas.height - padding);
 
                         canvas.toBlob(function (blob) {
-                            const croppedFile = new File([blob], 'cropped_photo.jpg', { type: 'image/jpeg' });
+                            const croppedFile = new File([blob], `cropped_${activeTarget}.jpg`, { type: 'image/jpeg' });
                             const dataTransfer = new DataTransfer();
                             dataTransfer.items.add(croppedFile);
-                            photoInput.files = dataTransfer.files;
+                            input.files = dataTransfer.files;
 
                             const dataUrl = canvas.toDataURL("image/jpeg");
-                            photoPreview.src = dataUrl;
-                            document.getElementById('photo_base64').value = dataUrl;
-                            photoPreview.classList.remove('hidden');
-                            photoPlaceholder.classList.add('hidden');
+                            preview.src = dataUrl;
+                            base64Input.value = dataUrl;
+                            preview.classList.remove('hidden');
+                            placeholder.classList.add('hidden');
 
                             cropperModal.classList.add('hidden');
                             cropper.destroy();
                             cropper = null;
+                            activeTarget = null;
                         }, 'image/jpeg');
                     }
                 });
 
-                // Load old photo base64 if exists (validation failure)
-                const oldPhotoBase64 = document.getElementById('photo_base64').value;
-                if (oldPhotoBase64) {
-                    photoPreview.src = oldPhotoBase64;
-                    photoPreview.classList.remove('hidden');
-                    photoPlaceholder.classList.add('hidden');
-                }
+                // Load old photo base64 values if exist (validation failure)
+                ['photo', 'photo_rumah', 'photo_orang'].forEach(id => {
+                    const base64 = document.getElementById(id + '_base64').value;
+                    if (base64) {
+                        const preview = document.getElementById(id + '-preview');
+                        const placeholder = document.getElementById(id + '-placeholder');
+                        preview.src = base64;
+                        preview.classList.remove('hidden');
+                        placeholder.classList.add('hidden');
+                    }
+                });
 
                 // ---- Leaflet Map ----
                 const oldLat = "{{ old('latitude') }}";
@@ -941,12 +1027,7 @@
                     "Google Satellite": googleHybrid,
                 }).addTo(map);
 
-                L.Control.geocoder({ defaultMarkGeocode: false })
-                    .on('markgeocode', function (e) {
-                        updateMarker(e.geocode.center.lat, e.geocode.center.lng);
-                        fetchAddress(e.geocode.center.lat, e.geocode.center.lng);
-                    })
-                    .addTo(map);
+                /* Geocoder search removed to restrict input to current location only */
 
                 let marker;
                 if (oldLat && oldLng) {
@@ -1000,10 +1081,7 @@
                     }
                 }
 
-                map.on('click', function (e) {
-                    updateMarker(e.latlng.lat, e.latlng.lng);
-                    fetchAddress(e.latlng.lat, e.latlng.lng);
-                });
+                /* Manual marker placement removed to restrict input to current location only */
 
                 // Get Current Location button
                 const locationBtn = document.getElementById('get-location-btn');

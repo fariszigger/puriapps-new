@@ -141,7 +141,7 @@
                             </div>
                             <div class="text-[11px] text-right italic font-normal text-gray-500">
                                 Kunjungan #{{ $visit->penagihan_ke ?? '-' }} /
-                                {{ $visit->created_at->format('d M Y') }}
+                                {{ formatIndonesianDate($visit->created_at) }}
                             </div>
                         </div>
 
@@ -186,7 +186,7 @@
                                     <tr>
                                         <td class="font-bold pb-1">Tanggal Kunjungan</td>
                                         <td class="w-4 pb-1">:</td>
-                                        <td class="pb-1">{{ $visit->created_at->format('d F Y, H:i') }} WIB</td>
+                                        <td class="pb-1">{{ formatIndonesianDate($visit->created_at) }}, {{ $visit->created_at->format('H:i') }} WIB</td>
                                     </tr>
                                     <tr>
                                         <td class="font-bold pb-1">Penagihan Ke</td>
@@ -253,7 +253,7 @@
                                 <td class="border-r-0 pb-1">Penagihan Ke</td>
                                 <td class="pb-1">: <span class="font-bold">{{ $visit->penagihan_ke ?? '-' }}</span></td>
                                 <td class="border-r-0 border-l border-gray-600 pb-1">Tanggal</td>
-                                <td class="pb-1">: {{ $visit->created_at->format('d-M-Y H:i') }}</td>
+                                <td class="pb-1">: {{ formatIndonesianDate($visit->created_at) }} {{ $visit->created_at->format('H:i') }}</td>
                             </tr>
 
                             <!-- HASIL PENAGIHAN -->
@@ -270,7 +270,7 @@
                                             {{ number_format($visit->jumlah_bayar ?? 0, 0, ',', '.') }}
                                         @elseif($visit->hasil_penagihan === 'janji_bayar')
                                             <span class="font-bold text-orange-600">JANJI BAYAR</span> — Tanggal:
-                                            {{ $visit->tanggal_janji_bayar ? \Carbon\Carbon::parse($visit->tanggal_janji_bayar)->format('d F Y') : '-' }}
+                                            {{ $visit->tanggal_janji_bayar ? formatIndonesianDate($visit->tanggal_janji_bayar) : '-' }}
                                         @else
                                             <span class="text-gray-500">-</span>
                                         @endif
@@ -438,7 +438,7 @@
                                             Moch. Arif Priyadi</p>
                                     </td>
                                     <td class="w-1/2 text-center pt-2">
-                                        <p class="mb-1">{{ $visit->created_at->format('d F Y') }}</p>
+                                        <p class="mb-1">{{ formatIndonesianDate($visit->created_at) }}</p>
                                         <p class="font-bold">Account Officer</p>
                                         <div class="h-10"></div>
                                         <p class="border-t border-black inline-block px-8 pt-1 font-bold">

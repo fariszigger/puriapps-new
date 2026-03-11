@@ -3,14 +3,8 @@
 @section('title', 'Edit Kunjungan Nasabah')
 
 @push('styles')
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <style>
-        .cropper-view-box,
-        .cropper-face {
-            border-radius: 0;
-        }
-
         .ql-editor {
             min-height: 120px;
         }
@@ -68,11 +62,7 @@
                     value="{{ old('kondisi_saat_ini', $visit->kondisi_saat_ini) }}">
                 <input type="hidden" id="rencana_penyelesaian_hidden" name="rencana_penyelesaian"
                     value="{{ old('rencana_penyelesaian', $visit->rencana_penyelesaian) }}">
-                <input type="hidden" id="photo_base64" name="photo_base64" value="{{ old('photo_base64') }}">
-                <input type="hidden" id="photo_rumah_base64" name="photo_rumah_base64"
-                    value="{{ old('photo_rumah_base64') }}">
-                <input type="hidden" id="photo_orang_base64" name="photo_orang_base64"
-                    value="{{ old('photo_orang_base64') }}">
+
 
                 <div class="space-y-8">
 
@@ -302,11 +292,26 @@
                                 </div>
                             </div>
 
-                            <div x-show="hasilPenagihan === 'janji_bayar'" x-transition>
-                                <label class="block mb-2 text-sm font-medium text-gray-900">Tanggal Janji Bayar</label>
-                                <input type="date" name="tanggal_janji_bayar"
-                                    value="{{ old('tanggal_janji_bayar', $visit->tanggal_janji_bayar) }}"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm">
+                            <div x-show="hasilPenagihan === 'janji_bayar'" x-transition class="space-y-3">
+                                <div>
+                                    <label class="block mb-2 text-sm font-medium text-gray-900">Tanggal Janji Bayar</label>
+                                    <input type="date" name="tanggal_janji_bayar"
+                                        value="{{ old('tanggal_janji_bayar', $visit->tanggal_janji_bayar) }}"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm">
+                                </div>
+                                <div>
+                                    <label class="block mb-2 text-sm font-medium text-gray-900">Jumlah Pembayaran
+                                        (Rp)</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-medium">Rp</span>
+                                        <input type="text" x-model="displayJumlahPembayaran"
+                                            @input="updateJumlahPembayaran($event.target.value)"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 bg-white/50 backdrop-blur-sm"
+                                            placeholder="0">
+                                        <input type="hidden" name="jumlah_pembayaran" :value="jumlahPembayaran">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -317,32 +322,23 @@
                         </h2>
 
                         <div class="flex justify-center">
-                            <div id="photo-upload-area"
-                                class="w-full max-w-md h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group relative"
-                                onclick="document.getElementById('photo').click()">
+                            <div class="w-full max-w-md h-64 border-2 border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative">
                                 @if($visit->photo_path)
-                                    <img id="photo-preview" class="w-full h-full object-cover"
+                                    <img class="w-full h-full object-cover"
                                         src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_path)]) }}"
-                                        alt="Photo Preview">
+                                        alt="Foto Kunjungan">
                                 @else
-                                    <img id="photo-preview" class="w-full h-full object-cover hidden" alt="Photo Preview">
+                                    <div class="text-center text-gray-400">
+                                        <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <p class="text-xs font-medium">Tidak ada foto kunjungan</p>
+                                    </div>
                                 @endif
-                                <div id="photo-placeholder"
-                                    class="text-center text-gray-400 group-hover:text-blue-500 transition-colors {{ $visit->photo_path ? 'hidden' : '' }}">
-                                    <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                                        </path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    <p class="text-xs font-medium">Tap untuk Upload Foto Kunjungan</p>
-                                    <p class="text-[10px] mt-1">JPG, PNG • 16:10</p>
+                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                                    Hanya Lihat
                                 </div>
                             </div>
-                            <input class="hidden photo-input" id="photo" name="photo" type="file" accept="image/*"
-                                capture="environment" data-target="photo">
                         </div>
                     </div>
 
@@ -353,33 +349,23 @@
                         </h2>
 
                         <div class="flex justify-center">
-                            <div id="photo_rumah-upload-area"
-                                class="w-full max-w-md h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group relative"
-                                onclick="document.getElementById('photo_rumah').click()">
+                            <div class="w-full max-w-md h-64 border-2 border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative">
                                 @if($visit->photo_rumah_path)
-                                    <img id="photo_rumah-preview" class="w-full h-full object-cover"
+                                    <img class="w-full h-full object-cover"
                                         src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_rumah_path)]) }}"
-                                        alt="Photo Rumah Preview">
+                                        alt="Foto Rumah">
                                 @else
-                                    <img id="photo_rumah-preview" class="w-full h-full object-cover hidden"
-                                        alt="Photo Rumah Preview">
+                                    <div class="text-center text-gray-400">
+                                        <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <p class="text-xs font-medium">Tidak ada foto rumah</p>
+                                    </div>
                                 @endif
-                                <div id="photo_rumah-placeholder"
-                                    class="text-center text-gray-400 group-hover:text-blue-500 transition-colors {{ $visit->photo_rumah_path ? 'hidden' : '' }}">
-                                    <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                                        </path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    <p class="text-xs font-medium">Tap untuk Upload Foto Rumah</p>
-                                    <p class="text-[10px] mt-1">JPG, PNG • 16:10</p>
+                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                                    Hanya Lihat
                                 </div>
                             </div>
-                            <input class="hidden photo-input" id="photo_rumah" name="photo_rumah" type="file"
-                                accept="image/*" capture="environment" data-target="photo_rumah">
                         </div>
                     </div>
 
@@ -390,33 +376,23 @@
                         </h2>
 
                         <div class="flex justify-center">
-                            <div id="photo_orang-upload-area"
-                                class="w-full max-w-md h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group relative"
-                                onclick="document.getElementById('photo_orang').click()">
+                            <div class="w-full max-w-md h-64 border-2 border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative">
                                 @if($visit->photo_orang_path)
-                                    <img id="photo_orang-preview" class="w-full h-full object-cover"
+                                    <img class="w-full h-full object-cover"
                                         src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_orang_path)]) }}"
-                                        alt="Photo Orang Preview">
+                                        alt="Foto Orang">
                                 @else
-                                    <img id="photo_orang-preview" class="w-full h-full object-cover hidden"
-                                        alt="Photo Orang Preview">
+                                    <div class="text-center text-gray-400">
+                                        <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <p class="text-xs font-medium">Tidak ada foto orang yang ditemui</p>
+                                    </div>
                                 @endif
-                                <div id="photo_orang-placeholder"
-                                    class="text-center text-gray-400 group-hover:text-blue-500 transition-colors {{ $visit->photo_orang_path ? 'hidden' : '' }}">
-                                    <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                                        </path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    <p class="text-xs font-medium">Tap untuk Upload Foto Orang</p>
-                                    <p class="text-[10px] mt-1">JPG, PNG • 16:10</p>
+                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                                    Hanya Lihat
                                 </div>
                             </div>
-                            <input class="hidden photo-input" id="photo_orang" name="photo_orang" type="file"
-                                accept="image/*" capture="environment" data-target="photo_orang">
                         </div>
                     </div>
 
@@ -494,54 +470,11 @@
             </div>
         </div>
 
-        {{-- ================= CROPPER MODAL ================= --}}
-        <div id="cropper-modal" class="fixed inset-0 z-[9999] hidden" aria-labelledby="cropper-modal-title" role="dialog"
-            aria-modal="true">
-            <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity"></div>
-            <div class="fixed inset-0 z-10 overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                    <div
-                        class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-2xl transition-all w-full max-w-2xl flex flex-col max-h-[90vh]">
-                        <div
-                            class="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3 sm:px-6 flex justify-between items-center shadow-sm">
-                            <h3 class="text-lg font-semibold leading-6 text-gray-900" id="cropper-modal-title">
-                                Crop Photo (16:10 Ratio)
-                            </h3>
-                            <div class="flex space-x-2">
-                                <button type="button" id="cancel-crop-btn"
-                                    class="inline-flex justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
-                                    Cancel
-                                </button>
-                                <button type="button" id="crop-btn"
-                                    class="inline-flex justify-center rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="-ml-0.5 mr-1.5 h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Crop & Save
-                                </button>
-                            </div>
-                        </div>
-                        <div class="p-4 sm:p-6 bg-gray-50 flex-grow overflow-y-auto flex items-center justify-center">
-                            <div class="relative w-full" style="height: 500px; max-height: 60vh;">
-                                <img id="cropper-image" src="" alt="Crop Preview"
-                                    class="block max-w-full h-full object-contain mx-auto">
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 px-4 py-3 sm:px-6 text-center border-t border-gray-200">
-                            <p class="text-xs text-gray-500">Drag to adjust. The selection is locked to the required report
-                                format.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
     </div>
 
     @push('scripts')
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
         <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
         <script>
             function editForm() {
@@ -595,9 +528,14 @@
                     hasilPenagihan: '{{ old("hasil_penagihan", $visit->hasil_penagihan ?? "") }}',
                     jumlahBayar: {{ old('jumlah_bayar', $visit->jumlah_bayar ?? 0) ?: 0 }},
                     displayJumlahBayar: '',
+                    jumlahPembayaran: {{ old('jumlah_pembayaran', $visit->jumlah_pembayaran ?? 0) ?: 0 }},
+                    displayJumlahPembayaran: '',
                     init() {
                         if (this.jumlahBayar > 0) {
                             this.displayJumlahBayar = this.formatNumber(this.jumlahBayar);
+                        }
+                        if (this.jumlahPembayaran > 0) {
+                            this.displayJumlahPembayaran = this.formatNumber(this.jumlahPembayaran);
                         }
                         if (this.bakiRaw > 0) {
                             this.bakiDisplay = this.formatNumber(this.bakiRaw);
@@ -611,6 +549,11 @@
                         this.jumlahBayar = num;
                         this.displayJumlahBayar = this.formatNumber(num);
                     },
+                    updateJumlahPembayaran(val) {
+                        const num = parseInt(val.replace(/\D/g, '')) || 0;
+                        this.jumlahPembayaran = num;
+                        this.displayJumlahPembayaran = this.formatNumber(num);
+                    },
                     updateBaki(v) {
                         const n = parseInt(v.replace(/\D/g, '')) || 0;
                         this.bakiRaw = n;
@@ -619,165 +562,49 @@
                 };
             }
 
-            // Form submit with Swal confirmation (needed to reference quill later)
-            const editFormEl = document.getElementById('edit-form');
+            document.addEventListener('DOMContentLoaded', function () {
+                // Form submit with Swal confirmation (needed to reference quill later)
+                const editFormEl = document.getElementById('edit-form');
 
-            // Quill editors (assign to window to be accessible from Alpine method and form submit block)
-            window.kondisiQuill = new Quill('#kondisi-editor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
-                }
-            });
-
-            window.rencanaQuill = new Quill('#rencana-editor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
-                }
-            });
-
-            // CropperJS for multiple photos
-            let cropper = null;
-            const cropperModal = document.getElementById('cropper-modal');
-            const cropperImage = document.getElementById('cropper-image');
-            let activeTarget = null;
-
-            document.querySelectorAll('.photo-input').forEach(input => {
-                input.addEventListener('change', function (e) {
-                    const file = e.target.files[0];
-                    activeTarget = this.dataset.target;
-                    if (!file) return;
-
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        cropperImage.src = event.target.result;
-                        cropperModal.classList.remove('hidden');
-
-                        if (cropper) cropper.destroy();
-                        cropper = new Cropper(cropperImage, {
-                            aspectRatio: 16 / 10,
-                            viewMode: 1,
-                            autoCropArea: 1,
-                            background: false
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                });
-            });
-
-            document.getElementById('crop-btn').addEventListener('click', function () {
-                if (!cropper || !activeTarget) return;
-                const canvas = cropper.getCroppedCanvas({ width: 800, height: 500 });
-
-                // Add watermark
-                const ctx = canvas.getContext('2d');
-                const aoName = '{{ auth()->user()->name }}';
-                const now = new Date();
-                const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                const watermarkText = aoName + ' \u2014 ' + dateStr;
-
-                const fontSize = Math.max(14, Math.floor(canvas.width / 40));
-                ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-                ctx.textAlign = 'right';
-                ctx.textBaseline = 'bottom';
-
-                const textWidth = ctx.measureText(watermarkText).width;
-                const padding = 10;
-                const stripHeight = fontSize + padding * 2;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(canvas.width - textWidth - padding * 3, canvas.height - stripHeight, textWidth + padding * 3, stripHeight);
-
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-                ctx.fillText(watermarkText, canvas.width - padding, canvas.height - padding);
-
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                const input = document.getElementById(activeTarget);
-                const preview = document.getElementById(activeTarget + '-preview');
-                const placeholder = document.getElementById(activeTarget + '-placeholder');
-                const base64Input = document.getElementById(activeTarget + '_base64');
-
-                preview.src = dataUrl;
-                preview.classList.remove('hidden');
-                placeholder?.classList.add('hidden');
-                if (base64Input) base64Input.value = dataUrl;
-
-                canvas.toBlob(function (blob) {
-                    const file = new File([blob], `cropped_${activeTarget}.jpg`, { type: 'image/jpeg' });
-                    const dt = new DataTransfer();
-                    dt.items.add(file);
-                    input.files = dt.files;
-                }, 'image/jpeg', 0.9);
-
-                cropperModal.classList.add('hidden');
-                cropper.destroy();
-                cropper = null;
-                activeTarget = null;
-            });
-
-            document.getElementById('cancel-crop-btn').addEventListener('click', function () {
-                cropperModal.classList.add('hidden');
-                if (cropper) {
-                    cropper.destroy();
-                    cropper = null;
-                }
-                if (activeTarget) {
-                    const input = document.getElementById(activeTarget);
-                    const preview = document.getElementById(activeTarget + '-preview');
-                    const placeholder = document.getElementById(activeTarget + '-placeholder');
-                    const base64Input = document.getElementById(activeTarget + '_base64');
-
-                    if (!base64Input.value) {
-                        // Check if it's an initial image from server
-                        const isInitial = preview.src && !preview.src.startsWith('data:');
-                        if (!isInitial) {
-                            preview.classList.add('hidden');
-                            placeholder.classList.remove('hidden');
-                        }
+                // Quill editors (assign to window to be accessible from Alpine method and form submit block)
+                window.kondisiQuill = new Quill('#kondisi-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
                     }
-                    input.value = '';
-                }
-                activeTarget = null;
-            });
+                });
 
-            // Restore base64 from old input (validation error)
-            ['photo', 'photo_rumah', 'photo_orang'].forEach(id => {
-                const base64Input = document.getElementById(id + '_base64');
-                if (base64Input && base64Input.value) {
-                    const preview = document.getElementById(id + '-preview');
-                    const placeholder = document.getElementById(id + '-placeholder');
-                    preview.src = base64Input.value;
-                    preview.classList.remove('hidden');
-                    placeholder?.classList.add('hidden');
-                }
-            });
+                window.rencanaQuill = new Quill('#rencana-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
+                    }
+                });
 
-            // Form submit with Swal confirmation
-            const editFormEl = document.getElementById('edit-form');
-            editFormEl.addEventListener('submit', function (e) {
-                e.preventDefault();
+                editFormEl.addEventListener('submit', function (e) {
+                    e.preventDefault();
 
-                Swal.fire({
-                    title: 'Perbarui Kunjungan?',
-                    text: 'Pastikan semua data sudah benar sebelum menyimpan.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#1d4ed8',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Ya, Perbarui',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (!result.isConfirmed) return;
+                    Swal.fire({
+                        title: 'Perbarui Kunjungan?',
+                        text: 'Pastikan semua data sudah benar sebelum menyimpan.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#1d4ed8',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Ya, Perbarui',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (!result.isConfirmed) return;
 
-                    // Sync Quill content
-                    document.getElementById('kondisi_saat_ini_hidden').value = window.kondisiQuill.root.innerHTML;
-                    document.getElementById('rencana_penyelesaian_hidden').value = window.rencanaQuill.root.innerHTML;
+                        // Sync Quill content
+                        document.getElementById('kondisi_saat_ini_hidden').value = window.kondisiQuill.root.innerHTML;
+                        document.getElementById('rencana_penyelesaian_hidden').value = window.rencanaQuill.root.innerHTML;
 
-                    editFormEl.submit();
+                        editFormEl.submit();
+                    });
                 });
             });
-                                                            });
         </script>
     @endpush
 @endsection

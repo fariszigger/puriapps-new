@@ -661,8 +661,9 @@
                     dotsRow.className = 'flex flex-wrap gap-1 mb-1';
                     const types = [...new Set(events.map(e => e.type))];
                     types.forEach(type => {
+                        if (type === 'dob') return; // User requested to hide blue circle
                         const dot = document.createElement('div');
-                        const color = type === 'dob' ? '#3b82f6' : type === 'visit' ? '#22c55e' : '#f97316';
+                        const color = type === 'visit' ? '#22c55e' : '#f97316';
                         dot.className = 'w-2 h-2 rounded-full';
                         dot.style.backgroundColor = color;
                         dotsRow.appendChild(dot);

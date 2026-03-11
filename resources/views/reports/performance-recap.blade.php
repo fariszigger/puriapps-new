@@ -102,7 +102,7 @@
                 <img src="{{ asset('build/assets/logobpr.png') }}" alt="Logo" class="h-10 w-auto object-contain">
             </div>
             <div class="text-right text-[10px] text-gray-500 italic">
-                Dicetak: {{ now()->format('d M Y H:i') }}
+                Dicetak: {{ formatIndonesianDate(now()) }} {{ now()->format('H:i') }}
             </div>
         </div>
 
@@ -151,7 +151,7 @@
                                     @if($idx === 0)
                                         <td rowspan="{{ count($visits) }}" class="text-center font-semibold align-middle"
                                             style="background-color: #f9fafb !important;">
-                                            {{ \Carbon\Carbon::parse($date)->format('d M Y') }}
+                                            {{ formatIndonesianDate(\Carbon\Carbon::parse($date)) }}
                                             <br>
                                             <span
                                                 class="text-[9px] text-gray-500 font-normal">{{ \Carbon\Carbon::parse($date)->translatedFormat('l') }}</span>
@@ -176,7 +176,7 @@
                                         @elseif($visit['hasil_penagihan'] === 'janji_bayar')
                                             <span style="color:#ea580c;font-weight:bold">Janji Bayar</span>
                                             @if($visit['tanggal_janji_bayar'])
-                                                — {{ \Carbon\Carbon::parse($visit['tanggal_janji_bayar'])->format('d/m/Y') }}
+                                                — {{ formatIndonesianDate(\Carbon\Carbon::parse($visit['tanggal_janji_bayar'])) }}
                                             @endif
                                             @if($visit['jumlah_pembayaran'])
                                                 <br><span class="text-[9px]">Rp
@@ -214,7 +214,7 @@
                             Moch. Arif Priyadi</p>
                     </td>
                     <td class="w-1/2 text-center pt-2">
-                        <p class="mb-1">{{ now()->format('d F Y') }}</p>
+                        <p class="mb-1">{{ formatIndonesianDate(now()) }}</p>
                         <p class="font-bold">Dibuat Oleh</p>
                         <div class="h-16"></div>
                         <p class="border-t border-black inline-block px-8 pt-1 font-bold">

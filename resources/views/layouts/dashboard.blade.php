@@ -52,6 +52,9 @@
                 </span>
             </a>
             <div class="flex items-center md:order-2">
+                
+                <livewire:navbar-notifications />
+
                 <button type="button"
                     class="flex items-center mr-3 text-sm bg-white/50 backdrop-blur-md rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 ring-offset-2 ring-offset-gray-100 pr-3 border border-white/50"
                     id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown"

@@ -19,6 +19,9 @@ class WarningLetter extends Model
         'tunggakan_date' => 'date',
         'deadline_date' => 'date',
         'tunggakan_amount' => 'decimal:2',
+        'previous_letter_date' => 'date',
+        'previous_letter_deadline' => 'date',
+        'previous_letter_amount' => 'decimal:2',
     ];
 
     public function customer(): BelongsTo
@@ -29,6 +32,11 @@ class WarningLetter extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function previousLetter(): BelongsTo
+    {
+        return $this->belongsTo(WarningLetter::class, 'previous_letter_id');
     }
 
     /**

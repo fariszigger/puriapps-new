@@ -31,6 +31,15 @@ class WarningLetterController extends Controller
 
         if ($customer) {
             $qualification = $this->checkQualification($customer, $type);
+            
+            // For SP2/SP3, fetch the previous letter
+            if (in_array($type, ['sp2', 'sp3'])) {
+                $prevType = $type === 'sp2' ? 'sp1' : 'sp2';
+                $previousLetter = WarningLetter::where('customer_id', $customer->id)
+                    ->where('type', $prevType)
+                    ->latest()
+                    ->first();
+            }
         }
 
         $generatedLetterNumber = WarningLetter::generateLetterNumber();
@@ -53,6 +62,11 @@ class WarningLetterController extends Controller
             'tunggakan_date' => 'nullable|date',
             'deadline_date' => 'nullable|date',
             'notes' => 'nullable|string',
+            'previous_letter_id' => 'nullable|exists:warning_letters,id',
+            'previous_letter_number' => 'nullable|string|max:255',
+            'previous_letter_date' => 'nullable|date',
+            'previous_letter_amount' => 'nullable|numeric',
+            'previous_letter_deadline' => 'nullable|date',
         ]);
 
         $customer = Customer::findOrFail($request->customer_id);
@@ -82,6 +96,11 @@ class WarningLetterController extends Controller
             'kolektibilitas' => $latestVisit?->kolektibilitas,
             'penagihan_ke' => $latestVisit?->penagihan_ke,
             'notes' => $request->notes,
+            'previous_letter_id' => $request->previous_letter_id,
+            'previous_letter_number' => $request->previous_letter_number,
+            'previous_letter_date' => $request->previous_letter_date,
+            'previous_letter_amount' => $request->previous_letter_amount,
+            'previous_letter_deadline' => $request->previous_letter_deadline,
         ]);
 
         return redirect()->route('warning-letters.index')
@@ -134,16 +153,21 @@ class WarningLetterController extends Controller
         if (auth()->user()->cannot('view warning-letters')) abort(403);
         $letter = WarningLetter::with(['customer', 'user'])->findOrFail($id);
 
-        $templateName = "kop-surat-{$letter->type}.docx";
-        $templatePath = storage_path("app/public/{$templateName}");
+        // Check in subfolder first as per latest request
+        $templatePath = storage_path("app/public/kop-surat/{$letter->type}.docx");
         
-        // Fallback to default if specific type doesn't exist
+        // Fallback to old naming convention (e.g., kop-surat-sp1.docx)
+        if (!file_exists($templatePath)) {
+            $templatePath = storage_path("app/public/kop-surat-{$letter->type}.docx");
+        }
+
+        // Final fallback to default
         if (!file_exists($templatePath)) {
             $templatePath = storage_path('app/public/kop-surat.docx');
         }
 
         if (!file_exists($templatePath)) {
-            abort(404, "Template {$templateName} atau kop-surat.docx tidak ditemukan. Pastikan file ada di storage/app/public/");
+            abort(404, "Template untuk tipa surat '{$letter->type}' tidak ditemukan. Pastikan file .docx ada di storage/app/public/kop-surat/ atau storage/app/public/");
         }
 
         $template = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
@@ -165,6 +189,13 @@ class WarningLetterController extends Controller
         $template->setValue('terbilang', $letter->tunggakan_amount ? $this->terbilangRupiah($letter->tunggakan_amount) : '____ rupiah');
         
         $template->setValue('batas_waktu', formatIndonesianDate($letter->deadline_date));
+
+        // Previous letter placeholders
+        $template->setValue('nomor_surat_lama', $letter->previous_letter_number ?? '____');
+        $template->setValue('tanggal_surat_lama', $letter->previous_letter_date ? formatIndonesianDate($letter->previous_letter_date) : '____');
+        $template->setValue('jumlah_surat_lama', $letter->previous_letter_amount ? number_format($letter->previous_letter_amount, 0, ',', '.') : '____');
+        $template->setValue('deadline_surat_lama', $letter->previous_letter_deadline ? formatIndonesianDate($letter->previous_letter_deadline) : '____');
+        $template->setValue('terbilang_lama', $letter->previous_letter_amount ? $this->terbilangRupiah($letter->previous_letter_amount) : '____ rupiah');
 
         $fileName = "{$letter->type_short_label} - " . ($letter->customer->name ?? 'Nasabah') . ".docx";
         

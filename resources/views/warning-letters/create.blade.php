@@ -77,6 +77,13 @@
         <form action="{{ route('warning-letters.store') }}" method="POST">
             @csrf
             <input type="hidden" name="type" value="{{ $type }}">
+            @if($previousLetter)
+                <input type="hidden" name="previous_letter_id" value="{{ $previousLetter->id }}">
+                <input type="hidden" name="previous_letter_number" value="{{ $previousLetter->letter_number }}">
+                <input type="hidden" name="previous_letter_date" value="{{ $previousLetter->letter_date->format('Y-m-d') }}">
+                <input type="hidden" name="previous_letter_amount" value="{{ $previousLetter->tunggakan_amount }}">
+                <input type="hidden" name="previous_letter_deadline" value="{{ $previousLetter->deadline_date ? $previousLetter->deadline_date->format('Y-m-d') : '' }}">
+            @endif
 
             <div class="space-y-8">
 
@@ -153,14 +160,18 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="credit_agreement_number" class="block mb-2 text-sm font-medium text-gray-900">Nomor Perjanjian Kredit</label>
-                            <input type="text" id="credit_agreement_number" name="credit_agreement_number" value="{{ old('credit_agreement_number') }}"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm"
+                            <input type="text" id="credit_agreement_number" name="credit_agreement_number" 
+                                value="{{ old('credit_agreement_number', $previousLetter ? $previousLetter->credit_agreement_number : '') }}"
+                                {{ $previousLetter ? 'readonly' : '' }}
+                                class="bg-gray-50 border border-gray-300 {{ $previousLetter ? 'text-gray-500 bg-gray-100 cursor-not-allowed' : 'text-gray-900' }} text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm"
                                 placeholder="No. Perjanjian Kredit">
                         </div>
                         <div>
                             <label for="credit_agreement_date" class="block mb-2 text-sm font-medium text-gray-900">Tanggal Perjanjian Kredit</label>
-                            <input type="date" id="credit_agreement_date" name="credit_agreement_date" value="{{ old('credit_agreement_date') }}"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm">
+                            <input type="date" id="credit_agreement_date" name="credit_agreement_date" 
+                                value="{{ old('credit_agreement_date', $previousLetter ? $previousLetter->credit_agreement_date->format('Y-m-d') : '') }}"
+                                {{ $previousLetter ? 'readonly' : '' }}
+                                class="bg-gray-50 border border-gray-300 {{ $previousLetter ? 'text-gray-500 bg-gray-100 cursor-not-allowed' : 'text-gray-900' }} text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm">
                         </div>
                     </div>
                 </div>

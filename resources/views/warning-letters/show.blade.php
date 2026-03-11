@@ -80,12 +80,31 @@
                     Menunjuk Perjanjian Kredit No. <strong>{{ $letter->credit_agreement_number ?? '____' }}</strong>
                     tanggal <strong>{{ $letter->credit_agreement_date ? $letter->credit_agreement_date->translatedFormat('d F Y') : '____' }}</strong>
                     antara PT. BANK PERKREDITAN RAKYAT PURISEGER SENTOSA selanjutnya disebut Bank dengan
-                    <strong>{{ $letter->customer->name ?? '____' }}</strong> dan memperhatikan kondisi terakhir kredit,
+                    <strong>{{ $letter->customer->name ?? '____' }}</strong> dan
+                    @if($letter->previous_letter_number)
+                        Surat Bank No. <strong>{{ $letter->previous_letter_number }}</strong> perihal {{ $letter->type === 'sp2' ? 'Peringatan I (Pertama)' : 'Peringatan II (Kedua)' }}, (copy terlampir),
+                    @else
+                        memperhatikan kondisi terakhir kredit,
+                    @endif
                     dengan ini kami sampaikan hal-hal sebagai berikut:
                 </p>
 
                 <ol class="list-decimal pl-6 space-y-3 text-justify">
-                    <li>Bahwa sampai saat ini saudara belum menyelesaikan tunggakan kewajiban kepada Bank sesuai dengan kesepakatan yang tercantum dalam Perjanjian kredit yang telah saudara tanda tangani.</li>
+                    @if($letter->type === 'sp2' || $letter->type === 'sp3')
+                        <li>
+                            Bahwa pada tanggal <strong>{{ $letter->previous_letter_date ? $letter->previous_letter_date->translatedFormat('d-m-Y') : '____' }}</strong>,
+                            Bank telah menerbitkan dan menyampaikan {{ $letter->type === 'sp2' ? 'Surat Peringatan I (Pertama)' : 'Surat Peringatan II (Kedua)' }} yang isinya meminta saudara untuk menyelesaikan tunggakan kewajiban kepada Bank yang jumlahnya pada saat itu sebesar
+                            <strong>Rp. {{ $letter->previous_letter_amount ? number_format($letter->previous_letter_amount, 0, ',', '.') : '____' }},-</strong>
+                            dengan batas pembayaran paling lambat tanggal <strong>{{ $letter->previous_letter_deadline ? $letter->previous_letter_deadline->translatedFormat('d-m-Y') : '____' }}</strong>.
+                        </li>
+                    @endif
+                    <li>
+                        @if($letter->type === 'sp2' || $letter->type === 'sp3')
+                            Bahwa ternyata sampai dengan tanggal tersebut dalam butir 1 (satu) di atas, saudara belum juga menyelesaikan tunggakan kewajiban dimaksud maka kami menilai saudara **tidak memiliki itikad baik** untuk menyelesaikan kewajiban saudara kepada Bank, serta telah melakukan tindakan **ingkar janji (wanprestasi)** sesuai dengan ketentuan dalam Perjanjian Kredit.
+                        @else
+                            Bahwa sampai saat ini saudara belum menyelesaikan tunggakan kewajiban kepada Bank sesuai dengan kesepakatan yang tercantum dalam Perjanjian kredit yang telah saudara tanda tangani.
+                        @endif
+                    </li>
                     <li>
                         Jumlah tunggakan kewajiban saudara posisi tanggal
                         <strong>{{ $letter->tunggakan_date ? $letter->tunggakan_date->translatedFormat('d-m-Y') : '____' }}</strong>

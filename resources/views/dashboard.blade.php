@@ -274,6 +274,9 @@
                         :class="filter === 'janji_bayar' ? 'bg-orange-600 text-white shadow-md' : 'bg-white/80 text-orange-700 hover:bg-white'"
                         class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-orange-200">Janji
                         Bayar</button>
+                    <button @click="filter = 'sp'; limit = 8"
+                        :class="filter === 'sp' ? 'bg-red-600 text-white shadow-md' : 'bg-white/80 text-red-700 hover:bg-white'"
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-red-200">SP</button>
                     <a href="{{ route('calendar.index') }}"
                         class="ml-2 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-white hover:bg-gray-900 transition-all shadow-md flex items-center gap-1">
                         Kalender
@@ -290,15 +293,15 @@
                     <div
                         class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-3 flex items-center gap-3 hover:shadow-md transition-shadow">
                         <div class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm"
-                            :class="event.type === 'dob' ? 'bg-blue-100' : (event.type === 'visit' ? 'bg-green-100' : 'bg-orange-100')">
-                            <span x-text="event.type === 'dob' ? '🎂' : (event.type === 'visit' ? '📍' : '💰')"></span>
+                            :class="event.type === 'dob' ? 'bg-blue-100' : (event.type === 'visit' ? 'bg-green-100' : (event.type === 'sp' ? 'bg-red-100' : 'bg-orange-100'))">
+                            <span x-text="event.type === 'dob' ? '🎂' : (event.type === 'visit' ? '📍' : (event.type === 'sp' ? '📄' : '💰'))"></span>
                         </div>
                         <div class="min-w-0">
                             <p class="text-xs font-bold text-gray-900 truncate" x-text="event.name"></p>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase"
-                                    :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : (event.type === 'visit' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700')"
-                                    x-text="event.type === 'dob' ? 'Ultah' : (event.type === 'visit' ? 'Kunjungan' : 'Janji Bayar')">
+                                    :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : (event.type === 'visit' ? 'bg-green-100 text-green-700' : (event.type === 'sp' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'))"
+                                    x-text="event.type === 'dob' ? 'Ultah' : (event.type === 'visit' ? 'Kunjungan' : (event.type === 'sp' ? 'Follow Up SP' : 'Janji Bayar'))">
                                 </span>
                                 <span class="text-[10px] text-gray-500" x-text="event.display_date"></span>
                                 <span x-show="event.type === 'dob' && event.age" class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-700" x-text="'ke-' + event.age"></span>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Evaluation;
 use App\Models\CustomerVisit;
+use App\Models\WarningLetter;
 
 class DashboardController extends Controller
 {
@@ -147,6 +148,27 @@ class DashboardController extends Controller
                 'display_date' => $v->created_at->format('d M'),
                 'name' => $v->customer->name ?? '-',
             ]);
+        }
+
+        // Warning Letter Follow-ups in next 7 days (letter_date + 21 days)
+        $spQuery = WarningLetter::with('customer:id,name')
+            ->select('id', 'customer_id', 'user_id', 'letter_date', 'type')
+            ->whereIn('type', ['sp1', 'sp2']);
+        
+        if ($isAO) {
+            $spQuery->where('user_id', $user->id);
+        }
+
+        foreach ($spQuery->get() as $sp) {
+            $followUpDate = $sp->letter_date->addDays(21);
+            if ($followUpDate->between($today, $next7)) {
+                $next7Events->push([
+                    'type' => 'sp',
+                    'date' => $followUpDate->format('Y-m-d'),
+                    'display_date' => $followUpDate->format('d M'),
+                    'name' => 'Follow Up SP - ' . ($sp->customer->name ?? '-'),
+                ]);
+            }
         }
 
         return $next7Events->sortBy('date')->values();

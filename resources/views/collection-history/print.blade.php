@@ -12,13 +12,15 @@
     <style>
         @page {
             size: A4;
-            margin: 20mm;
+            margin: 10mm;
         }
 
         body {
             background-color: #f3f4f6;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
         }
 
         .a4-container {
@@ -26,13 +28,14 @@
             min-height: 297mm;
             margin: 0 auto;
             background: white;
-            padding: 20mm;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 8mm 12mm;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         @media print {
             body {
                 background-color: white;
+                font-size: 10px;
             }
 
             .a4-container {
@@ -46,6 +49,17 @@
             .no-print {
                 display: none !important;
             }
+
+            .page-break-inside-avoid {
+                page-break-inside: avoid;
+            }
+        }
+
+        .content-rich-text p, 
+        .content-rich-text div {
+            margin: 0 !important;
+            padding: 0 !important;
+            display: inline;
         }
     </style>
 </head>
@@ -53,179 +67,160 @@
 <body class="text-gray-900 font-sans antialiased py-8 print:py-0">
 
     <!-- Print / Close Controls -->
-    <div class="max-w-[210mm] mx-auto mb-6 flex justify-end gap-3 no-print px-4 md:px-0">
+    <div class="max-w-[210mm] mx-auto mb-4 flex justify-end gap-3 no-print px-4 md:px-0">
         <button onclick="window.close()"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-200 shadow-sm transition-all flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+            class="px-4 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-all flex items-center gap-2">
             Tutup
         </button>
         <button onclick="window.print()"
-            class="px-6 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-md transition-all flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
-                </path>
-            </svg>
+            class="px-5 py-1.5 text-xs font-bold text-white bg-blue-600 rounded hover:bg-blue-700 shadow-md transition-all flex items-center gap-2">
             Cetak Dokumen
         </button>
     </div>
 
     <!-- A4 Document -->
-    <div class="a4-container">
-        <!-- Header -->
-        <div class="flex items-center justify-between border-b-2 border-gray-800 pb-6 mb-8">
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-blue-100 flex items-center justify-center rounded-xl border border-blue-200">
-                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                        </path>
-                    </svg>
-                </div>
+    <div class="a4-container !py-8 !px-10">
+        <!-- Header: Matching Recap Style -->
+        <div class="flex items-center justify-between border-b-2 border-black pb-2 mb-4">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('build/assets/logobpr.png') }}" alt="Logo" class="h-10 w-auto object-contain">
                 <div>
-                    <h1 class="text-2xl font-black text-gray-900 tracking-tight uppercase">History Penagihan Nasabah
-                    </h1>
-                    <p class="text-sm font-medium text-gray-500 line-clamp-1 mt-1">Dicetak pada:
-                        {{ \Carbon\Carbon::now()->translatedFormat('d F Y H:i') }}
-                    </p>
+                    <h1 class="text-lg font-bold uppercase tracking-tight">History Penagihan Nasabah</h1>
+                    <p class="text-[10px] text-gray-500 italic">PuriApps v2 - Sistem Informasi Kredit</p>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Aplikasi</p>
-                <p class="text-lg font-black text-blue-700 tracking-tight">PuriApps v2</p>
+            <div class="text-right text-[10px] text-gray-500 italic">
+                Dicetak: {{ now()->translatedFormat('d F Y H:i') }}
             </div>
         </div>
 
-        <!-- Customer Identity Box -->
-        <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-8 flex flex-col md:flex-row gap-6">
-            <div class="flex-1 space-y-3">
-                <h2
-                    class="text-sm font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">
-                    Identitas Nasabah</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
-                    <div>
-                        <p class="text-xs font-semibold text-gray-500 uppercase">Nama Lengkap</p>
-                        <p class="text-base font-bold text-gray-900">{{ $customer->name }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-500 uppercase">No. Telepon</p>
-                        <p class="text-sm font-medium text-gray-900">{{ $customer->phone_number ?? '-' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-500 uppercase">Perjanjian Kredit / Plafon</p>
-                        <p class="text-sm font-medium text-gray-900">
-                            {{ $customer->evaluations->first()->credit_agreement_number ?? 'Belum ada Evaluasi' }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-500 uppercase">Account Officer (AO)</p>
-                        <p
-                            class="text-sm font-bold text-blue-700 inline-flex items-center px-2 py-0.5 rounded bg-blue-100 border border-blue-200 mt-0.5">
-                            {{ $customer->user->name ?? '-' }}
-                        </p>
-                    </div>
-                    <div class="md:col-span-2 mt-1">
-                        <p class="text-xs font-semibold text-gray-500 uppercase">Alamat Sesuai KTP</p>
-                        <p class="text-sm font-medium text-gray-800 leading-relaxed">{{ $customer->address ?? '-' }}</p>
-                    </div>
+        <!-- Compact Customer Identity -->
+        <div class="border border-gray-300 rounded p-3 mb-4 bg-gray-50/50">
+            <div class="grid grid-cols-3 gap-x-4 gap-y-1 text-[11px]">
+                <div class="col-span-1">
+                    <span class="text-gray-500 block text-[9px] uppercase font-bold">Nama Nasabah</span>
+                    <span class="font-bold text-sm">{{ $customer->name }}</span>
+                </div>
+                <div class="col-span-1">
+                    <span class="text-gray-500 block text-[9px] uppercase font-bold">No. Telepon</span>
+                    <span class="font-medium text-gray-800">{{ $customer->phone_number ?? '-' }}</span>
+                </div>
+                <div class="col-span-1">
+                    <span class="text-gray-500 block text-[9px] uppercase font-bold">Account Officer</span>
+                    <span class="font-bold text-blue-700">{{ $customer->user->name ?? '-' }}</span>
+                </div>
+                <div class="col-span-2">
+                    <span class="text-gray-500 block text-[9px] uppercase font-bold">Alamat</span>
+                    <span class="font-medium text-gray-800 line-clamp-1">{{ $customer->address ?? '-' }}</span>
+                </div>
+                <div class="col-span-1">
+                    <span class="text-gray-500 block text-[9px] uppercase font-bold">No. PK / Plafon</span>
+                    <span class="font-medium text-gray-800">{{ $customer->evaluations->first()->credit_agreement_number ?? '-' }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- History Timeline -->
+        <!-- History Content -->
         <div>
-            <h2 class="text-lg font-bold text-gray-900 border-b-2 border-gray-100 pb-3 mb-6">Riwayat Tindakan
-                Administratif & Penagihan</h2>
+            <h2 class="text-xs font-bold text-gray-800 uppercase border-b border-gray-300 pb-1 mb-3">Daftar Riwayat Penagihan & Surat</h2>
 
             @if($history->isEmpty())
-                <div class="p-8 text-center bg-gray-50 border border-dashed border-gray-300 rounded-xl">
-                    <p class="text-gray-500 font-medium">Belum ada riwayat kunjungan maupun surat peringatan untuk nasabah
-                        ini.</p>
+                <div class="p-6 text-center border border-dashed border-gray-300 rounded text-gray-500 text-xs italic">
+                    Belum ada riwayat tercatat.
                 </div>
             @else
-                <div class="relative border-l-2 border-gray-200 ml-4 md:ml-6 space-y-8 pb-4">
+                <div class="space-y-3">
                     @foreach($history as $item)
                         @php
                             $isLetter = $item['type'] === 'letter';
-                            $iconColor = $isLetter ? 'text-red-600 bg-red-100 border-red-200' : 'text-orange-600 bg-orange-100 border-orange-200';
-                            $badgeColor = $isLetter ? 'bg-red-50 text-red-700 border-red-200' : 'bg-orange-50 text-orange-700 border-orange-200';
+                            $borderColor = $isLetter ? 'border-red-200' : 'border-gray-200';
+                            $bgTitle = $isLetter ? 'bg-red-50' : 'bg-gray-50';
                         @endphp
-                        <div class="relative pl-6 sm:pl-8">
-                            <!-- Timeline Dot Icon -->
-                            <span
-                                class="absolute -left-[17px] sm:-left-[17px] top-1 flex items-center justify-center w-8 h-8 rounded-full border-2 bg-white {{ $iconColor }} shadow-sm">
-                                @if($isLetter)
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
-                                    </svg>
-                                @else
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                @endif
-                            </span>
-
-                            <!-- Content -->
-                            <div
-                                class="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <h3 class="text-base font-bold text-gray-900">{{ $item['title'] }}</h3>
-                                        <span
-                                            class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border {{ $badgeColor }}">
-                                            {{ $isLetter ? 'Surat Penagihan' : 'Kunjungan Lapangan' }}
-                                        </span>
-                                    </div>
-                                    <span
-                                        class="text-sm font-bold text-gray-600 bg-gray-100 px-3 py-1 rounded-lg border border-gray-200">
-                                        {{ \Carbon\Carbon::parse($item['display_date'])->translatedFormat('d F Y') }}
+                        <div class="border {{ $borderColor }} rounded overflow-hidden">
+                            <!-- Item Header -->
+                            <div class="{{ $bgTitle }} px-3 py-1 flex justify-between items-center border-b {{ $borderColor }}">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-bold {{ $isLetter ? 'text-red-700' : 'text-gray-700' }} uppercase">
+                                        {{ $isLetter ? '📄 ' . $item['title'] : '📍 ' . $item['title'] }}
+                                    </span>
+                                    <span class="text-[9px] bg-white border px-1 rounded text-gray-500">
+                                        {{ $isLetter ? 'Surat' : 'Kunjungan' }}
                                     </span>
                                 </div>
-
-                                <div
-                                    class="text-sm text-gray-700 bg-gray-50/50 p-4 rounded-lg border border-gray-100 leading-relaxed min-h-[60px]">
-                                    @if($isLetter)
-                                        <p class="font-medium text-gray-900 mb-1">Informasi Penerbitan Surat:</p>
-                                        <p>Nomor Surat: <span
-                                                class="font-mono bg-gray-100 px-1 py-0.5 rounded border border-gray-200">{{ $item['raw_data']->letter_number }}</span>
-                                        </p>
+                                <span class="text-[10px] font-bold text-gray-600">
+                                    {{ \Carbon\Carbon::parse($item['display_date'])->translatedFormat('d M Y') }}
+                                </span>
+                            </div>
+                            
+                            <!-- Item Body -->
+                            <div class="p-2 text-[10px] leading-relaxed">
+                                @if($isLetter)
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <p><span class="text-gray-500 font-semibold">No. Surat:</span> {{ $item['raw_data']->letter_number }}</p>
                                         @if($item['raw_data']->tunggakan_amount)
-                                            <p>Nominal Tunggakan: <strong class="text-red-600">Rp
-                                                    {{ number_format($item['raw_data']->tunggakan_amount, 0, ',', '.') }}</strong></p>
+                                            <p><span class="text-gray-500 font-semibold">Tunggakan:</span> <strong class="text-red-600">Rp {{ number_format($item['raw_data']->tunggakan_amount, 0, ',', '.') }}</strong></p>
                                         @endif
-                                        <p>Catatan: <span class="italic">{{ $item['details'] }}</span></p>
-                                    @else
-                                        <p class="font-medium text-gray-900 mb-1">Kesimpulan Kunjungan:</p>
-                                        <p class="italic text-gray-600">"{{ $item['details'] }}"</p>
-
-                                        @if($item['raw_data']->tanggal_janji_bayar)
-                                            <div
-                                                class="mt-3 p-3 bg-orange-50 border border-orange-100 rounded-lg flex items-start gap-3">
-                                                <svg class="w-5 h-5 text-orange-500 mt-0.5 shrink-0" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                <div>
-                                                    <p class="text-sm font-bold text-orange-800">Terdapat Janji Bayar</p>
-                                                    <p class="text-xs text-orange-700 mt-0.5">Direncanakan pada:
-                                                        <strong>{{ \Carbon\Carbon::parse($item['raw_data']->tanggal_janji_bayar)->translatedFormat('d F Y') }}</strong>
-                                                        (Rp {{ number_format($item['raw_data']->jumlah_bayar, 0, ',', '.') }})
-                                                    </p>
+                                    </div>
+                                    <p class="mt-1 text-gray-700 italic">"{{ $item['details'] }}"</p>
+                                @else
+                                    <div class="flex gap-4">
+                                        <div class="flex-1">
+                                            <p class="text-gray-700 italic">"{{ $item['details'] }}"</p>
+                                            @if($item['raw_data']->tanggal_janji_bayar)
+                                                <div class="mt-1.5 p-1.5 bg-orange-50 border border-orange-100 rounded text-[9px] flex justify-between items-center">
+                                                    <span class="font-bold text-orange-800">Janji Bayar: {{ \Carbon\Carbon::parse($item['raw_data']->tanggal_janji_bayar)->translatedFormat('d M Y') }}</span>
+                                                    <span class="font-bold text-orange-800">Rp {{ number_format($item['raw_data']->jumlah_bayar, 0, ',', '.') }}</span>
                                                 </div>
+                                            @endif
+
+                                            @if($item['raw_data']->kondisi_saat_ini || $item['raw_data']->rencana_penyelesaian)
+                                                <div class="mt-2 pl-2 border-l-2 border-gray-200 text-[9px] space-y-1 content-rich-text">
+                                                    @if(trim(strip_tags($item['raw_data']->kondisi_saat_ini)) !== '')
+                                                        <div class="flex gap-1">
+                                                            <span class="text-gray-500 font-bold uppercase text-[7px] shrink-0 mt-0.5">Kondisi Debitur:</span> 
+                                                            <div class="flex-1">{!! $item['raw_data']->kondisi_saat_ini !!}</div>
+                                                        </div>
+                                                    @endif
+                                                    @if(trim(strip_tags($item['raw_data']->rencana_penyelesaian)) !== '')
+                                                        <div class="flex gap-1">
+                                                            <span class="text-gray-500 font-bold uppercase text-[7px] shrink-0 mt-0.5">Rencana Penyelesaian:</span> 
+                                                            <div class="flex-1">{!! $item['raw_data']->rencana_penyelesaian !!}</div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                        @php
+                                            $photos = [
+                                                ['path' => $item['raw_data']->photo_path, 'label' => 'Foto Lokasi'],
+                                                ['path' => $item['raw_data']->photo_rumah_path, 'label' => 'Foto Rumah'],
+                                                ['path' => $item['raw_data']->photo_orang_path, 'label' => 'Foto Orang'],
+                                            ];
+                                            $availablePhotos = array_filter($photos, fn($p) => !empty($p['path']));
+                                        @endphp
+
+                                        @if(count($availablePhotos) > 0)
+                                            <div class="shrink-0 flex gap-1.5 flex-wrap justify-end max-w-[220px]">
+                                                @foreach($availablePhotos as $photo)
+                                                    @php
+                                                        $pathParts = explode('/', $photo['path']);
+                                                        // Fallback if path format is unexpected
+                                                        $type = count($pathParts) >= 2 ? $pathParts[count($pathParts)-2] : 'photos';
+                                                        $filename = end($pathParts);
+                                                    @endphp
+                                                    <div class="text-center">
+                                                        <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" 
+                                                            alt="{{ $photo['label'] }}" 
+                                                            class="w-16 h-16 object-cover rounded border border-gray-200">
+                                                        <span class="text-[7px] text-gray-400 block mt-0.5 uppercase">{{ $photo['label'] }}</span>
+                                                    </div>
+                                                @endforeach
                                             </div>
                                         @endif
-                                    @endif
-                                </div>
-
-                                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                                    <p class="text-xs text-gray-500">Petugas / AO terkait:</p>
-                                    <p class="text-xs font-bold text-gray-700">{{ $item['ao'] }}</p>
+                                    </div>
+                                @endif
+                                <div class="mt-1 text-[9px] text-gray-400 flex justify-end">
+                                    Petugas: {{ $item['ao'] }}
                                 </div>
                             </div>
                         </div>
@@ -234,9 +229,9 @@
             @endif
         </div>
 
-        <!-- Print Footer -->
-        <div class="mt-12 pt-6 border-t border-gray-200 text-center">
-            <p class="text-xs text-gray-400">Dokumen ini dicetak dari Sistem Informasi Kredit (KRD System) BPR Puri.</p>
+        <!-- Footer -->
+        <div class="mt-6 pt-2 border-t border-gray-200 text-center">
+            <p class="text-[8px] text-gray-400 italic">Dokumen ini merupakan output resmi sistem KRD PuriApps v2.</p>
         </div>
     </div>
 

@@ -88,12 +88,13 @@
                     <h1 class="text-2xl font-black text-gray-900 tracking-tight uppercase">History Penagihan Nasabah
                     </h1>
                     <p class="text-sm font-medium text-gray-500 line-clamp-1 mt-1">Dicetak pada:
-                        {{ \Carbon\Carbon::now()->translatedFormat('d F Y H:i') }}</p>
+                        {{ \Carbon\Carbon::now()->translatedFormat('d F Y H:i') }}
+                    </p>
                 </div>
             </div>
             <div class="text-right">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Aplikasi</p>
-                <p class="text-lg font-black text-blue-700 tracking-tight">KRD System</p>
+                <p class="text-lg font-black text-blue-700 tracking-tight">PuriApps v2</p>
             </div>
         </div>
 
@@ -115,7 +116,8 @@
                     <div>
                         <p class="text-xs font-semibold text-gray-500 uppercase">Perjanjian Kredit / Plafon</p>
                         <p class="text-sm font-medium text-gray-900">
-                            {{ $customer->evaluations->first()->credit_agreement_number ?? 'Belum ada Evaluasi' }}</p>
+                            {{ $customer->evaluations->first()->credit_agreement_number ?? 'Belum ada Evaluasi' }}
+                        </p>
                     </div>
                     <div>
                         <p class="text-xs font-semibold text-gray-500 uppercase">Account Officer (AO)</p>
@@ -213,7 +215,8 @@
                                                     <p class="text-sm font-bold text-orange-800">Terdapat Janji Bayar</p>
                                                     <p class="text-xs text-orange-700 mt-0.5">Direncanakan pada:
                                                         <strong>{{ \Carbon\Carbon::parse($item['raw_data']->tanggal_janji_bayar)->translatedFormat('d F Y') }}</strong>
-                                                        (Rp {{ number_format($item['raw_data']->jumlah_bayar, 0, ',', '.') }})</p>
+                                                        (Rp {{ number_format($item['raw_data']->jumlah_bayar, 0, ',', '.') }})
+                                                    </p>
                                                 </div>
                                             </div>
                                         @endif

@@ -156,6 +156,7 @@
                                                     @else bg-orange-100 text-orange-700 @endif">
                                             @if($event['type'] === 'dob') Ulang Tahun
                                             @elseif($event['type'] === 'visit') Kunjungan
+                                            @elseif($event['type'] === 'sp') Follow Up SP
                                             @else Janji Bayar @endif
                                         </span>
                                     </div>
@@ -278,6 +279,11 @@
                     :class="filterType === 'janji_bayar' ? 'bg-orange-600 text-white shadow' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'">
                     💰 Janji Bayar
                 </button>
+                <button @click="setFilter('sp')"
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                    :class="filterType === 'sp' ? 'bg-red-600 text-white shadow' : 'bg-red-50 text-red-700 hover:bg-red-100'">
+                    📄 Follow Up SP
+                </button>
             </div>
         </div>
         @if($thisMonthEvents->count() > 0)
@@ -317,8 +323,8 @@
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
-                                        :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : event.type === 'visit' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'"
-                                        x-text="event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : 'Janji Bayar'"></span>
+                                        :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : event.type === 'visit' ? 'bg-green-100 text-green-700' : event.type === 'sp' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'"
+                                        x-text="event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : event.type === 'sp' ? 'Follow Up SP' : 'Janji Bayar'"></span>
                                 </td>
                                 <td class="px-4 py-3 text-sm font-semibold text-gray-800" x-text="event.name"></td>
                                 <td class="px-4 py-3 text-sm text-gray-600">
@@ -441,6 +447,7 @@
         const dobEvents = @json($dobEvents);
         const visitEvents = @json($visitEvents);
         const janjiBayarEvents = @json($janjiBayarEvents);
+        const warningLetterEvents = @json($warningLetterEvents);
         const csrfToken = '{{ csrf_token() }}';
         const userInitials = '{{ auth()->user()->initials() ?? substr(auth()->user()->username, 0, 2) }}';
 
@@ -458,8 +465,9 @@
             dob: [{ bg: '#dbeafe', text: '#1e40af' }, { bg: '#e0e7ff', text: '#3730a3' }, { bg: '#ede9fe', text: '#5b21b6' }],
             visit: [{ bg: '#dcfce7', text: '#166534' }, { bg: '#d1fae5', text: '#065f46' }, { bg: '#fef9c3', text: '#854d0e' }],
             janji_bayar: [{ bg: '#ffe4e6', text: '#9f1239' }, { bg: '#ffedd5', text: '#9a3412' }, { bg: '#fce7f3', text: '#9d174d' }],
+            sp: [{ bg: '#fee2e2', text: '#b91c1c' }, { bg: '#fef2f2', text: '#991b1b' }, { bg: '#fff1f2', text: '#9d174d' }],
         };
-        const PILL_ICONS = { dob: '🎂', visit: '📍', janji_bayar: '💰' };
+        const PILL_ICONS = { dob: '🎂', visit: '📍', janji_bayar: '💰', sp: '📄' };
 
         // ─── Init ───
         function init() {
@@ -516,7 +524,8 @@
             dobEvents.forEach(e => { if (e.month_day === md) events.push({ ...e, age: d.getFullYear() - new Date(e.date).getFullYear() }); });
             visitEvents.forEach(e => { if (e.date === dateStr) events.push(e); });
             janjiBayarEvents.forEach(e => { if (e.date === dateStr) events.push(e); });
-            events.sort((a, b) => ({ 'janji_bayar': 1, 'dob': 2, 'visit': 3 }[a.type]) - ({ 'janji_bayar': 1, 'dob': 2, 'visit': 3 }[b.type]));
+            warningLetterEvents.forEach(e => { if (e.date === dateStr) events.push(e); });
+            events.sort((a, b) => ({ 'janji_bayar': 1, 'sp': 2, 'dob': 3, 'visit': 4 }[a.type]) - ({ 'janji_bayar': 1, 'sp': 2, 'dob': 3, 'visit': 4 }[b.type]));
             return events;
         }
 
@@ -724,7 +733,7 @@
                 </button>`;
             }
 
-            const typeName = event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : 'Janji Bayar';
+            const typeName = event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : event.type === 'sp' ? 'Follow Up SP' : 'Janji Bayar';
 
             return `
                 <div id="detail-${event.id}" class="rounded-xl p-3.5 transition-all" style="background:${c.bg};color:${c.text}">

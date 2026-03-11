@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\CustomerVisit;
+use App\Models\WarningLetter;
 use Carbon\Carbon;
 
 class CalendarController extends Controller
@@ -16,9 +17,10 @@ class CalendarController extends Controller
         $dobEvents = $this->getDobEvents($isAO, $user);
         $visitEvents = $this->getVisitEvents($isAO, $user);
         $janjiBayarEvents = $this->getJanjiBayarEvents($isAO, $user);
+        $warningLetterEvents = $this->getWarningLetterEvents($isAO, $user);
 
         $today = Carbon::today();
-        $allEvents = collect(array_merge($dobEvents, $visitEvents, $janjiBayarEvents));
+        $allEvents = collect(array_merge($dobEvents, $visitEvents, $janjiBayarEvents, $warningLetterEvents));
 
         $thisMonthEvents = $this->filterThisMonthEvents($allEvents, $today);
         $next7Events = $this->filterNext7DayEvents($allEvents, $today);
@@ -28,6 +30,7 @@ class CalendarController extends Controller
             'dobEvents' => $dobEvents,
             'visitEvents' => $visitEvents,
             'janjiBayarEvents' => $janjiBayarEvents,
+            'warningLetterEvents' => $warningLetterEvents,
             'thisMonthEvents' => $thisMonthEvents,
             'next7Events' => $next7Events,
             'todayDate' => $today->format('Y-m-d'),
@@ -126,6 +129,37 @@ class CalendarController extends Controller
                 'label' => 'Janji Bayar - ' . ($jb->customer->name ?? '-'),
                 'jumlah' => $jb->jumlah_pembayaran ?? $jb->jumlah_bayar,
                 'visit_id' => $jb->id,
+            ];
+        }
+
+        return $events;
+    }
+
+    private function getWarningLetterEvents(bool $isAO, $user): array
+    {
+        $query = WarningLetter::with('customer:id,name')
+            ->select('id', 'customer_id', 'user_id', 'letter_date', 'type')
+            ->whereIn('type', ['sp1', 'sp2']);
+
+        if ($isAO) {
+            $query->where('user_id', $user->id);
+        }
+
+        $letters = $query->get();
+        $events = [];
+
+        foreach ($letters as $letter) {
+            $followUpDate = $letter->letter_date->addDays(21);
+            $typeLabel = $letter->type === 'sp1' ? 'SP-1' : 'SP-2';
+            
+            $events[] = [
+                'id' => 'sp-' . $letter->id,
+                'type' => 'sp',
+                'date' => $followUpDate->format('Y-m-d'),
+                'name' => $letter->customer->name ?? '-',
+                'label' => 'Follow up ' . $typeLabel . ' - ' . ($letter->customer->name ?? '-'),
+                'letter_id' => $letter->id,
+                'letter_type' => $letter->type,
             ];
         }
 

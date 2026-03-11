@@ -26,6 +26,13 @@ Route::middleware(['authentication'])->group(function () {
 
     Route::get('/global-map', [\App\Http\Controllers\MapController::class, 'index'])->name('map.index');
 
+    // Warning Letters
+    Route::resource('warning-letters', App\Http\Controllers\WarningLetterController::class);
+    
+    // Collection History
+    Route::get('/collection-history', [App\Http\Controllers\CollectionHistoryController::class, 'index'])->name('collection-history.index');
+    Route::get('/collection-history/{customer}/print', [App\Http\Controllers\CollectionHistoryController::class, 'print'])->name('collection-history.print');
+
     Route::get('/calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
     Route::post('/calendar/toggle-promise/{customerVisit}', [\App\Http\Controllers\CalendarController::class, 'togglePromise'])->name('calendar.toggle-promise');
     Route::get('/calendar/recap', [\App\Http\Controllers\CalendarController::class, 'recap'])->name('calendar.recap');

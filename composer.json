@@ -13,6 +13,7 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^4.0",
+        "phpoffice/phpword": "*",
         "spatie/laravel-permission": "*"
     },
     "require-dev": {
@@ -30,7 +31,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/DateHelper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

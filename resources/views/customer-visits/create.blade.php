@@ -828,7 +828,37 @@
                         // Fetch penagihan_ke via AJAX
                         fetch(`/customer-visits/count/${customer.id}`)
                             .then(r => r.json())
-                            .then(data => { this.pengihanKe = data.count + 1; })
+                            .then(data => {
+                                this.pengihanKe = data.count + 1;
+                                // Warn if penagihan ke > 3
+                                if (this.pengihanKe > 3) {
+                                    Swal.fire({
+                                        title: `⚠️ Penagihan Ke-${this.pengihanKe}`,
+                                        html: `Nasabah <b>${customer.name}</b> sudah dikunjungi <b>${data.count} kali</b> sebelumnya.<br><br>Apakah Anda ingin melanjutkan kunjungan atau membuat <b>Surat Peringatan</b>?`,
+                                        icon: 'warning',
+                                        showCancelButton: true,
+                                        showDenyButton: true,
+                                        confirmButtonText: '📋 Buat Surat Peringatan',
+                                        denyButtonText: '📍 Lanjutkan Kunjungan',
+                                        cancelButtonText: 'Batal',
+                                        confirmButtonColor: '#dc2626',
+                                        denyButtonColor: '#2563eb',
+                                        reverseButtons: false,
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            // Redirect to Surat Peringatan create page
+                                            window.location.href = `/warning-letters/create?type=sp1&customer_id=${customer.id}`;
+                                        } else if (result.isDenied) {
+                                            // User chose to continue — do nothing, form is ready
+                                        } else {
+                                            // User cancelled — reset customer selection
+                                            this.selectedCustomer = null;
+                                            this.pengihanKe = '-';
+                                            this.showCustomerModal = true;
+                                        }
+                                    });
+                                }
+                            })
                             .catch(() => { this.pengihanKe = '?'; });
                     },
 

@@ -66,4 +66,14 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerVisit::class);
     }
+
+    public function visits()
+    {
+        return $this->hasMany(CustomerVisit::class);
+    }
+
+    public function warningLetters()
+    {
+        return $this->hasMany(WarningLetter::class);
+    }
 }

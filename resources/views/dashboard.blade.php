@@ -237,10 +237,17 @@
     @endpush
 
     <!-- 7 Hari Ke Depan -->
-    <div class="mb-8">
-        <a href="{{ route('calendar.index') }}"
-            class="block p-5 bg-gradient-to-r from-teal-50/80 to-blue-50/80 backdrop-blur-md rounded-xl border border-teal-200/50 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 group">
-            <div class="flex items-center justify-between mb-3">
+    <div class="mb-8" x-data="{ 
+            filter: 'all', 
+            limit: 8, 
+            events: {{ json_encode($next7Events->toArray()) }},
+            get filteredEvents() {
+                return this.filter === 'all' ? this.events : this.events.filter(e => e.type === this.filter);
+            }
+        }">
+        <div
+            class="p-5 bg-gradient-to-r from-teal-50/80 to-blue-50/80 backdrop-blur-md rounded-xl border border-teal-200/50 shadow-lg transition-all">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
                 <div class="flex items-center gap-3">
                     <div class="p-2 bg-teal-100 rounded-lg text-teal-600">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,50 +256,68 @@
                         </svg>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900">7 Hari Ke Depan</h3>
-                    <span
-                        class="px-2 py-0.5 text-xs font-bold text-teal-700 bg-teal-100 rounded-full">{{ $next7Events->count() }}
-                        jadwal</span>
+                    <span class="px-2 py-0.5 text-xs font-bold text-teal-700 bg-teal-100 rounded-full"
+                        x-text="filteredEvents.length + ' jadwal'"></span>
                 </div>
-                <svg class="w-5 h-5 text-gray-400 group-hover:text-teal-600 transition-colors" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button @click="filter = 'all'; limit = 8"
+                        :class="filter === 'all' ? 'bg-teal-600 text-white shadow-md' : 'bg-white/80 text-teal-700 hover:bg-white'"
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-teal-200">Semua</button>
+                    <button @click="filter = 'visit'; limit = 8"
+                        :class="filter === 'visit' ? 'bg-green-600 text-white shadow-md' : 'bg-white/80 text-green-700 hover:bg-white'"
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-green-200">Kunjungan</button>
+                    <button @click="filter = 'dob'; limit = 8"
+                        :class="filter === 'dob' ? 'bg-blue-600 text-white shadow-md' : 'bg-white/80 text-blue-700 hover:bg-white'"
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-blue-200">Ultah</button>
+                    <button @click="filter = 'janji_bayar'; limit = 8"
+                        :class="filter === 'janji_bayar' ? 'bg-orange-600 text-white shadow-md' : 'bg-white/80 text-orange-700 hover:bg-white'"
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-orange-200">Janji
+                        Bayar</button>
+                    <a href="{{ route('calendar.index') }}"
+                        class="ml-2 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-white hover:bg-gray-900 transition-all shadow-md flex items-center gap-1">
+                        Kalender
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
             </div>
 
-            @if($next7Events->count() > 0)
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                    @foreach($next7Events->take(8) as $event)
-                        <div class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-3 flex items-center gap-3">
-                            <div
-                                class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm
-                                                                                                                                                                @if($event['type'] === 'dob') bg-blue-100 @elseif($event['type'] === 'visit') bg-green-100 @else bg-orange-100 @endif">
-                                @if($event['type'] === 'dob') 🎂 @elseif($event['type'] === 'visit') 📍 @else 💰 @endif
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-xs font-bold text-gray-900 truncate">{{ $event['name'] }}</p>
-                                <div class="flex items-center gap-1.5">
-                                    <span
-                                        class="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase
-                                                                                                                                                                        @if($event['type'] === 'dob') bg-blue-100 text-blue-700
-                                                                                                                                                                        @elseif($event['type'] === 'visit') bg-green-100 text-green-700
-                                                                                                                                                                        @else bg-orange-100 text-orange-700 @endif">
-                                        @if($event['type'] === 'dob') Ultah @elseif($event['type'] === 'visit') Kunjungan @else
-                                        Janji Bayar @endif
-                                    </span>
-                                    <span class="text-[10px] text-gray-500">{{ $event['display_date'] }}</span>
-                                </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2"
+                x-show="filteredEvents.length > 0">
+                <template x-for="(event, index) in filteredEvents.slice(0, limit)" :key="index">
+                    <div
+                        class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-3 flex items-center gap-3 hover:shadow-md transition-shadow">
+                        <div class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                            :class="event.type === 'dob' ? 'bg-blue-100' : (event.type === 'visit' ? 'bg-green-100' : 'bg-orange-100')">
+                            <span x-text="event.type === 'dob' ? '🎂' : (event.type === 'visit' ? '📍' : '💰')"></span>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-gray-900 truncate" x-text="event.name"></p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase"
+                                    :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : (event.type === 'visit' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700')"
+                                    x-text="event.type === 'dob' ? 'Ultah' : (event.type === 'visit' ? 'Kunjungan' : 'Janji Bayar')">
+                                </span>
+                                <span class="text-[10px] text-gray-500" x-text="event.display_date"></span>
+                                <span x-show="event.type === 'dob' && event.age" class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-700" x-text="'ke-' + event.age"></span>
                             </div>
                         </div>
-                    @endforeach
-                </div>
-                @if($next7Events->count() > 8)
-                    <p class="text-xs text-teal-600 font-semibold mt-2 text-center">+ {{ $next7Events->count() - 8 }} jadwal lainnya
-                        →</p>
-                @endif
-            @else
-                <p class="text-sm text-gray-400 text-center py-3">Tidak ada jadwal dalam 7 hari ke depan.</p>
-            @endif
-        </a>
+                    </div>
+                </template>
+            </div>
+
+            <button @click="limit += 8" x-show="filteredEvents.length > limit" style="display: none;"
+                class="w-full text-xs text-teal-700 hover:text-teal-800 font-bold mt-3 text-center py-2 bg-white/50 hover:bg-white/80 rounded-lg transition-colors border border-teal-100">
+                + Tampilkan <span x-text="Math.min(8, filteredEvents.length - limit)"></span> jadwal lainnya
+            </button>
+
+            <p x-show="filteredEvents.length === 0" style="display: none;"
+                class="text-sm text-gray-500 font-medium text-center py-6 bg-white/40 rounded-lg border border-dashed border-gray-300">
+                Tidak ada jadwal <span x-text="filter !== 'all' ? 'untuk filter ini ' : ''"></span>dalam 7 hari ke depan.
+            </p>
+        </div>
     </div>
 
     <!-- Antrian Persetujuan (Kabag / Admin Only) -->
@@ -422,7 +447,7 @@
                                     @endphp
                                     <span
                                         class="px-2.5 py-1 rounded-full font-semibold text-[11px] tracking-wide 
-                                                                                                                                                                                                                                                        {{ $isPast ? 'bg-red-100 text-red-700' : ($isToday ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700') }}">
+                                                                                                                                                                                                                                                                    {{ $isPast ? 'bg-red-100 text-red-700' : ($isToday ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700') }}">
                                         {{ $tgl->format('d M Y') }}
                                         @if($isToday) (Hari Ini)
                                         @elseif($isPast) (Terlewat) @endif
@@ -510,6 +535,27 @@
             <p class="font-normal text-gray-700">Lihat dan tinjau kunjungan.</p>
         </a>
 
+        <!-- History Penagihan Card -->
+        <a href="{{ route('collection-history.index') }}"
+            class="block p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl hover:bg-white/50 transition-all duration-300 transform hover:-translate-y-1 group">
+            <div class="flex items-center justify-between mb-4">
+                <h5 class="text-xl font-bold tracking-tight text-gray-900 group-hover:text-orange-600 transition-colors">
+                    History Penagihan</h5>
+                <div class="p-3 bg-orange-100/50 rounded-full text-orange-600 group-hover:bg-orange-200/50 transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+            <p class="font-normal text-gray-700">Lihat histori penagihan dan surat tiap nasabah.</p>
+        </a>
+
         @can('view performance reports')
             <!-- Laporan Hasil Kinerja Card -->
             <a href="{{ route('reports.performance') }}"
@@ -531,6 +577,34 @@
             </a>
         @endcan
     </div>
+
+    {{-- Separator: Administrasi Surat --}}
+    @can('view warning-letters')
+        <div class="flex items-center justify-center my-8">
+            <div class="h-px bg-gray-300 w-full md:w-1/3"></div>
+            <span class="px-4 text-sm text-gray-400 font-medium uppercase tracking-wider whitespace-nowrap">Administrasi Surat</span>
+            <div class="h-px bg-gray-300 w-full md:w-1/3"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <a href="{{ route('warning-letters.index') }}"
+                class="block p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl hover:bg-white/50 transition-all duration-300 transform hover:-translate-y-1 group">
+                <div class="flex items-center justify-between mb-4">
+                    <h5 class="text-xl font-bold tracking-tight text-gray-900 group-hover:text-red-700 transition-colors">
+                        Daftar Surat</h5>
+                    <div class="p-3 bg-red-100/50 rounded-full text-red-600 group-hover:bg-red-200/50 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <p class="font-normal text-gray-700">Kelola Surat Peringatan dan Surat Panggilan nasabah.</p>
+            </a>
+        </div>
+    @endcan
 
     <!-- Separator -->
     <div class="flex items-center justify-center my-8">

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Data Debitur - {{ $customer->name }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('build/assets/logo-icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @page {

@@ -7,14 +7,14 @@
         <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0 w-full sm:max-w-md">
             <a href="#" class="flex items-center mb-6 text-2xl font-semibold drop-shadow-md">
                 <img class="w-8 h-8 mr-2 drop-shadow-md"
-                    src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg" alt="logo">
+                    src="{{ asset('build/assets/logo-icon.png') }}" alt="logo">
                 <span class="text-blue-700">Puri</span><span class="text-red-600">Apps</span>
             </a>
             <div class="w-full bg-white/40 backdrop-blur-lg rounded-xl shadow-2xl border border-white/50">
                 <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                     <h1
                         class="text-xl text-center font-bold leading-tight tracking-tight text-gray-900 md:text-2xl drop-shadow-sm">
-                        Welcome Back
+                        Selamat Datang di PuriApps
                     </h1>
                     <form class="space-y-4 md:space-y-6" action="{{ route('login.post') }}" method="POST">
                         @csrf

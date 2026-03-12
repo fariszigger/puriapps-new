@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('title', 'Dashboard') - PuriApps</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo-icon.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('build/assets/logo-icon.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     @stack('styles')
@@ -46,7 +46,7 @@
         class="bg-white/50 backdrop-blur-lg border-b border-white/40 px-4 lg:px-6 py-2.5 fixed w-full z-20 top-0 left-0 shadow-sm">
         <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
             <a href="#" class="flex items-center">
-                <img src="{{ asset('images/logo-icon.png') }}" class="mr-3 h-6 sm:h-9 drop-shadow-md"
+                <img src="{{ asset('build/assets/logo-icon.png') }}" class="mr-3 h-6 sm:h-9 drop-shadow-md"
                     alt="PuriApps Logo" />
                 <span class="self-center text-xl font-semibold whitespace-nowrap drop-shadow-md">
                     <span class="text-blue-700">Puri</span><span class="text-red-600">Apps</span>

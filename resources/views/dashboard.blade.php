@@ -515,6 +515,7 @@
 
 
 
+        @can('view evaluations')
         <!-- List Evaluation Card -->
         <a href="{{ route('evaluations.index') }}"
             class="block p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl hover:bg-white/50 transition-all duration-300 transform hover:-translate-y-1 group">
@@ -532,6 +533,7 @@
             </div>
             <p class="font-normal text-gray-700">Lihat dan tinjau evaluasi.</p>
         </a>
+        @endcan
 
         <!-- List Kunjungan Card -->
         <a href="{{ route('customer-visits.index') }}"

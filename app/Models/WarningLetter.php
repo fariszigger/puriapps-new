@@ -19,9 +19,15 @@ class WarningLetter extends Model
         'tunggakan_date' => 'date',
         'deadline_date' => 'date',
         'tunggakan_amount' => 'decimal:2',
+        'tunggakan_pokok' => 'decimal:2',
+        'tunggakan_bunga' => 'decimal:2',
+        'denda_keterlambatan' => 'decimal:2',
         'previous_letter_date' => 'date',
         'previous_letter_deadline' => 'date',
         'previous_letter_amount' => 'decimal:2',
+        'previous_tunggakan_pokok' => 'decimal:2',
+        'previous_tunggakan_bunga' => 'decimal:2',
+        'previous_denda_keterlambatan' => 'decimal:2',
     ];
 
     public function customer(): BelongsTo

@@ -108,8 +108,40 @@
                     <li>
                         Jumlah tunggakan kewajiban saudara posisi tanggal
                         <strong>{{ $letter->tunggakan_date ? $letter->tunggakan_date->translatedFormat('d-m-Y') : '____' }}</strong>
-                        adalah sebesar <strong>Rp. {{ $letter->tunggakan_amount ? number_format($letter->tunggakan_amount, 0, ',', '.') : '____' }},-</strong>
-                        <br>Jumlah tunggakan tersebut akan terus bertambah sampai saudara melakukan penyelesaian.
+                        adalah sebagai berikut:
+
+                        <div class="mt-4 mb-4 overflow-hidden rounded-lg border border-gray-200">
+                            <table class="w-full text-sm text-left border-collapse">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 border-b font-bold text-gray-700">Jenis Tunggakan</th>
+                                        <th class="px-4 py-2 border-b font-bold text-gray-700 text-right">Jumlah (Rp)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="px-4 py-2 border-b">Tunggakan Pokok</td>
+                                        <td class="px-4 py-2 border-b text-right font-mono">{{ number_format($letter->tunggakan_pokok, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-2 border-b">Tunggakan Bunga</td>
+                                        <td class="px-4 py-2 border-b text-right font-mono">{{ number_format($letter->tunggakan_bunga, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-2 border-b">Denda Keterlambatan</td>
+                                        <td class="px-4 py-2 border-b text-right font-mono">{{ number_format($letter->denda_keterlambatan, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr class="bg-blue-50 font-bold">
+                                        <td class="px-4 py-2">TOTAL TUNGGAKAN</td>
+                                        <td class="px-4 py-2 text-right font-mono text-blue-700">Rp. {{ number_format($letter->tunggakan_amount, 0, ',', '.') }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <p class="mb-2 italic text-gray-600">Terbilang: <strong>{{ $letter->tunggakan_amount ? App\Http\Controllers\WarningLetterController::terbilangRupiahStatic($letter->tunggakan_amount) : '____' }}</strong></p>
+                        
+                        Jumlah tunggakan tersebut akan terus bertambah sampai saudara melakukan penyelesaian.
                     </li>
                     <li>
                         Untuk menghindari pembebanan denda atas keterlambatan yang akan semakin memberatkan saudara, serta agar tidak menambah kerugian bagi Bank, kami sangat mengharapkan agar saudara segera menyelesaikan seluruh tunggakan dimaksud,

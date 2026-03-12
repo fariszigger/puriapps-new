@@ -59,6 +59,9 @@ class WarningLetterController extends Controller
             'credit_agreement_number' => 'nullable|string|max:255',
             'credit_agreement_date' => 'nullable|date',
             'tunggakan_amount' => 'nullable|numeric',
+            'tunggakan_pokok' => 'nullable|numeric',
+            'tunggakan_bunga' => 'nullable|numeric',
+            'denda_keterlambatan' => 'nullable|numeric',
             'tunggakan_date' => 'nullable|date',
             'deadline_date' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -66,6 +69,9 @@ class WarningLetterController extends Controller
             'previous_letter_number' => 'nullable|string|max:255',
             'previous_letter_date' => 'nullable|date',
             'previous_letter_amount' => 'nullable|numeric',
+            'previous_tunggakan_pokok' => 'nullable|numeric',
+            'previous_tunggakan_bunga' => 'nullable|numeric',
+            'previous_denda_keterlambatan' => 'nullable|numeric',
             'previous_letter_deadline' => 'nullable|date',
         ]);
 
@@ -91,6 +97,9 @@ class WarningLetterController extends Controller
             'credit_agreement_number' => $request->credit_agreement_number,
             'credit_agreement_date' => $request->credit_agreement_date,
             'tunggakan_amount' => $request->tunggakan_amount,
+            'tunggakan_pokok' => $request->tunggakan_pokok,
+            'tunggakan_bunga' => $request->tunggakan_bunga,
+            'denda_keterlambatan' => $request->denda_keterlambatan,
             'tunggakan_date' => $request->tunggakan_date,
             'deadline_date' => $request->deadline_date,
             'kolektibilitas' => $latestVisit?->kolektibilitas,
@@ -100,6 +109,9 @@ class WarningLetterController extends Controller
             'previous_letter_number' => $request->previous_letter_number,
             'previous_letter_date' => $request->previous_letter_date,
             'previous_letter_amount' => $request->previous_letter_amount,
+            'previous_tunggakan_pokok' => $request->previous_tunggakan_pokok,
+            'previous_tunggakan_bunga' => $request->previous_tunggakan_bunga,
+            'previous_denda_keterlambatan' => $request->previous_denda_keterlambatan,
             'previous_letter_deadline' => $request->previous_letter_deadline,
         ]);
 
@@ -129,6 +141,9 @@ class WarningLetterController extends Controller
             'credit_agreement_number' => 'nullable|string|max:255',
             'credit_agreement_date' => 'nullable|date',
             'tunggakan_amount' => 'nullable|numeric',
+            'tunggakan_pokok' => 'nullable|numeric',
+            'tunggakan_bunga' => 'nullable|numeric',
+            'denda_keterlambatan' => 'nullable|numeric',
             'tunggakan_date' => 'nullable|date',
             'deadline_date' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -139,6 +154,9 @@ class WarningLetterController extends Controller
             'credit_agreement_number' => $request->credit_agreement_number,
             'credit_agreement_date' => $request->credit_agreement_date,
             'tunggakan_amount' => $request->tunggakan_amount,
+            'tunggakan_pokok' => $request->tunggakan_pokok,
+            'tunggakan_bunga' => $request->tunggakan_bunga,
+            'denda_keterlambatan' => $request->denda_keterlambatan,
             'tunggakan_date' => $request->tunggakan_date,
             'deadline_date' => $request->deadline_date,
             'notes' => $request->notes,
@@ -185,6 +203,7 @@ class WarningLetterController extends Controller
         $template->setValue('tanggal_pk', formatIndonesianDate($letter->credit_agreement_date));
         
         $template->setValue('tanggal_tunggakan', $letter->tunggakan_date ? $letter->tunggakan_date->format('d-m-Y') : '____');
+        $template->setValue('tanggal_tunggakan_lengkap', formatIndonesianDate($letter->tunggakan_date));
         $template->setValue('jumlah_tunggakan', $letter->tunggakan_amount ? number_format($letter->tunggakan_amount, 0, ',', '.') : '____');
         $template->setValue('terbilang', $letter->tunggakan_amount ? $this->terbilangRupiah($letter->tunggakan_amount) : '____ rupiah');
         
@@ -196,6 +215,14 @@ class WarningLetterController extends Controller
         $template->setValue('jumlah_surat_lama', $letter->previous_letter_amount ? number_format($letter->previous_letter_amount, 0, ',', '.') : '____');
         $template->setValue('deadline_surat_lama', $letter->previous_letter_deadline ? formatIndonesianDate($letter->previous_letter_deadline) : '____');
         $template->setValue('terbilang_lama', $letter->previous_letter_amount ? $this->terbilangRupiah($letter->previous_letter_amount) : '____ rupiah');
+
+        // New Breakdown Fields Data
+        $template->setValue('tunggakan_pokok', number_format((float) $letter->tunggakan_pokok, 0, ',', '.'));
+        $template->setValue('tunggakan_bunga', number_format((float) $letter->tunggakan_bunga, 0, ',', '.'));
+        $template->setValue('denda_keterlambatan', number_format((float) $letter->denda_keterlambatan, 0, ',', '.'));
+        $template->setValue('prev_tunggakan_pokok', number_format((float) $letter->previous_tunggakan_pokok, 0, ',', '.'));
+        $template->setValue('prev_tunggakan_bunga', number_format((float) $letter->previous_tunggakan_bunga, 0, ',', '.'));
+        $template->setValue('prev_denda_keterlambatan', number_format((float) $letter->previous_denda_keterlambatan, 0, ',', '.'));
 
         $fileName = "{$letter->type_short_label} - " . ($letter->customer->name ?? 'Nasabah') . ".docx";
         

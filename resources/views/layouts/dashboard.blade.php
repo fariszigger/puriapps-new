@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('title', 'Dashboard') - PuriApps</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-icon.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     @stack('styles')
@@ -45,8 +46,8 @@
         class="bg-white/50 backdrop-blur-lg border-b border-white/40 px-4 lg:px-6 py-2.5 fixed w-full z-20 top-0 left-0 shadow-sm">
         <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
             <a href="#" class="flex items-center">
-                <img src="https://flowbite.com/docs/images/logo.svg" class="mr-3 h-6 sm:h-9 drop-shadow-md"
-                    alt="Flowbite Logo" />
+                <img src="{{ asset('images/logo-icon.png') }}" class="mr-3 h-6 sm:h-9 drop-shadow-md"
+                    alt="PuriApps Logo" />
                 <span class="self-center text-xl font-semibold whitespace-nowrap drop-shadow-md">
                     <span class="text-blue-700">Puri</span><span class="text-red-600">Apps</span>
                 </span>
@@ -175,6 +176,7 @@
                         <div class="bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden flex flex-col">
                             <!-- Menu Items -->
                             <div class="overflow-y-auto p-2 space-y-1 custom-scrollbar">
+                                @can('create customers')
                                 <a href="{{ route('customers.create') }}"
                                     class="flex items-center p-2 rounded-xl hover:bg-gray-50 transition-colors group">
                                     <div
@@ -190,7 +192,9 @@
                                         <p class="text-[10px] text-gray-500">Add new customer</p>
                                     </div>
                                 </a>
+                                @endcan
 
+                                @can('create evaluations')
                                 <a href="{{ route('evaluations.create') }}"
                                     class="flex items-center p-2 rounded-xl hover:bg-gray-50 transition-colors group">
                                     <div
@@ -206,7 +210,9 @@
                                         <p class="text-[10px] text-gray-500">Record evaluation</p>
                                     </div>
                                 </a>
+                                @endcan
 
+                                @can('create customer-visits')
                                 <a href="{{ route('customer-visits.create') }}"
                                     class="flex items-center p-2 rounded-xl hover:bg-gray-50 transition-colors group">
                                     <div
@@ -225,6 +231,7 @@
                                         <p class="text-[10px] text-gray-500">Record customer visit</p>
                                     </div>
                                 </a>
+                                @endcan
                             </div>
                         </div>
                     </div>

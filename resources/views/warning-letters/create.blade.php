@@ -83,6 +83,9 @@
                 <input type="hidden" name="previous_letter_date" value="{{ $previousLetter->letter_date->format('Y-m-d') }}">
                 <input type="hidden" name="previous_letter_amount" value="{{ $previousLetter->tunggakan_amount }}">
                 <input type="hidden" name="previous_letter_deadline" value="{{ $previousLetter->deadline_date ? $previousLetter->deadline_date->format('Y-m-d') : '' }}">
+                <input type="hidden" name="previous_tunggakan_pokok" value="{{ $previousLetter->tunggakan_pokok }}">
+                <input type="hidden" name="previous_tunggakan_bunga" value="{{ $previousLetter->tunggakan_bunga }}">
+                <input type="hidden" name="previous_denda_keterlambatan" value="{{ $previousLetter->denda_keterlambatan }}">
             @endif
 
             <div class="space-y-8">
@@ -180,18 +183,45 @@
                 <div class="space-y-4">
                     <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Tunggakan & Batas Waktu</h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <label for="tunggakan_display" class="block mb-2 text-sm font-medium text-gray-900">Jumlah Tunggakan (Rp)</label>
+                            <label for="tunggakan_pokok_display" class="block mb-2 text-sm font-medium text-gray-900">Tunggakan Pokok (Rp)</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-medium">Rp</span>
-                                <input type="text" id="tunggakan_display" x-model="tunggakanDisplay"
-                                    @input="updateTunggakan($event.target.value)"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 bg-white/50 backdrop-blur-sm"
-                                    placeholder="0">
-                                <input type="hidden" name="tunggakan_amount" :value="tunggakanRaw">
+                                <input type="text" id="tunggakan_pokok_display" x-model="pokokDisplay" @input="updatePokok($event.target.value)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 bg-white/50 backdrop-blur-sm" placeholder="0">
+                                <input type="hidden" name="tunggakan_pokok" :value="pokokRaw">
                             </div>
                         </div>
+                        <div>
+                            <label for="tunggakan_bunga_display" class="block mb-2 text-sm font-medium text-gray-900">Tunggakan Bunga (Rp)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-medium">Rp</span>
+                                <input type="text" id="tunggakan_bunga_display" x-model="bungaDisplay" @input="updateBunga($event.target.value)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 bg-white/50 backdrop-blur-sm" placeholder="0">
+                                <input type="hidden" name="tunggakan_bunga" :value="bungaRaw">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="denda_display" class="block mb-2 text-sm font-medium text-gray-900">Denda Keterlambatan (Rp)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-medium">Rp</span>
+                                <input type="text" id="denda_display" x-model="dendaDisplay" @input="updateDenda($event.target.value)"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 bg-white/50 backdrop-blur-sm" placeholder="0">
+                                <input type="hidden" name="denda_keterlambatan" :value="dendaRaw">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Total Tunggakan (Rp)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-medium">Rp</span>
+                                <input type="text" readonly :value="formatNumber(totalTunggakan)"
+                                    class="bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg block w-full pl-10 p-2.5 cursor-not-allowed">
+                                <input type="hidden" name="tunggakan_amount" :value="totalTunggakan">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
                             <label for="tunggakan_date" class="block mb-2 text-sm font-medium text-gray-900">Posisi Tanggal Tunggakan</label>
                             <input type="date" id="tunggakan_date" name="tunggakan_date" value="{{ old('tunggakan_date', date('Y-m-d')) }}"
@@ -236,19 +266,37 @@
             function warningLetterForm() {
                 return {
                     selectedCustomerId: '{{ $customer->id ?? '' }}',
-                    tunggakanRaw: '{{ old("tunggakan_amount", "0") }}',
-                    tunggakanDisplay: '',
+                    pokokRaw: '{{ old("tunggakan_pokok", isset($previousLetter) ? (int)$previousLetter->tunggakan_pokok : "0") }}',
+                    bungaRaw: '{{ old("tunggakan_bunga", isset($previousLetter) ? (int)$previousLetter->tunggakan_bunga : "0") }}',
+                    dendaRaw: '{{ old("denda_keterlambatan", isset($previousLetter) ? (int)$previousLetter->denda_keterlambatan : "0") }}',
+                    pokokDisplay: '',
+                    bungaDisplay: '',
+                    dendaDisplay: '',
 
-                    init() {
-                        if (this.tunggakanRaw > 0) {
-                            this.tunggakanDisplay = this.formatNumber(this.tunggakanRaw);
-                        }
+                    get totalTunggakan() {
+                        return (parseInt(this.pokokRaw) || 0) + (parseInt(this.bungaRaw) || 0) + (parseInt(this.dendaRaw) || 0);
                     },
 
-                    updateTunggakan(value) {
+                    init() {
+                        if (this.pokokRaw > 0) this.pokokDisplay = this.formatNumber(this.pokokRaw);
+                        if (this.bungaRaw > 0) this.bungaDisplay = this.formatNumber(this.bungaRaw);
+                        if (this.dendaRaw > 0) this.dendaDisplay = this.formatNumber(this.dendaRaw);
+                    },
+
+                    updatePokok(value) {
                         const n = parseInt(value.replace(/\D/g, '')) || 0;
-                        this.tunggakanRaw = n;
-                        this.tunggakanDisplay = n ? this.formatNumber(n) : '';
+                        this.pokokRaw = n;
+                        this.pokokDisplay = n ? this.formatNumber(n) : '';
+                    },
+                    updateBunga(value) {
+                        const n = parseInt(value.replace(/\D/g, '')) || 0;
+                        this.bungaRaw = n;
+                        this.bungaDisplay = n ? this.formatNumber(n) : '';
+                    },
+                    updateDenda(value) {
+                        const n = parseInt(value.replace(/\D/g, '')) || 0;
+                        this.dendaRaw = n;
+                        this.dendaDisplay = n ? this.formatNumber(n) : '';
                     },
 
                     formatNumber(value) {

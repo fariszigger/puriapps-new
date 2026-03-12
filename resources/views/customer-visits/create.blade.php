@@ -178,7 +178,32 @@
                         </div>
                     </div>
 
-                    {{-- ================= 1.5. SPK NUMBER ================= --}}
+                    {{-- ================= 1.5. AO PENDAMPING ================= --}}
+                    <div class="space-y-4" x-data="{ openAos: false }">
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">AO Pendamping (Opsional)</h2>
+                        <div class="relative">
+                            <button type="button" @click="openAos = !openAos" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 bg-white/50 backdrop-blur-sm text-left flex justify-between items-center">
+                                <span x-text="selectedAos.length > 0 ? selectedAos.length + ' AO Terpilih' : 'Pilih AO Pendamping...'"></span>
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            
+                            <div x-show="openAos" @click.away="openAos = false" x-transition class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                <div class="p-2 space-y-1">
+                                    @foreach($otherUsers as $user)
+                                        <label class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer">
+                                            <input type="checkbox" name="accompanying_aos[]" value="{{ $user->id }}" x-model="selectedAos" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                                            <span class="ml-2 text-sm text-gray-900">{{ $user->name }} ({{ $user->roles->pluck('name')->join(', ') }})</span>
+                                        </label>
+                                    @endforeach
+                                    @if($otherUsers->isEmpty())
+                                        <div class="p-2 text-sm text-gray-500">Tidak ada user lain.</div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ================= 1.7. SPK NUMBER ================= --}}
                     <div class="space-y-4">
                         <label for="spk_number" class="block mb-2 text-sm font-medium text-gray-900">Nomor SPK / Rekening
                             Kredit</label>
@@ -748,6 +773,7 @@
                     showCustomerModal: true,
                     showTemplateModal: false,
                     activeTemplateTarget: 'kondisi',
+                    selectedAos: [],
                     kol: '{{ old('kolektibilitas', '') }}',
                     ketemuDengan: '{{ old('ketemu_dengan', '') }}',
                     bakiRaw: '{{ old('baki_debet', '0') }}',

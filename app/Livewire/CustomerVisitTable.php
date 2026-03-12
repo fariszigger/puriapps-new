@@ -42,6 +42,9 @@ class CustomerVisitTable extends Component
 
         if (!auth()->user()->can('view all data')) {
             $query->where('user_id', auth()->id());
+        } else {
+            // For global viewers, hide the accompanying duplicates so each visit only appears once
+            $query->where('is_accompanying', false);
         }
 
         $query->when(!empty($this->search), function ($query) {

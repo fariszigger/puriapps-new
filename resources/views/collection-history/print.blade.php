@@ -222,6 +222,9 @@
                                 @endif
                                 <div class="mt-1 text-[9px] text-gray-400 flex justify-end">
                                     Petugas: {{ $item['ao'] }}
+                                    @if(isset($item['accompanying_names']) && $item['accompanying_names'])
+                                        (Didampingi: {{ $item['accompanying_names'] }})
+                                    @endif
                                 </div>
                             </div>
                         </div>

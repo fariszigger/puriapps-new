@@ -17,8 +17,13 @@ class CustomerVisitController extends Controller
     public function create()
     {
         if (auth()->user()->cannot('create customer-visits')) abort(403);
-        $customers = Customer::all();
-        return view('customer-visits.create', compact('customers'));
+        $customers = Customer::orderBy('id', 'desc')->get();
+        $otherUsers = \App\Models\User::where('id', '!=', auth()->id())
+            ->whereHas('roles', function ($q) {
+                $q->whereIn('name', ['AO', 'Kabag']);
+            })
+            ->get();
+        return view('customer-visits.create', compact('customers', 'otherUsers'));
     }
 
     public function store(Request $request)
@@ -48,14 +53,15 @@ class CustomerVisitController extends Controller
             'photo_rumah' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'photo_orang' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'location_image' => 'nullable|string',
+            'accompanying_aos' => 'nullable|array',
+            'accompanying_aos.*' => 'exists:users,id',
         ]);
 
         // Auto-calculate penagihan_ke
-        $pengihanKe = CustomerVisit::where('customer_id', $request->customer_id)->count() + 1;
+        $pengihanKe = CustomerVisit::where('customer_id', $request->customer_id)->where('is_accompanying', false)->count() + 1;
 
         $visitData = [
             'customer_id' => $request->customer_id,
-            'user_id' => auth()->id(),
             'address' => $request->address,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
@@ -77,22 +83,23 @@ class CustomerVisitController extends Controller
             'penagihan_ke' => $pengihanKe,
         ];
 
-        // Handle Photo Upload
+        // Format accompanying names
+        $accompanyingNames = null;
+        if (!empty($request->accompanying_aos)) {
+            $names = \App\Models\User::whereIn('id', $request->accompanying_aos)->pluck('name')->toArray();
+            $accompanyingNames = implode(', ', $names);
+        }
+        $visitData['accompanying_names'] = $accompanyingNames;
+
+        // Handle Photo Uploads
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('customer-visits/photos', 'local');
-            $visitData['photo_path'] = $path;
+            $visitData['photo_path'] = $request->file('photo')->store('customer-visits/photos', 'local');
         }
-
-        // Handle Photo Rumah Debitur
         if ($request->hasFile('photo_rumah')) {
-            $path = $request->file('photo_rumah')->store('customer-visits/photos', 'local');
-            $visitData['photo_rumah_path'] = $path;
+            $visitData['photo_rumah_path'] = $request->file('photo_rumah')->store('customer-visits/photos', 'local');
         }
-
-        // Handle Foto Orang yang Ditemui
         if ($request->hasFile('photo_orang')) {
-            $path = $request->file('photo_orang')->store('customer-visits/photos', 'local');
-            $visitData['photo_orang_path'] = $path;
+            $visitData['photo_orang_path'] = $request->file('photo_orang')->store('customer-visits/photos', 'local');
         }
 
         // Handle Map Image (Base64)
@@ -106,7 +113,46 @@ class CustomerVisitController extends Controller
             $visitData['location_image_path'] = $locationImagePath;
         }
 
-        CustomerVisit::create($visitData);
+        // 1. Create the Main Visit Record
+        $mainVisitData = $visitData;
+        $mainVisitData['user_id'] = auth()->id();
+        $mainVisitData['is_accompanying'] = false;
+        CustomerVisit::create($mainVisitData);
+
+        // 2. Loop through Accompanying AOs and duplicate
+        if (!empty($request->accompanying_aos)) {
+            foreach ($request->accompanying_aos as $aoId) {
+                $duplicateData = $visitData;
+                $duplicateData['user_id'] = $aoId;
+                $duplicateData['is_accompanying'] = true;
+
+                // Copy files explicitly for the duplicated record
+                $copyImage = function($originalPath, $diskFolder) {
+                    if ($originalPath && Storage::disk('local')->exists($originalPath)) {
+                        $ext = pathinfo($originalPath, PATHINFO_EXTENSION) ?: 'png';
+                        $newPath = $diskFolder . '/copy_' . time() . '_' . uniqid() . '.' . $ext;
+                        Storage::disk('local')->copy($originalPath, $newPath);
+                        return $newPath;
+                    }
+                    return null;
+                };
+
+                if (isset($duplicateData['photo_path'])) {
+                    $duplicateData['photo_path'] = $copyImage($duplicateData['photo_path'], 'customer-visits/photos');
+                }
+                if (isset($duplicateData['photo_rumah_path'])) {
+                    $duplicateData['photo_rumah_path'] = $copyImage($duplicateData['photo_rumah_path'], 'customer-visits/photos');
+                }
+                if (isset($duplicateData['photo_orang_path'])) {
+                    $duplicateData['photo_orang_path'] = $copyImage($duplicateData['photo_orang_path'], 'customer-visits/photos');
+                }
+                if (isset($duplicateData['location_image_path'])) {
+                    $duplicateData['location_image_path'] = $copyImage($duplicateData['location_image_path'], 'customer-visits/map');
+                }
+
+                CustomerVisit::create($duplicateData);
+            }
+        }
 
         return redirect()->route('customer-visits.index')->with('success', 'Kunjungan berhasil ditambahkan.');
     }
@@ -187,7 +233,7 @@ class CustomerVisitController extends Controller
 
     public function count($customerId)
     {
-        $count = CustomerVisit::where('customer_id', $customerId)->count();
+        $count = CustomerVisit::where('customer_id', $customerId)->where('is_accompanying', false)->count();
         return response()->json(['count' => $count]);
     }
 

@@ -160,43 +160,48 @@
                 <tr>
                     <td>
                         <!-- Info Memo -->
-                        <div class="mb-2 text-xs flex justify-between items-start">
-                            <div class="flex-1">
-                                <table class="w-full ml-10">
-                                    <tr>
-                                        <td class="font-bold w-48 pb-1">Account Officer (AO)</td>
-                                        <td class="w-4 pb-1">:</td>
-                                        <td class="pb-1"><span class="font-bold">{{ $visit->user->name ?? '-' }}</span>
-                                            ({{ $visit->user->code ?? '-' }})
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-bold pb-1">Identitas Debitur</td>
-                                        <td class="w-4 pb-1">:</td>
-                                        <td class="pb-1"><span
-                                                class="font-bold">{{ $visit->customer->name ?? '-' }}</span> (NIK :
-                                            {{ $visit->customer->identity_number ?? '-' }})
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-bold pb-1">No. SPK / Rekening</td>
-                                        <td class="w-4 pb-1">:</td>
-                                        <td class="pb-1"><span class="font-bold">{{ $visit->spk_number ?? '-' }}</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-bold pb-1">Tanggal Kunjungan</td>
-                                        <td class="w-4 pb-1">:</td>
-                                        <td class="pb-1">{{ formatIndonesianDate($visit->created_at) }}, {{ $visit->created_at->format('H:i') }} WIB</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-bold pb-1">Penagihan Ke</td>
-                                        <td class="w-4 pb-1">:</td>
-                                        <td class="pb-1"><span
-                                                class="font-bold">{{ $visit->penagihan_ke ?? '-' }}</span></td>
-                                    </tr>
-                                </table>
-                            </div>
+                        <div class="mb-2 text-xs pl-28">
+                            <table class="w-full table-fixed">
+                                <tr>
+                                    <td class="font-bold w-44 pb-1 align-top">Account Officer (AO)</td>
+                                    <td class="w-4 pb-1 align-top">:</td>
+                                    <td class="pb-1 align-top">
+                                        <span class="font-bold">{{ $visit->user->name ?? '-' }}</span>
+                                        ({{ $visit->user->code ?? '-' }})
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold pb-1 align-top">Identitas Debitur</td>
+                                    <td class="w-4 pb-1 align-top">:</td>
+                                    <td class="pb-1 align-top">
+                                        <span class="font-bold">{{ $visit->customer->name ?? '-' }}</span> 
+                                        (NIK : {{ $visit->customer->identity_number ?? '-' }})
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold pb-1 align-top">No. SPK / Rekening</td>
+                                    <td class="w-4 pb-1 align-top">:</td>
+                                    <td class="pb-1 align-top">
+                                        <span class="font-bold">{{ $visit->spk_number ?? '-' }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold pb-1 align-top">Tanggal Kunjungan</td>
+                                    <td class="w-4 pb-1 align-top">:</td>
+                                    <td class="pb-1 align-top">
+                                        {{ formatIndonesianDate($visit->created_at) }}, {{ $visit->created_at->format('H:i') }} WIB
+                                    </td>
+                                </tr>
+                                @if($visit->accompanying_names)
+                                <tr>
+                                    <td class="font-bold pb-1 align-top">Didampingi Oleh</td>
+                                    <td class="w-4 pb-1 align-top">:</td>
+                                    <td class="pb-1 align-top leading-snug">
+                                        <span class="font-bold break-words whitespace-normal">{{ $visit->accompanying_names }}</span>
+                                    </td>
+                                </tr>
+                                @endif
+                            </table>
                         </div>
 
                         <!-- SECTION A: DATA KUNJUNGAN -->
@@ -279,58 +284,39 @@
                                 </tr>
                             @endif
 
-                            <!-- ALAMAT KUNJUNGAN -->
+                            <!-- LOKASI KUNJUNGAN -->
                             <tr>
                                 <td colspan="4" class="header-bg text-xs uppercase py-1 border-t-2 border-gray-600">
-                                    ALAMAT KUNJUNGAN</td>
+                                    LOKASI KUNJUNGAN</td>
                             </tr>
                             <tr>
-                                <td class="w-[25%] border-r-0 pb-1">Alamat yang dikunjungi</td>
-                                <td colspan="3" class="pb-1">: {{ $visit->address ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="w-[25%] border-r-0 pb-1">Kelurahan/Desa</td>
-                                <td class="w-[25%] pb-1">: {{ $visit->village ?? '-' }}</td>
-                                <td class="w-[25%] border-r-0 border-l border-gray-600 pb-1">Kecamatan</td>
-                                <td class="w-[25%] pb-1">: {{ $visit->district ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="border-r-0 pb-1">Kabupaten/Kota</td>
-                                <td class="pb-1">: {{ $visit->regency ?? '-' }}</td>
-                                <td class="border-r-0 border-l border-gray-600 pb-1">Provinsi</td>
-                                <td class="pb-1">: {{ $visit->province ?? '-' }}</td>
-                            </tr>
-
-                            <!-- LOKASI PETA -->
-                            @if($visit->location_image_path || ($visit->latitude && $visit->longitude))
-                                <tr>
-                                    <td colspan="4" class="header-bg text-xs uppercase py-1 border-t-2 border-gray-600">
-                                        LOKASI KUNJUNGAN</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4" class="p-2 border-0">
-                                        <div class="flex gap-4 items-start w-full">
-                                            <!-- Map Details -->
-                                            <div class="flex-1 text-[10px]">
-                                                <table class="w-full text-left nested-table m-0">
+                                <td colspan="4" class="p-2 border-0">
+                                    <div class="flex gap-4 items-start w-full">
+                                        <!-- Map Details -->
+                                        <div class="flex-1 text-[10px]">
+                                            <table class="w-full text-left nested-table m-0 table-fixed">
+                                                <tr>
+                                                    <td class="w-[30%] py-1 pl-2 font-bold align-top">Alamat</td>
+                                                    <td class="py-1 align-top">: {{ $visit->address ?? '-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="w-[30%] py-1 pl-2 font-bold">Koordinat</td>
+                                                    <td class="py-1">:
+                                                        {{ $visit->latitude ?? '-' }},
+                                                        {{ $visit->longitude ?? '-' }}
+                                                    </td>
+                                                </tr>
+                                                @if($visit->latitude && $visit->longitude)
                                                     <tr>
-                                                        <td class="w-[30%] py-1 pl-2 font-bold">Koordinat</td>
-                                                        <td class="py-1">:
-                                                            {{ $visit->latitude ?? '-' }},
-                                                            {{ $visit->longitude ?? '-' }}
+                                                        <td class="w-[30%] py-1 pl-2 font-bold align-top">Tautan
+                                                            Peta</td>
+                                                        <td class="py-1">: <span
+                                                                class="text-blue-600 break-all text-[8px]">https://www.google.com/maps/search/?api=1&query={{ $visit->latitude }},{{ $visit->longitude }}</span>
                                                         </td>
                                                     </tr>
-                                                    @if($visit->latitude && $visit->longitude)
-                                                        <tr>
-                                                            <td class="w-[30%] py-1 pl-2 font-bold align-top">Tautan
-                                                                Peta</td>
-                                                            <td class="py-1">: <span
-                                                                    class="text-blue-600 break-all text-[8px]">https://www.google.com/maps/search/?api=1&query={{ $visit->latitude }},{{ $visit->longitude }}</span>
-                                                            </td>
-                                                        </tr>
-                                                    @endif
-                                                </table>
-                                            </div>
+                                                @endif
+                                            </table>
+                                        </div>
 
                                             <!-- Map Image & QR Code -->
                                             <div class="flex gap-2">
@@ -352,7 +338,6 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @endif
                         </table>
 
                         <!-- SECTION B: KONDISI & RENCANA -->

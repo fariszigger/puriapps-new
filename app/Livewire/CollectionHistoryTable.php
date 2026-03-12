@@ -45,9 +45,14 @@ class CollectionHistoryTable extends Component
             });
         }
 
-        // Scoping for AO (can only see their own)
+        // Scoping for AO (can only see their own OR customers they have visited)
         if (!auth()->user()->can('view all data')) {
-            $query->where('user_id', auth()->id());
+            $query->where(function ($q) {
+                $q->where('user_id', auth()->id())
+                  ->orWhereHas('visits', function ($vq) {
+                      $vq->where('user_id', auth()->id());
+                  });
+            });
         }
 
         $customers = $query->orderBy('name', 'asc')->paginate($this->perPage);
@@ -58,9 +63,9 @@ class CollectionHistoryTable extends Component
             $latestDate = null;
             $systemDate = null;
 
-            // Get the absolute latest system record time for both types
+            // Get the absolute latest system record time for both types (primary visits only)
             $latestLetter = $customer->warningLetters->sortByDesc('created_at')->first();
-            $latestVisit = $customer->visits->sortByDesc('created_at')->first();
+            $latestVisit = $customer->visits->where('is_accompanying', false)->sortByDesc('created_at')->first();
 
             if ($latestLetter && $latestVisit) {
                 if ($latestLetter->created_at->greaterThanOrEqualTo($latestVisit->created_at)) {
@@ -68,7 +73,7 @@ class CollectionHistoryTable extends Component
                     $latestDate = $latestLetter->letter_date;
                     $systemDate = $latestLetter->created_at;
                 } else {
-                    $latestAction = 'Penagihan ' . $customer->visits->count();
+                    $latestAction = 'Penagihan ' . $customer->visits->where('is_accompanying', false)->count();
                     $latestDate = $latestVisit->created_at;
                     $systemDate = $latestVisit->created_at;
                 }
@@ -77,7 +82,7 @@ class CollectionHistoryTable extends Component
                 $latestDate = $latestLetter->letter_date;
                 $systemDate = $latestLetter->created_at;
             } elseif ($latestVisit) {
-                $latestAction = 'Penagihan ' . $customer->visits->count();
+                $latestAction = 'Penagihan ' . $customer->visits->where('is_accompanying', false)->count();
                 $latestDate = $latestVisit->created_at;
                 $systemDate = $latestVisit->created_at;
             }

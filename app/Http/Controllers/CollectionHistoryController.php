@@ -18,13 +18,18 @@ class CollectionHistoryController extends Controller
     {
         $customer = Customer::findOrFail($customerId);
         
-        // Ensure AO can only view their own customers
         if (!auth()->user()->can('view all data') && $customer->user_id !== auth()->id()) {
-            abort(403);
+            $hasVisited = \App\Models\CustomerVisit::where('customer_id', $customerId)
+                            ->where('user_id', auth()->id())
+                            ->exists();
+            if (!$hasVisited) {
+                abort(403);
+            }
         }
 
-        // 1. Fetch all visits for this customer
+        // 1. Fetch all visits for this customer (only primary records to avoid duplicates)
         $visits = CustomerVisit::where('customer_id', $customerId)
+                    ->where('is_accompanying', false)
                     ->orderBy('created_at', 'asc')
                     ->get();
 
@@ -36,29 +41,24 @@ class CollectionHistoryController extends Controller
         // 3. Combine and sort
         $history = collect();
 
-        // We'll need to calculate which "Penagihan ke-X" each visit was
-        $visitCount = 1;
-
         foreach ($visits as $visit) {
             $history->push([
                 'type' => 'visit',
-                'title' => 'Penagihan ' . $visitCount++,
-                'date' => $visit->created_at, // Has date and time
+                'date' => $visit->created_at,
                 'display_date' => $visit->created_at,
                 'ao' => $visit->user->name ?? '-',
+                'accompanying_names' => $visit->accompanying_names,
                 'details' => $visit->notes ?? 'Kunjungan / Penagihan',
                 'raw_data' => $visit
             ]);
         }
 
         foreach ($letters as $letter) {
-            // For letters, we use created_at as the primary sorting key to get the "hour" 
-            // but we might want the letter_date as the displayed date.
             $history->push([
                 'type' => 'letter',
                 'title' => $letter->type_label,
-                'date' => $letter->created_at, // Using created_at for chronological sorting with hours
-                'display_date' => $letter->letter_date, // This is the official date
+                'date' => $letter->created_at,
+                'display_date' => $letter->letter_date,
                 'ao' => $letter->user->name ?? '-',
                 'details' => $letter->notes ?? 'Batas Waktu: ' . formatIndonesianDate($letter->deadline_date),
                 'raw_data' => $letter
@@ -67,6 +67,19 @@ class CollectionHistoryController extends Controller
 
         // Sort everything chronologically by date and time
         $history = $history->sortBy('date')->values();
+
+        // 4. Calculate titles for visits only after sorting
+        $visitCount = 1;
+        $history = $history->map(function ($item) use (&$visitCount) {
+            if ($item['type'] === 'visit') {
+                if (!$item['raw_data']->is_accompanying) {
+                    $item['title'] = 'Penagihan ' . $visitCount++;
+                } else {
+                    $item['title'] = 'Penagihan (Pendamping)';
+                }
+            }
+            return $item;
+        });
 
         return view('collection-history.print', compact('customer', 'history'));
     }

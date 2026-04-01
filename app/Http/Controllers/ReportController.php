@@ -24,16 +24,54 @@ class ReportController extends Controller
 
         $filter = $request->query('filter', 'monthly');
         $selectedMonth = $request->query('month');
+        $selectedDate = $request->query('date');
+        $selectedWeek = $request->query('week', 1);
         $now = Carbon::now();
 
         if ($filter === 'daily') {
-            $startDate = $now->copy()->startOfDay();
-            $endDate = $now->copy()->endOfDay();
-            $periodLabel = 'Hari Ini (' . $startDate->format('d M Y') . ')';
+            try {
+                $date = $selectedDate ? Carbon::parse($selectedDate) : $now;
+            } catch (\Exception $e) {
+                $date = $now;
+            }
+            $startDate = $date->copy()->startOfDay();
+            $endDate = $date->copy()->endOfDay();
+            $periodLabel = 'Harian (' . $startDate->format('d M Y') . ')';
         } elseif ($filter === 'weekly') {
-            $startDate = $now->copy()->startOfWeek();
-            $endDate = $now->copy()->endOfWeek();
-            $periodLabel = 'Minggu Ini (' . $startDate->format('d M') . ' - ' . $endDate->format('d M Y') . ')';
+            try {
+                $date = $selectedMonth ? Carbon::createFromFormat('Y-m', $selectedMonth) : $now;
+            } catch (\Exception $e) {
+                $date = $now;
+            }
+            $startOfMonth = $date->copy()->startOfMonth();
+            
+            $daysInMonth = $startOfMonth->daysInMonth;
+            $maxWeeks = (int) ceil($daysInMonth / 7);
+
+            $week = (int) $selectedWeek;
+            if ($week < 1) $week = 1;
+            if ($week > $maxWeeks) $week = $maxWeeks;
+
+            $startDay = ($week - 1) * 7 + 1;
+            $endDay = $week * 7;
+            
+            $startDate = $startOfMonth->copy()->addDays($startDay - 1)->startOfDay();
+            
+            if ($week == $maxWeeks) {
+                $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            } else {
+                $potentialEndDate = $startOfMonth->copy()->addDays($endDay - 1)->endOfDay();
+                $endDate = $potentialEndDate > $startOfMonth->copy()->endOfMonth() 
+                                ? $startOfMonth->copy()->endOfMonth()->endOfDay() 
+                                : $potentialEndDate;
+            }
+            
+            if ($startDate > $startOfMonth->copy()->endOfMonth()) {
+                $startDate = $startOfMonth->copy()->endOfMonth()->startOfDay();
+                $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            }
+
+            $periodLabel = 'Minggu Ke-' . $week . ' Bulan ' . $startOfMonth->translatedFormat('F Y') . ' (' . $startDate->format('d M') . ' - ' . $endDate->format('d M Y') . ')';
         } else {
             // Monthly
             if ($selectedMonth) {
@@ -89,16 +127,54 @@ class ReportController extends Controller
 
         $filter = $request->query('filter', 'monthly');
         $selectedMonth = $request->query('month');
+        $selectedDate = $request->query('date');
+        $selectedWeek = $request->query('week', 1);
         $now = Carbon::now();
 
         if ($filter === 'daily') {
-            $startDate = $now->copy()->startOfDay();
-            $endDate = $now->copy()->endOfDay();
-            $periodLabel = 'Hari Ini (' . $startDate->format('d M Y') . ')';
+            try {
+                $date = $selectedDate ? Carbon::parse($selectedDate) : $now;
+            } catch (\Exception $e) {
+                $date = $now;
+            }
+            $startDate = $date->copy()->startOfDay();
+            $endDate = $date->copy()->endOfDay();
+            $periodLabel = 'Harian (' . $startDate->format('d M Y') . ')';
         } elseif ($filter === 'weekly') {
-            $startDate = $now->copy()->startOfWeek();
-            $endDate = $now->copy()->endOfWeek();
-            $periodLabel = 'Minggu Ini (' . $startDate->format('d M') . ' - ' . $endDate->format('d M Y') . ')';
+            try {
+                $date = $selectedMonth ? Carbon::createFromFormat('Y-m', $selectedMonth) : $now;
+            } catch (\Exception $e) {
+                $date = $now;
+            }
+            $startOfMonth = $date->copy()->startOfMonth();
+            
+            $daysInMonth = $startOfMonth->daysInMonth;
+            $maxWeeks = (int) ceil($daysInMonth / 7);
+
+            $week = (int) $selectedWeek;
+            if ($week < 1) $week = 1;
+            if ($week > $maxWeeks) $week = $maxWeeks;
+
+            $startDay = ($week - 1) * 7 + 1;
+            $endDay = $week * 7;
+            
+            $startDate = $startOfMonth->copy()->addDays($startDay - 1)->startOfDay();
+            
+            if ($week == $maxWeeks) {
+                $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            } else {
+                $potentialEndDate = $startOfMonth->copy()->addDays($endDay - 1)->endOfDay();
+                $endDate = $potentialEndDate > $startOfMonth->copy()->endOfMonth() 
+                                ? $startOfMonth->copy()->endOfMonth()->endOfDay() 
+                                : $potentialEndDate;
+            }
+            
+            if ($startDate > $startOfMonth->copy()->endOfMonth()) {
+                $startDate = $startOfMonth->copy()->endOfMonth()->startOfDay();
+                $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            }
+
+            $periodLabel = 'Minggu Ke-' . $week . ' Bulan ' . $startOfMonth->translatedFormat('F Y') . ' (' . $startDate->format('d M') . ' - ' . $endDate->format('d M Y') . ')';
         } else {
             // Monthly
             if ($selectedMonth) {

@@ -10,12 +10,16 @@ class PerformanceReport extends Component
 {
     public $filter = 'monthly';
     public $selectedMonth;
+    public $selectedDate;
+    public $selectedWeek = 1;
     public $startDate;
     public $endDate;
 
     public function mount()
     {
         $this->selectedMonth = Carbon::now()->format('Y-m');
+        $this->selectedDate = Carbon::now()->format('Y-m-d');
+        $this->selectedWeek = min(5, (int) ceil(Carbon::now()->day / 7));
         $this->updateDateRange();
     }
 
@@ -29,15 +33,62 @@ class PerformanceReport extends Component
         $this->updateDateRange();
     }
 
+    public function updatedSelectedDate()
+    {
+        $this->updateDateRange();
+    }
+
+    public function updatedSelectedWeek()
+    {
+        $this->updateDateRange();
+    }
+
     private function updateDateRange()
     {
         $now = Carbon::now();
         if ($this->filter === 'daily') {
-            $this->startDate = $now->copy()->startOfDay();
-            $this->endDate = $now->copy()->endOfDay();
+            try {
+                $date = Carbon::parse($this->selectedDate);
+            } catch (\Exception $e) {
+                $date = $now;
+                $this->selectedDate = $date->format('Y-m-d');
+            }
+            $this->startDate = $date->copy()->startOfDay();
+            $this->endDate = $date->copy()->endOfDay();
         } elseif ($this->filter === 'weekly') {
-            $this->startDate = $now->copy()->startOfWeek();
-            $this->endDate = $now->copy()->endOfWeek();
+            try {
+                $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
+            } catch (\Exception $e) {
+                $date = $now;
+                $this->selectedMonth = $date->format('Y-m');
+            }
+            $startOfMonth = $date->copy()->startOfMonth();
+            
+            $daysInMonth = $startOfMonth->daysInMonth;
+            $maxWeeks = (int) ceil($daysInMonth / 7);
+
+            $week = (int) $this->selectedWeek;
+            if ($week < 1) $week = 1;
+            if ($week > $maxWeeks) $week = $maxWeeks;
+
+            $startDay = ($week - 1) * 7 + 1;
+            $endDay = $week * 7;
+            
+            $this->startDate = $startOfMonth->copy()->addDays($startDay - 1)->startOfDay();
+            
+            if ($week == $maxWeeks) {
+                $this->endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            } else {
+                $potentialEndDate = $startOfMonth->copy()->addDays($endDay - 1)->endOfDay();
+                $this->endDate = $potentialEndDate > $startOfMonth->copy()->endOfMonth() 
+                                ? $startOfMonth->copy()->endOfMonth()->endOfDay() 
+                                : $potentialEndDate;
+            }
+            
+            if ($this->startDate > $startOfMonth->copy()->endOfMonth()) {
+                $this->startDate = $startOfMonth->copy()->endOfMonth()->startOfDay();
+                $this->endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            }
         } else {
             // Validate and parse the selected month
             try {
@@ -71,9 +122,9 @@ class PerformanceReport extends Component
     private function getPeriodLabel()
     {
         if ($this->filter === 'daily') {
-            return 'Hari Ini (' . $this->startDate->format('d M Y') . ')';
+            return 'Harian (' . $this->startDate->format('d M Y') . ')';
         } elseif ($this->filter === 'weekly') {
-            return 'Minggu Ini (' . $this->startDate->format('d M') . ' - ' . $this->endDate->format('d M Y') . ')';
+            return 'Minggu Ke-' . $this->selectedWeek . ' Bulan ' . $this->startDate->translatedFormat('F Y') . ' (' . $this->startDate->format('d M') . ' - ' . $this->endDate->format('d M Y') . ')';
         } else {
             return 'Bulan Ini (' . $this->startDate->format('F Y') . ')';
         }

@@ -19,7 +19,36 @@
                 </select>
             </div>
 
-            @if($filter === 'monthly')
+            @if($filter === 'daily')
+                <div class="flex items-center gap-2 border-l border-gray-200 pl-3">
+                    <label class="text-sm font-medium text-gray-600">Tanggal:</label>
+                    <input type="date" wire:model.live="selectedDate"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 transition-all">
+                </div>
+            @elseif($filter === 'weekly')
+                <div class="flex items-center gap-2 border-l border-gray-200 pl-3">
+                    <label class="text-sm font-medium text-gray-600">Bulan:</label>
+                    <input type="month" wire:model.live="selectedMonth"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 transition-all">
+                </div>
+                <div class="flex items-center gap-2 pl-3">
+                    <label class="text-sm font-medium text-gray-600">Minggu Ke-:</label>
+                    <select wire:model.live="selectedWeek"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 transition-all">
+                        @php
+                            try {
+                                $date = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth);
+                            } catch (\Exception $e) {
+                                $date = \Carbon\Carbon::now();
+                            }
+                            $weeksCount = ceil($date->daysInMonth / 7);
+                        @endphp
+                        @for ($i = 1; $i <= $weeksCount; $i++)
+                            <option value="{{ $i }}">Minggu {{ $i }}</option>
+                        @endfor
+                    </select>
+                </div>
+            @elseif($filter === 'monthly')
                 <div class="flex items-center gap-2 border-l border-gray-200 pl-3">
                     <label class="text-sm font-medium text-gray-600">Bulan:</label>
                     <input type="month" wire:model.live="selectedMonth"
@@ -34,7 +63,7 @@
                 </svg>
             </div>
 
-            <a href="{{ route('reports.performance-recap', ['filter' => $filter, 'month' => $selectedMonth]) }}"
+            <a href="{{ route('reports.performance-recap', ['filter' => $filter, 'month' => $selectedMonth, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
                 target="_blank"
                 class="ml-2 inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +135,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="{{ route('reports.performance-detail', ['user' => $ao->id, 'filter' => $filter, 'month' => $selectedMonth]) }}"
+                                <a href="{{ route('reports.performance-detail', ['user' => $ao->id, 'filter' => $filter, 'month' => $selectedMonth, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
                                     target="_blank"
                                     class="inline-flex items-center text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors">
                                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

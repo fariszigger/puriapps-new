@@ -74,7 +74,7 @@ class WarningLetter extends Model
     }
     /**
      * Generate the next letter number automatically
-     * Format: NNN/BPR.PURI.KRD/M/YYYY (e.g., 117/BPR.PURI.KRD/X/2025)
+     * Format: NNN/BPR.PURI.KRD/SYS/M/YYYY (e.g., 117/BPR.PURI.KRD/SYS/X/2025)
      */
     public static function generateLetterNumber(\Carbon\Carbon $date = null): string
     {
@@ -97,7 +97,7 @@ class WarningLetter extends Model
         $sequence = 1;
         if ($lastLetter) {
             // Extract the number part from the beginning of the string
-            // Format is "117/BPR.PURI.KRD/X/2025"
+            // Format is "117/BPR.PURI.KRD/SYS/X/2025" or similar
             $parts = explode('/', $lastLetter->letter_number);
             if (is_numeric($parts[0])) {
                 $sequence = (int) $parts[0] + 1;
@@ -107,6 +107,6 @@ class WarningLetter extends Model
         // Format sequence to always be at least 3 digits, e.g., 001, 012, 117
         $sequenceFormatted = str_pad($sequence, 3, '0', STR_PAD_LEFT);
 
-        return "{$sequenceFormatted}/BPR.PURI.KRD/{$romanMonth}/{$year}";
+        return "{$sequenceFormatted}/BPR.PURI.KRD/SYS/{$romanMonth}/{$year}";
     }
 }

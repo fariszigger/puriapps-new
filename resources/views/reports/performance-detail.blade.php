@@ -196,27 +196,11 @@
             </div>
         @endif
 
-        <!-- Signatures -->
-        <div class="mt-8 text-[10px]">
-            <table class="w-full">
-                <tr>
-                    <td class="w-1/2 text-center pt-2">
-                        <p class="mb-1">Mengetahui,</p>
-                        <p class="font-bold">Kepala Bagian</p>
-                        <div class="h-16"></div>
-                        <p class="border-t border-black inline-block px-8 pt-1 font-bold">
-                            Moch. Arif Priyadi</p>
-                    </td>
-                    <td class="w-1/2 text-center pt-2">
-                        <p class="mb-1">{{ now()->format('d F Y') }}</p>
-                        <p class="font-bold">Dibuat Oleh</p>
-                        <div class="h-16"></div>
-                        <p class="border-t border-black inline-block px-8 pt-1 font-bold">
-                            {{ auth()->user()->name ?? '-' }}
-                        </p>
-                    </td>
-                </tr>
-            </table>
+        <!-- System Verification Note -->
+        <div class="mt-8 pt-4 border-t border-gray-300 text-[10px] text-gray-500 text-center italic">
+            Dokumen ini di-generate secara otomatis oleh sistem pada {{ now()->format('d F Y H:i') }}.
+            <br>
+            Tidak memerlukan tanda tangan basah ("Mengetahui" atau "Dibuat Oleh") karena telah diverifikasi dan divalidasi oleh sistem.
         </div>
     </div>
 

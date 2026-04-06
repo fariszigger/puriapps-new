@@ -112,7 +112,7 @@ class DashboardController extends Controller
         }
 
         // Janji Bayar events in next 7 days
-        $jbQuery = CustomerVisit::with('customer:id,name')
+        $jbQuery = CustomerVisit::with(['customer:id,name', 'user:id,name,code'])
             ->select('id', 'customer_id', 'user_id', 'tanggal_janji_bayar', 'jumlah_bayar', 'jumlah_pembayaran', 'janji_bayar_fulfilled')
             ->whereNotNull('tanggal_janji_bayar')
             ->where('janji_bayar_fulfilled', false)
@@ -128,12 +128,13 @@ class DashboardController extends Controller
                 'date' => $jb->tanggal_janji_bayar,
                 'display_date' => \Carbon\Carbon::parse($jb->tanggal_janji_bayar)->format('d M'),
                 'name' => $jb->customer->name ?? '-',
+                'ao_code' => $jb->user->code ?? $jb->user->name ?? '-',
                 'jumlah' => $jb->jumlah_pembayaran ?? $jb->jumlah_bayar,
             ]);
         }
 
         // Visit events in next 7 days (already happened or scheduled)
-        $visitQuery2 = CustomerVisit::with('customer:id,name')
+        $visitQuery2 = CustomerVisit::with(['customer:id,name', 'user:id,name,code'])
             ->select('id', 'customer_id', 'user_id', 'created_at', 'kolektibilitas')
             ->whereBetween('created_at', [$today->startOfDay(), $next7->endOfDay()]);
         
@@ -147,11 +148,12 @@ class DashboardController extends Controller
                 'date' => $v->created_at->format('Y-m-d'),
                 'display_date' => $v->created_at->format('d M'),
                 'name' => $v->customer->name ?? '-',
+                'ao_code' => $v->user->code ?? $v->user->name ?? '-',
             ]);
         }
 
         // Warning Letter Follow-ups in next 7 days (letter_date + 21 days)
-        $spQuery = WarningLetter::with('customer:id,name')
+        $spQuery = WarningLetter::with(['customer:id,name', 'user:id,name,code'])
             ->select('id', 'customer_id', 'user_id', 'letter_date', 'type')
             ->whereIn('type', ['sp1', 'sp2']);
         
@@ -167,6 +169,7 @@ class DashboardController extends Controller
                     'date' => $followUpDate->format('Y-m-d'),
                     'display_date' => $followUpDate->format('d M'),
                     'name' => 'Follow Up SP - ' . ($sp->customer->name ?? '-'),
+                    'ao_code' => $sp->user->code ?? $sp->user->name ?? '-',
                 ]);
             }
         }

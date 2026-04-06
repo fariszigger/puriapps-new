@@ -160,7 +160,12 @@
                                             @else Janji Bayar @endif
                                         </span>
                                     </div>
-                                    <p class="font-bold text-gray-900 text-sm">{{ $event['name'] }}</p>
+                                    <p class="font-bold text-gray-900 text-sm">
+                                        {{ $event['name'] }}
+                                        @if(isset($event['ao_code']))
+                                            <span class="ml-1 text-[9px] px-1 py-0.5 rounded bg-gray-100 text-gray-500 font-bold uppercase">{{ $event['ao_code'] }}</span>
+                                        @endif
+                                    </p>
                                     @if($event['type'] === 'dob')
                                         <p class="text-xs text-gray-500 mt-1">Usia: {{ now()->year - \Carbon\Carbon::parse($event['date'])->year }} tahun</p>
                                     @endif
@@ -326,7 +331,12 @@
                                         :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : event.type === 'visit' ? 'bg-green-100 text-green-700' : event.type === 'sp' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'"
                                         x-text="event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : event.type === 'sp' ? 'Follow Up SP' : 'Janji Bayar'"></span>
                                 </td>
-                                <td class="px-4 py-3 text-sm font-semibold text-gray-800" x-text="event.name"></td>
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-800">
+                                    <span x-text="event.name"></span>
+                                    <template x-if="event.ao_code">
+                                        <span class="ml-1 text-[9px] px-1 py-0.5 rounded bg-gray-100 text-gray-500 font-bold uppercase" x-text="event.ao_code"></span>
+                                    </template>
+                                </td>
                                 <td class="px-4 py-3 text-sm text-gray-600">
                                     <span x-show="event.type === 'dob'" x-text="'Usia ' + getAge(event.date) + ' tahun'"></span>
                                     <span x-show="event.type === 'janji_bayar' && event.jumlah" x-text="'Rp ' + formatRupiah(event.jumlah)"></span>
@@ -747,7 +757,7 @@
                 <div id="detail-${event.id}" class="rounded-xl p-3.5 transition-all" style="background:${c.bg};color:${c.text}">
                     <div class="flex items-center gap-1.5 mb-1">
                         <span class="text-sm">${icon}</span>
-                        <span class="text-[10px] font-bold uppercase tracking-wide opacity-70">${typeName}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wide opacity-70">${typeName} ${event.ao_code ? '• AO: '+event.ao_code : ''}</span>
                     </div>
                     <p class="font-bold text-sm">${event.name}</p>
                     <p class="text-xs font-medium opacity-80 mt-0.5">${detail}</p>
@@ -780,15 +790,15 @@
                     <div class="flex items-start justify-between gap-1">
                         <div class="flex items-center gap-1.5 overflow-hidden min-w-0">
                             <span class="text-sm shrink-0">${icon}</span>
-                            <span class="font-bold text-xs leading-tight truncate">${event.name}</span>
+                            <div class="flex flex-col min-w-0">
+                                <span class="font-bold text-xs leading-tight truncate">${event.name}</span>
+                                ${event.ao_code ? `<span class="text-[8px] font-bold uppercase opacity-60">AO: ${event.ao_code}</span>` : ''}
+                            </div>
                         </div>
                         ${checkBtn}
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] font-semibold opacity-80">${detail}</span>
-                        <div class="w-4 h-4 rounded-full flex items-center justify-center shrink-0" style="background:${c.text}15">
-                            <span class="text-[7px] font-bold uppercase" style="color:${c.text}">${userInitials}</span>
-                        </div>
                     </div>
                 </div>`;
         }

@@ -81,7 +81,7 @@ class CalendarController extends Controller
 
     private function getVisitEvents(bool $isAO, $user): array
     {
-        $query = CustomerVisit::with('customer:id,name')
+        $query = CustomerVisit::with(['customer:id,name', 'user:id,name,code'])
             ->select('id', 'customer_id', 'user_id', 'created_at', 'kolektibilitas', 'ketemu_dengan');
 
         if ($isAO) {
@@ -99,6 +99,7 @@ class CalendarController extends Controller
                 'name' => $visit->customer->name ?? '-',
                 'label' => 'Kunjungan - ' . ($visit->customer->name ?? '-'),
                 'kolektibilitas' => $visit->kolektibilitas,
+                'ao_code' => $visit->user->code ?? $visit->user->name ?? '-',
                 'visit_id' => $visit->id,
             ];
         }
@@ -108,7 +109,7 @@ class CalendarController extends Controller
 
     private function getJanjiBayarEvents(bool $isAO, $user): array
     {
-        $query = CustomerVisit::with('customer:id,name')
+        $query = CustomerVisit::with(['customer:id,name', 'user:id,name,code'])
             ->select('id', 'customer_id', 'user_id', 'tanggal_janji_bayar', 'jumlah_bayar', 'jumlah_pembayaran', 'janji_bayar_fulfilled', 'created_at')
             ->whereNotNull('tanggal_janji_bayar')
             ->where('janji_bayar_fulfilled', false);
@@ -128,6 +129,7 @@ class CalendarController extends Controller
                 'name' => $jb->customer->name ?? '-',
                 'label' => 'Janji Bayar - ' . ($jb->customer->name ?? '-'),
                 'jumlah' => $jb->jumlah_pembayaran ?? $jb->jumlah_bayar,
+                'ao_code' => $jb->user->code ?? $jb->user->name ?? '-',
                 'visit_id' => $jb->id,
             ];
         }
@@ -137,7 +139,7 @@ class CalendarController extends Controller
 
     private function getWarningLetterEvents(bool $isAO, $user): array
     {
-        $query = WarningLetter::with('customer:id,name')
+        $query = WarningLetter::with(['customer:id,name', 'user:id,name,code'])
             ->select('id', 'customer_id', 'user_id', 'letter_date', 'type')
             ->whereIn('type', ['sp1', 'sp2']);
 
@@ -158,6 +160,7 @@ class CalendarController extends Controller
                 'date' => $followUpDate->format('Y-m-d'),
                 'name' => $letter->customer->name ?? '-',
                 'label' => 'Follow up ' . $typeLabel . ' - ' . ($letter->customer->name ?? '-'),
+                'ao_code' => $letter->user->code ?? $letter->user->name ?? '-',
                 'letter_id' => $letter->id,
                 'letter_type' => $letter->type,
             ];

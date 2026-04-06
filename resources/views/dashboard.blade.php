@@ -314,7 +314,12 @@
                             <span x-text="event.type === 'dob' ? '🎂' : (event.type === 'visit' ? '📍' : (event.type === 'sp' ? '📄' : '💰'))"></span>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-xs font-bold text-gray-900 truncate" x-text="event.name"></p>
+                            <p class="text-xs font-bold text-gray-900 truncate">
+                                <span x-text="event.name"></span>
+                                <template x-if="event.ao_code">
+                                    <span class="ml-1 text-[9px] px-1 py-0.5 rounded bg-gray-100 text-gray-500 font-bold uppercase" x-text="event.ao_code"></span>
+                                </template>
+                            </p>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase"
                                     :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : (event.type === 'visit' ? 'bg-green-100 text-green-700' : (event.type === 'sp' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'))"

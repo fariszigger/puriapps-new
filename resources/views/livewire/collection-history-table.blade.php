@@ -59,7 +59,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                                {{ $customer->user->name ?? '-' }}
+                                {{ $customer->tindakan_terakhir_ao ?? '-' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-center">

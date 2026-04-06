@@ -62,6 +62,7 @@ class CollectionHistoryTable extends Component
             $latestAction = 'Belum ada tindakan';
             $latestDate = null;
             $systemDate = null;
+            $latestAo = '-';
 
             // Get the absolute latest system record time for both types (primary visits only)
             $latestLetter = $customer->warningLetters->sortByDesc('created_at')->first();
@@ -76,20 +77,24 @@ class CollectionHistoryTable extends Component
                     $latestAction = 'Penagihan ' . $customer->visits->where('is_accompanying', false)->count();
                     $latestDate = $latestVisit->created_at;
                     $systemDate = $latestVisit->created_at;
+                    $latestAo = $latestVisit->user->name ?? '-';
                 }
             } elseif ($latestLetter) {
                 $latestAction = $latestLetter->type_label;
                 $latestDate = $latestLetter->letter_date;
                 $systemDate = $latestLetter->created_at;
+                $latestAo = $latestLetter->user->name ?? '-';
             } elseif ($latestVisit) {
                 $latestAction = 'Penagihan ' . $customer->visits->where('is_accompanying', false)->count();
                 $latestDate = $latestVisit->created_at;
                 $systemDate = $latestVisit->created_at;
+                $latestAo = $latestVisit->user->name ?? '-';
             }
 
             $customer->tindakan_terakhir = $latestAction;
             $customer->tindakan_terakhir_tanggal = $latestDate;
             $customer->tindakan_terakhir_system = $systemDate;
+            $customer->tindakan_terakhir_ao = $latestAo;
         }
 
         return view('livewire.collection-history-table', [

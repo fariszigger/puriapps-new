@@ -179,7 +179,7 @@
                     </div>
 
                     {{-- ================= 1.5. AO PENDAMPING ================= --}}
-                    <div class="space-y-4" x-data="{ openAos: false }">
+                    <div class="space-y-4 hidden" x-data="{ openAos: false }">
                         <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">AO Pendamping (Opsional)</h2>
                         <div class="relative">
                             <button type="button" @click="openAos = !openAos" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 bg-white/50 backdrop-blur-sm text-left flex justify-between items-center">
@@ -360,10 +360,11 @@
                             <option value="Saudara">Saudara</option>
                             <option value="Orang Tua">Orang Tua</option>
                             <option value="Lainnya">Lainnya</option>
+                            <option value="Tidak ada yang bisa ditemui">Tidak ada yang bisa ditemui</option>
                         </select>
 
-                        {{-- Nama orang yang ditemui (if not Debitur) --}}
-                        <div x-show="ketemuDengan && ketemuDengan !== 'Debitur'" x-transition class="mt-3">
+                        {{-- Nama orang yang ditemui (if not Debitur or Tidak ada yang bisa ditemui) --}}
+                        <div x-show="ketemuDengan && ketemuDengan !== 'Debitur' && ketemuDengan !== 'Tidak ada yang bisa ditemui'" x-transition class="mt-3">
                             <label for="nama_orang_ditemui" class="block mb-2 text-sm font-medium text-gray-900">Nama Orang
                                 yang
                                 Ditemui</label>
@@ -412,7 +413,7 @@
                         </h2>
 
                         <div class="space-y-4">
-                            <div class="flex items-center gap-6">
+                            <div class="flex items-center gap-6 flex-wrap">
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="radio" name="hasil_penagihan" value="bayar" x-model="hasilPenagihan"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
@@ -422,6 +423,16 @@
                                     <input type="radio" name="hasil_penagihan" value="janji_bayar" x-model="hasilPenagihan"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
                                     <span class="text-sm font-medium text-gray-900">Janji Bayar</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer" x-show="!['1','2'].includes(kol)">
+                                    <input type="radio" name="hasil_penagihan" value="tidak_ada_janji" x-model="hasilPenagihan"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
+                                    <span class="text-sm font-medium text-gray-900">Tidak Ada Janji</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer" x-show="!['1','2'].includes(kol)">
+                                    <input type="radio" name="hasil_penagihan" value="janji_lainnya" x-model="hasilPenagihan"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
+                                    <span class="text-sm font-medium text-gray-900">Janji Lainnya</span>
                                 </label>
                             </div>
 
@@ -458,6 +469,16 @@
                                             placeholder="0">
                                         <input type="hidden" name="jumlah_pembayaran" :value="jumlahPembayaran">
                                     </div>
+                                </div>
+                            </div>
+
+                            {{-- Janji Lainnya: Show text input --}}
+                            <div x-show="hasilPenagihan === 'janji_lainnya'" x-transition class="space-y-3">
+                                <div>
+                                    <label class="block mb-2 text-sm font-medium text-gray-900">Deskripsi Janji Lainnya</label>
+                                    <textarea name="janji_lainnya_desc" rows="3"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white/50 backdrop-blur-sm"
+                                        placeholder="Tuliskan janji nasabah di sini...">{{ old('janji_lainnya_desc') }}</textarea>
                                 </div>
                             </div>
                         </div>

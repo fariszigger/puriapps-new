@@ -167,10 +167,19 @@
                                     <div class="flex gap-4">
                                         <div class="flex-1">
                                             <p class="text-gray-700 italic">"{{ $item['details'] }}"</p>
-                                            @if($item['raw_data']->tanggal_janji_bayar)
+                                            @if($item['raw_data']->hasil_penagihan === 'janji_bayar' && $item['raw_data']->tanggal_janji_bayar)
                                                 <div class="mt-1.5 p-1.5 bg-orange-50 border border-orange-100 rounded text-[9px] flex justify-between items-center">
                                                     <span class="font-bold text-orange-800">Janji Bayar: {{ \Carbon\Carbon::parse($item['raw_data']->tanggal_janji_bayar)->translatedFormat('d M Y') }}</span>
-                                                    <span class="font-bold text-orange-800">Rp {{ number_format($item['raw_data']->jumlah_bayar, 0, ',', '.') }}</span>
+                                                    <span class="font-bold text-orange-800">Rp {{ number_format($item['raw_data']->jumlah_pembayaran ?: $item['raw_data']->jumlah_bayar, 0, ',', '.') }}</span>
+                                                </div>
+                                            @elseif($item['raw_data']->hasil_penagihan === 'tidak_ada_janji')
+                                                <div class="mt-1.5 p-1.5 bg-red-50 border border-red-100 rounded text-[9px]">
+                                                    <span class="font-bold text-red-800">Tidak Ada Janji</span>
+                                                </div>
+                                            @elseif($item['raw_data']->hasil_penagihan === 'janji_lainnya')
+                                                <div class="mt-1.5 p-1.5 bg-yellow-50 border border-yellow-100 rounded text-[9px]">
+                                                    <span class="font-bold text-yellow-800">Janji Lainnya:</span>
+                                                    <span class="text-gray-700 italic border-l border-yellow-300 pl-1 ml-1">{{ $item['raw_data']->janji_lainnya_desc }}</span>
                                                 </div>
                                             @endif
 

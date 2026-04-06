@@ -94,6 +94,15 @@
                                         </span>
                                     @endif
                                 </div>
+                            @elseif($visit->hasil_penagihan === 'tidak_ada_janji')
+                                <span class="text-red-500 font-semibold">Tidak Ada Janji</span>
+                            @elseif($visit->hasil_penagihan === 'janji_lainnya')
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-yellow-500 font-semibold">Janji Lainnya</span>
+                                    @if($visit->janji_lainnya_desc)
+                                        <span class="text-xs text-gray-500 max-w-[150px] truncate" title="{{ $visit->janji_lainnya_desc }}">{{ $visit->janji_lainnya_desc }}</span>
+                                    @endif
+                                </div>
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif

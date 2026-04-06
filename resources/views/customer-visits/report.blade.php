@@ -277,6 +277,13 @@
                                         @elseif($visit->hasil_penagihan === 'janji_bayar')
                                             <span class="font-bold text-orange-600">JANJI BAYAR</span> — Tanggal:
                                             {{ $visit->tanggal_janji_bayar ? formatIndonesianDate($visit->tanggal_janji_bayar) : '-' }}
+                                        @elseif($visit->hasil_penagihan === 'tidak_ada_janji')
+                                            <span class="font-bold text-red-600">TIDAK ADA JANJI</span>
+                                        @elseif($visit->hasil_penagihan === 'janji_lainnya')
+                                            <span class="font-bold text-yellow-600">JANJI LAINNYA</span>
+                                            @if($visit->janji_lainnya_desc)
+                                                <br><span class="text-xs text-gray-700 font-normal ml-2">— {{ $visit->janji_lainnya_desc }}</span>
+                                            @endif
                                         @else
                                             <span class="text-gray-500">-</span>
                                         @endif

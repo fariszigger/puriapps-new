@@ -111,10 +111,18 @@ class PerformanceReport extends Component
                 $query->whereBetween('created_at', [$this->startDate, $this->endDate]);
             }])
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->groupBy(function($ao) {
+                return trim($ao->office_branch) ?: 'Kantor Pusat';
+            })
+            ->sortBy(function($group, $key) {
+                if ($key === 'Kantor Pusat') return 0;
+                if ($key === 'Kantor Kas Mojosari') return 1;
+                return 2;
+            });
 
         return view('livewire.performance-report', [
-            'aos' => $aos,
+            'aosGroups' => $aos,
             'periodLabel' => $this->getPeriodLabel()
         ]);
     }

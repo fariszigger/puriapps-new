@@ -180,6 +180,13 @@
                                         @if($visit['janji_bayar_fulfilled'])
                                             <br><span style="color:#16a34a;font-weight:bold;font-size:9px">✓ LUNAS</span>
                                         @endif
+                                    @elseif($visit['hasil_penagihan'] === 'tidak_ada_janji')
+                                        <span style="color:#ef4444;font-weight:bold">Tidak Ada Janji</span>
+                                    @elseif($visit['hasil_penagihan'] === 'janji_lainnya')
+                                        <span style="color:#eab308;font-weight:bold">Janji Lainnya</span>
+                                        @if(!empty($visit['janji_lainnya_desc']))
+                                            <br><span class="text-[9px] text-gray-700">{{ $visit['janji_lainnya_desc'] }}</span>
+                                        @endif
                                     @else
                                         <span style="color:#9ca3af">-</span>
                                     @endif

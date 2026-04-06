@@ -155,11 +155,46 @@
                                             {{ formatIndonesianDate(\Carbon\Carbon::parse($date)) }}
                                             <br>
                                             <span
-                                                class="text-[9px] text-gray-500 font-normal">{{ \Carbon\Carbon::parse($date)->translatedFormat('l') }}</span>
+                                                class="text-[9px] text-gray-500 font-normal">{{ \Carbon\Carbon::parse($date)->locale('id')->isoFormat('dddd') }}</span>
                                         </td>
                                     @endif
                                     <td class="text-center text-gray-600">{{ $visit['time'] }}</td>
-                                    <td class="font-semibold">{{ $visit['customer_name'] }}</td>
+                                    <td class="font-semibold">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <span class="leading-tight">{{ $visit['customer_name'] }}</span>
+                                                @if($visit['address'])
+                                                    <br>
+                                                    <span class="text-[8px] text-gray-500 font-normal leading-tight inline-block mt-0.5 max-w-[130px]" style="white-space: normal;">{{ $visit['address'] }}</span>
+                                                @endif
+                                            </div>
+                                            @php
+                                                $photos = [
+                                                    ['path' => $visit['photo_path'], 'label' => 'Lokasi'],
+                                                    ['path' => $visit['photo_rumah_path'], 'label' => 'Rumah'],
+                                                    ['path' => $visit['photo_orang_path'], 'label' => 'Orang'],
+                                                ];
+                                                $availablePhotos = array_filter($photos, fn($p) => !empty($p['path']));
+                                            @endphp
+                                            @if(count($availablePhotos) > 0)
+                                                <div class="flex gap-1.5 flex-nowrap justify-end shrink-0 ml-2">
+                                                    @foreach($availablePhotos as $photo)
+                                                        @php
+                                                            $pathParts = explode('/', $photo['path']);
+                                                            $type = count($pathParts) >= 2 ? $pathParts[count($pathParts)-2] : 'photos';
+                                                            $filename = end($pathParts);
+                                                        @endphp
+                                                        <div class="text-center relative group">
+                                                            <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" alt="{{ $photo['label'] }}" class="w-8 h-8 md:w-10 md:h-10 object-cover rounded border border-gray-300">
+                                                            <div class="hidden group-hover:block absolute top-1/2 right-full -translate-y-1/2 mr-2 z-50">
+                                                                <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" alt="{{ $photo['label'] }}" class="max-w-[200px] md:max-w-[300px] w-auto h-auto object-contain rounded-lg shadow-2xl border border-gray-200 bg-white p-1">
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td class="text-center">
                                         @php
                                             $kolColors = ['1' => '', '2' => '', '3' => 'color:#c2410c;font-weight:bold', '4' => 'color:#dc2626;font-weight:bold', '5' => 'color:#dc2626;font-weight:bold'];
@@ -185,6 +220,13 @@
                                             @endif
                                             @if($visit['janji_bayar_fulfilled'])
                                                 <br><span style="color:#16a34a;font-weight:bold;font-size:9px">✓ LUNAS</span>
+                                            @endif
+                                        @elseif($visit['hasil_penagihan'] === 'tidak_ada_janji')
+                                            <span style="color:#ef4444;font-weight:bold">Tidak Ada Janji</span>
+                                        @elseif($visit['hasil_penagihan'] === 'janji_lainnya')
+                                            <span style="color:#eab308;font-weight:bold">Janji Lainnya</span>
+                                            @if(!empty($visit['janji_lainnya_desc']))
+                                                <br><span class="text-[9px] text-gray-700">{{ $visit['janji_lainnya_desc'] }}</span>
                                             @endif
                                         @else
                                             <span style="color:#9ca3af">-</span>

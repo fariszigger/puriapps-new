@@ -426,6 +426,13 @@
                                                 class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 ml-1">✓
                                                 Lunas</span>
                                         @endif
+                                    @elseif($visit->hasil_penagihan === 'tidak_ada_janji')
+                                        <span class="text-red-600 font-semibold">Tidak Ada Janji</span>
+                                    @elseif($visit->hasil_penagihan === 'janji_lainnya')
+                                        <span class="text-yellow-600 font-semibold">Janji Lainnya</span>
+                                        @if($visit->janji_lainnya_desc)
+                                            <br><span class="text-xs text-gray-500 truncate max-w-[120px] inline-block" title="{{ $visit->janji_lainnya_desc }}">{{ $visit->janji_lainnya_desc }}</span>
+                                        @endif
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif

@@ -101,6 +101,10 @@ class ReportController extends Controller
                 return [
                     'id' => $visit->id,
                     'customer_name' => $visit->customer->name ?? '-',
+                    'address' => $visit->address ?? '-',
+                    'photo_path' => $visit->photo_path,
+                    'photo_rumah_path' => $visit->photo_rumah_path,
+                    'photo_orang_path' => $visit->photo_orang_path,
                     'kolektibilitas' => $visit->kolektibilitas,
                     'ketemu_dengan' => $visit->ketemu_dengan,
                     'hasil_penagihan' => $visit->hasil_penagihan,
@@ -213,6 +217,10 @@ class ReportController extends Controller
                         return [
                             'id' => $visit->id,
                             'customer_name' => $visit->customer->name ?? '-',
+                            'address' => $visit->address ?? '-',
+                            'photo_path' => $visit->photo_path,
+                            'photo_rumah_path' => $visit->photo_rumah_path,
+                            'photo_orang_path' => $visit->photo_orang_path,
                             'kolektibilitas' => $visit->kolektibilitas,
                             'ketemu_dengan' => $visit->ketemu_dengan,
                             'hasil_penagihan' => $visit->hasil_penagihan,

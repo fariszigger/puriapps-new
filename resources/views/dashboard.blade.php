@@ -258,7 +258,8 @@
             limit: 8, 
             events: {{ json_encode($next7Events->toArray()) }},
             get filteredEvents() {
-                return this.filter === 'all' ? this.events : this.events.filter(e => e.type === this.filter);
+                if (this.filter === 'all') return this.events.filter(e => e.type !== 'dob');
+                return this.events.filter(e => e.type === this.filter);
             }
         }">
         <div

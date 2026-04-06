@@ -174,7 +174,7 @@
                                     <td class="font-bold pb-1 align-top">Identitas Debitur</td>
                                     <td class="w-4 pb-1 align-top">:</td>
                                     <td class="pb-1 align-top">
-                                        <span class="font-bold">{{ $visit->customer->name ?? '-' }}</span> 
+                                        <span class="font-bold">{{ $visit->customer->name ?? '-' }}</span>
                                         (NIK : {{ $visit->customer->identity_number ?? '-' }})
                                     </td>
                                 </tr>
@@ -189,17 +189,19 @@
                                     <td class="font-bold pb-1 align-top">Tanggal Kunjungan</td>
                                     <td class="w-4 pb-1 align-top">:</td>
                                     <td class="pb-1 align-top">
-                                        {{ formatIndonesianDate($visit->created_at) }}, {{ $visit->created_at->format('H:i') }} WIB
+                                        {{ formatIndonesianDate($visit->created_at) }},
+                                        {{ $visit->created_at->format('H:i') }} WIB
                                     </td>
                                 </tr>
                                 @if($visit->accompanying_names)
-                                <tr>
-                                    <td class="font-bold pb-1 align-top">Didampingi Oleh</td>
-                                    <td class="w-4 pb-1 align-top">:</td>
-                                    <td class="pb-1 align-top leading-snug">
-                                        <span class="font-bold break-words whitespace-normal">{{ $visit->accompanying_names }}</span>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td class="font-bold pb-1 align-top">Didampingi Oleh</td>
+                                        <td class="w-4 pb-1 align-top">:</td>
+                                        <td class="pb-1 align-top leading-snug">
+                                            <span
+                                                class="font-bold break-words whitespace-normal">{{ $visit->accompanying_names }}</span>
+                                        </td>
+                                    </tr>
                                 @endif
                             </table>
                         </div>
@@ -242,7 +244,7 @@
                                 <td class="w-[25%] border-r-0 border-l border-gray-600 pb-1">Bertemu Dengan</td>
                                 <td class="w-[25%] pb-1">:
                                     @if($visit->ketemu_dengan === 'Suami/Istri')
-                                        @if($visit->customer->gender === 'Laki-Laki')
+                                        @if($visit->customer->gender === 'Laki - Laki')
                                             Istri debitur
                                         @else
                                             Suami debitur
@@ -259,7 +261,8 @@
                                 <td class="border-r-0 pb-1">Penagihan Ke</td>
                                 <td class="pb-1">: <span class="font-bold">{{ $visit->penagihan_ke ?? '-' }}</span></td>
                                 <td class="border-r-0 border-l border-gray-600 pb-1">Tanggal</td>
-                                <td class="pb-1">: {{ formatIndonesianDate($visit->created_at) }} {{ $visit->created_at->format('H:i') }}</td>
+                                <td class="pb-1">: {{ formatIndonesianDate($visit->created_at) }}
+                                    {{ $visit->created_at->format('H:i') }}</td>
                             </tr>
 
                             <!-- HASIL PENAGIHAN -->
@@ -282,7 +285,8 @@
                                         @elseif($visit->hasil_penagihan === 'janji_lainnya')
                                             <span class="font-bold text-yellow-600">JANJI LAINNYA</span>
                                             @if($visit->janji_lainnya_desc)
-                                                <br><span class="text-xs text-gray-700 font-normal ml-2">— {{ $visit->janji_lainnya_desc }}</span>
+                                                <br><span class="text-xs text-gray-700 font-normal ml-2">—
+                                                    {{ $visit->janji_lainnya_desc }}</span>
                                             @endif
                                         @else
                                             <span class="text-gray-500">-</span>
@@ -325,26 +329,26 @@
                                             </table>
                                         </div>
 
-                                            <!-- Map Image & QR Code -->
-                                            <div class="flex gap-2">
-                                                @if($visit->location_image_path)
-                                                    <div
-                                                        class="border border-gray-400 p-[2px] bg-white w-48 h-24 overflow-hidden relative">
-                                                        <img src="{{ route('media.customer-visits', ['type' => 'map', 'filename' => basename($visit->location_image_path)]) }}"
-                                                            alt="Peta Lokasi" class="w-full h-full object-cover">
-                                                    </div>
-                                                @endif
+                                        <!-- Map Image & QR Code -->
+                                        <div class="flex gap-2">
+                                            @if($visit->location_image_path)
+                                                <div
+                                                    class="border border-gray-400 p-[2px] bg-white w-48 h-24 overflow-hidden relative">
+                                                    <img src="{{ route('media.customer-visits', ['type' => 'map', 'filename' => basename($visit->location_image_path)]) }}"
+                                                        alt="Peta Lokasi" class="w-full h-full object-cover">
+                                                </div>
+                                            @endif
 
-                                                @if($visit->latitude && $visit->longitude)
-                                                    <div class="border border-gray-400 p-[2px] bg-white w-24 h-24">
-                                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode('https://www.google.com/maps/search/?api=1&query=' . $visit->latitude . ',' . $visit->longitude) }}"
-                                                            alt="QR Code Lokasi" class="w-full h-full object-contain">
-                                                    </div>
-                                                @endif
-                                            </div>
+                                            @if($visit->latitude && $visit->longitude)
+                                                <div class="border border-gray-400 p-[2px] bg-white w-24 h-24">
+                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode('https://www.google.com/maps/search/?api=1&query=' . $visit->latitude . ',' . $visit->longitude) }}"
+                                                        alt="QR Code Lokasi" class="w-full h-full object-contain">
+                                                </div>
+                                            @endif
                                         </div>
-                                    </td>
-                                </tr>
+                                    </div>
+                                </td>
+                            </tr>
                         </table>
 
                         <!-- SECTION B: KONDISI & RENCANA -->
@@ -421,9 +425,11 @@
 
                         <!-- System Verification Note -->
                         <div class="mt-8 pt-4 border-t border-gray-300 text-[10px] text-gray-500 text-center italic">
-                            Dokumen ini di-generate secara otomatis oleh sistem pada {{ formatIndonesianDate(now()) }} {{ now()->format('H:i') }}.
+                            Dokumen ini di-generate secara otomatis oleh sistem pada {{ formatIndonesianDate(now()) }}
+                            {{ now()->format('H:i') }}.
                             <br>
-                            Tidak memerlukan tanda tangan basah ("Mengetahui" atau "Account Officer") karena telah diverifikasi dan divalidasi oleh sistem.
+                            Tidak memerlukan tanda tangan basah ("Mengetahui" atau "Account Officer") karena telah
+                            diverifikasi dan divalidasi oleh sistem.
                         </div>
 
                     </td>

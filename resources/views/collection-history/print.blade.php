@@ -107,8 +107,8 @@
                     <span class="font-medium text-gray-800">{{ $customer->phone_number ?? '-' }}</span>
                 </div>
                 <div class="col-span-1">
-                    <span class="text-gray-500 block text-[9px] uppercase font-bold">Account Officer</span>
-                    <span class="font-bold text-blue-700">{{ $customer->user->name ?? '-' }}</span>
+                    <span class="text-gray-500 block text-[9px] uppercase font-bold">NIK / No. Identitas</span>
+                    <span class="font-medium text-gray-800">{{ $customer->identity_number ?? '-' }}</span>
                 </div>
                 <div class="col-span-2">
                     <span class="text-gray-500 block text-[9px] uppercase font-bold">Alamat</span>
@@ -148,9 +148,14 @@
                                         {{ $isLetter ? 'Surat' : 'Kunjungan' }}
                                     </span>
                                 </div>
+                            <div class="flex items-center gap-3">
+                                @if(!$isLetter)
+                                    <span class="text-[9px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">AO: {{ $item['ao'] }}</span>
+                                @endif
                                 <span class="text-[10px] font-bold text-gray-600">
                                     {{ \Carbon\Carbon::parse($item['display_date'])->translatedFormat('d M Y') }}
                                 </span>
+                            </div>
                             </div>
                             
                             <!-- Item Body -->

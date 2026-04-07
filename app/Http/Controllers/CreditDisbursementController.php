@@ -25,7 +25,7 @@ class CreditDisbursementController extends Controller
             abort(403);
         }
 
-        $aoUsers = User::role('AO')->orderBy('name')->get();
+        $aoUsers = User::role(['AO', 'Kabag'])->orderBy('name')->get();
 
         return view('credit-disbursements.create', compact('aoUsers'));
     }
@@ -65,7 +65,7 @@ class CreditDisbursementController extends Controller
         }
 
         $disbursement = CreditDisbursement::findOrFail($id);
-        $aoUsers = User::role('AO')->orderBy('name')->get();
+        $aoUsers = User::role(['AO', 'Kabag'])->orderBy('name')->get();
 
         return view('credit-disbursements.edit', compact('disbursement', 'aoUsers'));
     }

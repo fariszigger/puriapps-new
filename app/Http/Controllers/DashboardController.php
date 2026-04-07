@@ -46,8 +46,8 @@ class DashboardController extends Controller
             ];
         }
 
-        // Global target: sum of all active AO targets * current month
-        $globalTarget = \App\Models\User::role('AO')->sum('disbursement_target') * now()->format('n');
+        // Global target: sum of all active AO & Kabag targets * current month
+        $globalTarget = \App\Models\User::role(['AO', 'Kabag'])->sum('disbursement_target') * now()->format('n');
 
         return [
             'totalCustomers' => Customer::count(),

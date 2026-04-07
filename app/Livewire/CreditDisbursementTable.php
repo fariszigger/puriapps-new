@@ -104,7 +104,7 @@ class CreditDisbursementTable extends Component
             $summaryQuery->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$this->filterMonth]);
         }
 
-        $aoUsers = User::role('AO')->orderBy('name')->get(['id', 'name', 'code', 'disbursement_target']);
+        $aoUsers = User::role(['AO', 'Kabag'])->orderBy('name')->get(['id', 'name', 'code', 'disbursement_target']);
 
         // Build a map of user targets
         $targetMap = $aoUsers->pluck('disbursement_target', 'id');

@@ -15,12 +15,14 @@ class CreditDisbursementTable extends Component
     public $perPage = 10;
     public $filterMonth = '';
     public $filterAo = '';
+    public $viewMode = 'monthly'; // 'monthly', 'yearly'
 
     protected $queryString = [
         'search' => ['except' => ''],
         'perPage' => ['except' => 10],
         'filterMonth' => ['except' => ''],
         'filterAo' => ['except' => ''],
+        'viewMode' => ['except' => 'monthly'],
     ];
 
     public function mount()
@@ -48,6 +50,11 @@ class CreditDisbursementTable extends Component
         $this->resetPage();
     }
 
+    public function updatingViewMode()
+    {
+        $this->resetPage();
+    }
+
     public function delete($id)
     {
         $user = auth()->user();
@@ -64,8 +71,11 @@ class CreditDisbursementTable extends Component
     {
         $query = CreditDisbursement::with('user');
 
-        // Month filter
-        if ($this->filterMonth) {
+        // Time filter
+        if ($this->viewMode === 'yearly' && $this->filterMonth) {
+            $year = date('Y', strtotime($this->filterMonth));
+            $query->whereYear('disbursement_date', $year);
+        } elseif ($this->filterMonth) {
             $query->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$this->filterMonth]);
         }
 
@@ -85,9 +95,12 @@ class CreditDisbursementTable extends Component
             });
         });
 
-        // Monthly summary per AO
+        // Time summary
         $summaryQuery = CreditDisbursement::query();
-        if ($this->filterMonth) {
+        if ($this->viewMode === 'yearly' && $this->filterMonth) {
+            $year = date('Y', strtotime($this->filterMonth));
+            $summaryQuery->whereYear('disbursement_date', $year);
+        } elseif ($this->filterMonth) {
             $summaryQuery->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$this->filterMonth]);
         }
 
@@ -102,7 +115,8 @@ class CreditDisbursementTable extends Component
             ->with('user:id,name,code,disbursement_target')
             ->get()
             ->map(function ($item) use ($targetMap) {
-                $target = $targetMap->get($item->user_id, 400000000);
+                $baseTarget = $targetMap->get($item->user_id, 400000000);
+                $target = $this->viewMode === 'yearly' ? $baseTarget * 12 : $baseTarget;
                 return [
                     'user_id' => $item->user_id,
                     'name' => $item->user->name ?? '-',
@@ -116,7 +130,8 @@ class CreditDisbursementTable extends Component
 
         $grandTotal = $aoSummary->sum('total_amount');
         $aoCount = $aoUsers->count();
-        $totalTarget = $aoUsers->sum('disbursement_target');
+        $baseTotalTarget = $aoUsers->sum('disbursement_target');
+        $totalTarget = $this->viewMode === 'yearly' ? $baseTotalTarget * 12 : $baseTotalTarget;
 
         return view('livewire.credit-disbursement-table', [
             'disbursements' => $query->orderBy('disbursement_date', 'desc')->paginate($this->perPage),

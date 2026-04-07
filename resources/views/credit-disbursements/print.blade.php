@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Pencairan Kredit - {{ $filterMonth }}</title>
+    <title>Laporan Pencairan Kredit {{ $viewMode === 'yearly' ? 'Tahunan' : 'Bulanan' }} - {{ $filterMonth }}</title>
     <link rel="icon" type="image/png" href="{{ asset('build/assets/logo-icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -103,8 +103,14 @@
         </div>
 
         <div class="text-center mb-6">
-            <h1 class="text-lg font-bold uppercase tracking-wider">LAPORAN PENCAIRAN KREDIT</h1>
-            <p class="text-sm font-semibold text-gray-700 mt-1">Bulan: {{ \Carbon\Carbon::parse($filterMonth . '-01')->translatedFormat('F Y') }}</p>
+            <h1 class="text-lg font-bold uppercase tracking-wider underline">LAPORAN PENCAIRAN KREDIT {{ $viewMode === 'yearly' ? 'TAHUNAN' : 'BULANAN' }}</h1>
+            <p class="text-sm font-semibold text-gray-700 mt-1">
+                @if($viewMode === 'yearly')
+                    Tahun: {{ date('Y', strtotime($filterMonth)) }}
+                @else
+                    Bulan: {{ \Carbon\Carbon::parse($filterMonth . '-01')->translatedFormat('F Y') }}
+                @endif
+            </p>
             @if($filterAo)
                 <p class="text-sm font-semibold text-gray-700 mt-1">Account Officer: {{ $disbursements->first() ? $disbursements->first()->user->name : '-' }}</p>
             @endif
@@ -128,60 +134,98 @@
             </div>
         </div>
 
-        @if($disbursements->count() > 0)
-            <table class="recap-table mb-6 relative">
-                <thead>
-                    <tr>
-                        <th class="w-[30px] text-center">No</th>
-                        <th class="w-[100px]">SPK</th>
-                        <th class="w-[80px]">Tanggal</th>
-                        @if(!$filterAo)
-                            <th class="w-[50px]">AO</th>
-                        @endif
-                        <th>Nama Nasabah & Alamat</th>
-                        <th class="w-[100px] text-right">Jumlah (Rp)</th>
-                        <th class="w-[60px] text-right">Tenor</th>
-                        <th class="w-[60px] text-right">Bunga</th>
-                        <th class="w-[100px] text-right">Angsuran</th>
-                        <th class="w-[100px]">Catatan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $no = 1; @endphp
-                    @foreach($disbursements as $item)
+        @php $globalNo = 1; @endphp
+        @forelse($groupedDisbursements as $branchName => $aoGroups)
+            <div class="mb-8 border-l-[10px] border-emerald-600 pl-4 bg-emerald-50/30 py-2">
+                <h2 class="text-base font-black uppercase tracking-[0.1em] text-emerald-900 leading-none">Pencairan: Kantor {{ $branchName }}</h2>
+            </div>
+
+            @foreach($aoGroups as $aoCode => $items)
+                <div class="mb-4 mt-8 flex items-center justify-between border-b border-gray-300 pb-1">
+                    <h3 class="text-sm font-bold text-gray-800">Account Officer: <span class="bg-gray-800 text-white px-2 py-0.5 rounded text-[10px] ml-1 mr-1">{{ $aoCode }}</span> — {{ $items->first()->user->name ?? '-' }}</h3>
+                    <span class="text-[10px] text-gray-500 font-medium italic">{{ $items->count() }} Transaksi</span>
+                </div>
+
+                <table class="recap-table mb-2 relative">
+                    <thead>
                         <tr>
-                            <td class="text-center">{{ $no++ }}</td>
-                            <td class="font-mono text-[9px]">{{ $item->nomor_spk ?? '-' }}</td>
-                            <td>{{ \Carbon\Carbon::parse($item->disbursement_date)->format('d/m/Y') }}</td>
-                            @if(!$filterAo)
-                                <td class="font-bold">{{ $item->user->code ?? '-' }}</td>
-                            @endif
-                            <td>
-                                <div class="font-semibold">{{ $item->customer_name }}</div>
-                                @if($item->address)
-                                    <div class="text-[9px] text-gray-500 leading-tight">{{ $item->address }}</div>
-                                @endif
-                            </td>
-                            <td class="text-right font-mono">{{ number_format($item->amount, 0, ',', '.') }}</td>
-                            <td class="text-right">{{ $item->jangka_waktu }} bln</td>
-                            <td class="text-right">{{ number_format($item->suku_bunga, 2, ',', '.') }}%</td>
-                            <td class="text-right font-mono">{{ number_format($item->angsuran, 0, ',', '.') }}</td>
-                            <td class="text-[10px] text-gray-700">{{ $item->notes ?? '-' }}</td>
+                            <th class="w-[30px] text-center">No</th>
+                            <th class="w-[100px]">SPK</th>
+                            <th class="w-[80px]">Tanggal</th>
+                            <th>Nama Nasabah & Alamat</th>
+                            <th class="w-[100px] text-right">Jumlah (Rp)</th>
+                            <th class="w-[60px] text-right">Tenor</th>
+                            <th class="w-[60px] text-right">Bunga</th>
+                            <th class="w-[100px] text-right">Angsuran</th>
                         </tr>
-                    @endforeach
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="{{ $filterAo ? 4 : 5 }}" class="text-right py-3 pr-4 uppercase text-sm">Total Realisasi:</th>
-                        <th class="text-right py-3 text-sm font-mono whitespace-nowrap bg-gray-50 !important">Rp {{ number_format($totalAmount, 0, ',', '.') }}</th>
-                        <th colspan="4" class="bg-gray-50 !important"></th>
-                    </tr>
-                </tfoot>
-            </table>
-        @else
-            <div class="text-center py-12 text-gray-400 border border-gray-300 rounded mb-6">
-                <p class="text-lg font-semibold">Tidak ada data pencairan</p>
-                <p class="text-sm mt-1">Belum ada pencairan yang tercatat pada kriteria ini.</p>
+                    </thead>
+                    <tbody>
+                        @foreach($items as $item)
+                            <tr>
+                                <td class="text-center">{{ $globalNo++ }}</td>
+                                <td class="font-mono text-[9px]">{{ $item->nomor_spk ?? '-' }}</td>
+                                <td>{{ \Carbon\Carbon::parse($item->disbursement_date)->format('d/m/Y') }}</td>
+                                <td>
+                                    <div class="font-semibold">{{ $item->customer_name }}</div>
+                                    @if($item->address)
+                                        <div class="text-[9px] text-gray-500 leading-tight">{{ $item->address }}</div>
+                                    @endif
+                                </td>
+                                <td class="text-right font-mono font-semibold">{{ number_format($item->amount, 0, ',', '.') }}</td>
+                                <td class="text-right">{{ $item->jangka_waktu }} bln</td>
+                                <td class="text-right">{{ number_format($item->suku_bunga, 2, ',', '.') }}%</td>
+                                <td class="text-right font-mono">{{ number_format($item->angsuran, 0, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        @php 
+                            $baseTarget = $items->first()->user->disbursement_target ?? 400000000;
+                            $aoTarget = $viewMode === 'yearly' ? $baseTarget * 12 : $baseTarget;
+                            $realization = $items->sum('amount');
+                            $diff = $aoTarget - $realization;
+                        @endphp
+                        <tr class="bg-gray-100/80">
+                            <th colspan="4" class="text-right py-2 pr-4 uppercase text-[9px] font-black text-gray-700">RINGKASAN ({{ $aoCode }}):</th>
+                            <th class="text-right py-2 text-[10px] font-black font-mono border-x border-gray-400">
+                                <span class="block text-[8px] text-gray-500 font-normal">REALISASI</span>
+                                Rp {{ number_format($realization, 0, ',', '.') }}
+                            </th>
+                            <th colspan="2" class="text-center py-2 text-[10px] font-black font-mono border-x border-gray-400">
+                                <span class="block text-[8px] text-gray-500 font-normal">{{ $viewMode === 'yearly' ? 'TARGET TAHUNAN' : 'TARGET BULANAN' }}</span>
+                                Rp {{ number_format($aoTarget, 0, ',', '.') }}
+                            </th>
+                            <th class="text-right py-2 text-[10px] font-black font-mono border-l border-gray-400 {{ $diff > 0 ? 'text-red-700 bg-red-50' : 'text-emerald-700 bg-emerald-50' }}">
+                                <span class="block text-[8px] text-gray-500 font-normal uppercase">{{ $diff > 0 ? 'KEKURANGAN' : 'SURPLUS' }}</span>
+                                Rp {{ number_format(abs($diff), 0, ',', '.') }}
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            @endforeach
+        @empty
+            <div class="text-center py-20 text-gray-400 border border-dashed border-gray-300 rounded mb-6">
+                <svg class="w-16 h-16 mx-auto text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-lg font-bold text-gray-600">Tidak ada data pencairan</p>
+                <p class="text-sm mt-1 max-w-xs mx-auto">Belum ada pencairan yang tercatat pada kriteria pencarian Anda.</p>
+            </div>
+        @endforelse
+
+        {{-- Final Grand Total Summary --}}
+        @if($disbursements->count() > 0)
+            <div class="mt-8 pt-4 border-t-2 border-black">
+                <div class="flex justify-end gap-x-12">
+                    <div class="text-right">
+                        <span class="text-xs text-gray-500 uppercase font-bold pr-2">Total Transaksi:</span>
+                        <span class="text-sm font-black">{{ $disbursements->count() }} Pencairan</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-gray-500 uppercase font-bold pr-2">Total Seluruh Realisasi:</span>
+                        <span class="text-base font-black font-mono bg-gray-900 text-white px-3 py-1 rounded">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+                    </div>
+                </div>
             </div>
         @endif
 

@@ -108,17 +108,26 @@ class CreditDisbursementController extends Controller
 
         $filterMonth = $request->query('month', date('Y-m'));
         $filterAo = $request->query('ao');
+        $viewMode = $request->query('view_mode', 'monthly');
 
-        $query = CreditDisbursement::with('user:id,name,code,disbursement_target')->orderBy('disbursement_date', 'asc');
+        $query = CreditDisbursement::with('user:id,name,code,disbursement_target,office_branch')->orderBy('disbursement_date', 'asc');
 
-        if ($filterMonth) {
+        if ($viewMode === 'yearly' && $filterMonth) {
+            $year = date('Y', strtotime($filterMonth));
+            $query->whereYear('disbursement_date', $year);
+        } elseif ($filterMonth) {
             $query->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$filterMonth]);
         }
+
         if ($filterAo) {
             $query->where('user_id', $filterAo);
         }
 
         $disbursements = $query->get();
+        $groupedDisbursements = $disbursements->groupBy([
+            fn($item) => $item->user->office_branch ?? 'PUSAT',
+            fn($item) => $item->user->code ?? 'N/A'
+        ]);
 
         // Calculate totals for print
         $totalAmount = $disbursements->sum('amount');
@@ -126,14 +135,16 @@ class CreditDisbursementController extends Controller
         $aoUsers = User::role('AO')->get(['id', 'name', 'disbursement_target']);
         $targetMap = $aoUsers->pluck('disbursement_target', 'id');
 
-        // Target total logic depends on filtered AO
+        // Target total logic depends on filtered AO and view mode
         if ($filterAo) {
-            $totalTarget = $targetMap->get($filterAo, 400000000);
+            $baseTarget = $targetMap->get($filterAo, 400000000);
         } else {
-            $totalTarget = $aoUsers->sum('disbursement_target');
+            $baseTarget = $aoUsers->sum('disbursement_target');
         }
+        
+        $totalTarget = $viewMode === 'yearly' ? $baseTarget * 12 : $baseTarget;
 
-        return view('credit-disbursements.print', compact('disbursements', 'filterMonth', 'filterAo', 'totalAmount', 'totalTarget'));
+        return view('credit-disbursements.print', compact('disbursements', 'groupedDisbursements', 'filterMonth', 'filterAo', 'totalAmount', 'totalTarget', 'viewMode'));
     }
 
     public function destroy($id)

@@ -66,61 +66,96 @@
         @endif
     </div>
 
-    {{-- Filters --}}
-    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <div class="relative flex-1 md:flex-none md:w-64">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                    </svg>
+    {{-- Advanced Toolbar --}}
+    <div class="bg-white/50 backdrop-blur-md rounded-2xl border border-white/50 p-4 shadow-xl mb-8 space-y-4">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+            {{-- Left: Search & View Mode --}}
+            <div class="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+                {{-- Search bar --}}
+                <div class="relative w-full sm:w-72 group">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-emerald-500 transition-transform group-focus-within:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input wire:model.live.debounce.300ms="search" type="search"
+                        class="block w-full pl-10 pr-4 py-2.5 text-sm text-gray-900 border border-gray-200 rounded-xl bg-white/80 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner"
+                        placeholder="Cari nasabah atau AO...">
                 </div>
-                <input wire:model.live.debounce.300ms="search" type="search"
-                    class="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white/50 focus:ring-emerald-500 focus:border-emerald-500 backdrop-blur-sm"
-                    placeholder="Cari nasabah atau AO...">
+
+                {{-- Mode Toggle --}}
+                <div class="flex p-1 bg-gray-100/50 rounded-xl border border-gray-200 shadow-inner w-full sm:w-auto">
+                    <button wire:click="$set('viewMode', 'monthly')" 
+                        class="flex-1 sm:flex-none px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all duration-300 {{ $viewMode === 'monthly' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 hover:text-emerald-600' }}">
+                        Bulanan
+                    </button>
+                    <button wire:click="$set('viewMode', 'yearly')" 
+                        class="flex-1 sm:flex-none px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all duration-300 {{ $viewMode === 'yearly' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 hover:text-emerald-600' }}">
+                        Tahunan
+                    </button>
+                </div>
             </div>
 
-            <input type="month" wire:model.live="filterMonth"
-                class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg px-3 py-2.5 focus:ring-emerald-500 focus:border-emerald-500 backdrop-blur-sm">
+            {{-- Right: Filters & Actions --}}
+            <div class="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto border-t lg:border-t-0 pt-4 lg:pt-0 border-gray-100">
+                {{-- Date Filter --}}
+                <div class="relative min-w-[140px]">
+                    @if($viewMode === 'monthly')
+                        <input type="month" wire:model.live="filterMonth"
+                            class="w-full pl-4 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all cursor-pointer">
+                    @else
+                        <select wire:model.live="filterMonth"
+                            class="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all appearance-none cursor-pointer">
+                            @for($y = date('Y'); $y >= 2024; $y--)
+                                <option value="{{ $y }}-01">{{ $y }}</option>
+                            @endfor
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    @endif
+                </div>
 
-            <select wire:model.live="filterAo"
-                class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg px-3 py-2.5 focus:ring-emerald-500 focus:border-emerald-500 backdrop-blur-sm">
-                <option value="">Semua AO</option>
-                @foreach($aoUsers as $ao)
-                    <option value="{{ $ao->id }}">{{ $ao->code ?? $ao->name }}</option>
-                @endforeach
-            </select>
-        </div>
+                {{-- AO Selector --}}
+                <select wire:model.live="filterAo"
+                    class="pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all appearance-none cursor-pointer min-w-[180px]">
+                    <option value="">Semua AO</option>
+                    @foreach($aoUsers as $user)
+                        <option value="{{ $user->id }}">[{{ $user->code }}] {{ $user->name }}</option>
+                    @endforeach
+                </select>
 
-        <div class="flex items-center gap-3 w-full md:w-auto">
-            <div class="flex items-center gap-2">
-                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Show:</label>
+                {{-- Show Per Page --}}
                 <select wire:model.live="perPage"
-                    class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 p-2.5 backdrop-blur-sm">
+                    class="pl-3 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-600 focus:ring-2 focus:ring-emerald-500/50 transition-all appearance-none cursor-pointer w-20">
                     <option value="10">10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
                 </select>
-            </div>
 
-            <a href="{{ route('credit-disbursements.print', ['month' => $filterMonth, 'ao' => $filterAo]) }}" target="_blank"
-                class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-all shadow-sm whitespace-nowrap mr-2">
-                <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                </svg>
-                Cetak Laporan
-            </a>
+                {{-- Print Button --}}
+                <a href="{{ route('credit-disbursements.print', ['month' => $filterMonth, 'ao' => $filterAo, 'view_mode' => $viewMode]) }}" 
+                    target="_blank"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-white font-black text-[10px] uppercase tracking-widest text-emerald-700 border-2 border-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm group">
+                    <svg class="w-4 h-4 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Cetak
+                </a>
 
-            @can('create credit-disbursements')
+                {{-- Add Button --}}
+                @can('create credit-disbursements')
                 <a href="{{ route('credit-disbursements.create') }}"
-                    class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 focus:ring-4 focus:outline-none focus:ring-emerald-300 transition-all shadow-lg hover:shadow-emerald-500/30 whitespace-nowrap">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 font-black text-[10px] uppercase tracking-widest text-white rounded-xl hover:bg-emerald-700 transition-all shadow-lg hover:shadow-emerald-500/30 group">
+                    <svg class="w-4 h-4 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
-                    Tambah Pencairan
+                    Tambah
                 </a>
-            @endcan
+                @endcan
+            </div>
         </div>
     </div>
 
@@ -138,7 +173,6 @@
                     <th scope="col" class="px-6 py-3 whitespace-nowrap">Tenor</th>
                     <th scope="col" class="px-6 py-3 whitespace-nowrap">Bunga</th>
                     <th scope="col" class="px-6 py-3 whitespace-nowrap">Angsuran</th>
-                    <th scope="col" class="px-6 py-3">Catatan</th>
                     @if(auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements'))
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     @endif
@@ -180,9 +214,6 @@
                         <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                             Rp {{ number_format($item->angsuran, 0, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 max-w-[150px] truncate text-gray-500" title="{{ $item->notes }}">
-                            {{ $item->notes ?? '-' }}
-                        </td>
                         @if(auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements'))
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-2">
@@ -213,13 +244,18 @@
                     </tr>
                 @empty
                     <tr class="bg-white/40 border-b border-white/40">
-                        <td colspan="{{ (auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements')) ? 7 : 6 }}" class="px-6 py-8 text-center text-gray-500">
-                            <div class="flex flex-col items-center gap-2">
-                                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="font-medium">Belum ada data pencairan.</span>
+                        <td colspan="{{ (auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements')) ? 10 : 9 }}" class="px-6 py-16 text-center text-gray-500">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-16 h-16 bg-gray-100/50 rounded-full flex items-center justify-center mb-1">
+                                    <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="max-w-xs mx-auto">
+                                    <span class="block text-base font-bold text-gray-700">Tidak Ada Data</span>
+                                    <span class="text-sm text-gray-400 font-medium">Belum ada data pencairan untuk periode ini.</span>
+                                </div>
                             </div>
                         </td>
                     </tr>

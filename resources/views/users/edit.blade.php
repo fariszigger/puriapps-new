@@ -113,7 +113,7 @@
                 </div>
 
                 <div x-show="selectedRole === 'AO'" x-transition class="md:col-span-2">
-                    <label for="disbursement_target" class="block mb-2 text-sm font-medium text-gray-900">Target Pencairan Bulanan (Rp)</label>
+                    <label for="disbursement_target" class="block mb-2 text-sm font-medium text-gray-900">Limit Pencairan Bulanan (Rp)</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <span class="text-gray-500 text-sm">Rp</span>

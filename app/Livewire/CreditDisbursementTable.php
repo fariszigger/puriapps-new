@@ -123,7 +123,7 @@ class CreditDisbursementTable extends Component
                     'code' => $item->user->code ?? '-',
                     'total_amount' => $item->total_amount,
                     'total_count' => $item->total_count,
-                    'target' => $target,
+                    'limit' => $target,
                     'percentage' => $target > 0 ? min(100, round(($item->total_amount / $target) * 100, 1)) : 0,
                 ];
             });
@@ -134,10 +134,10 @@ class CreditDisbursementTable extends Component
         $totalTarget = $this->viewMode === 'yearly' ? $baseTotalTarget * 12 : $baseTotalTarget;
 
         return view('livewire.credit-disbursement-table', [
-            'disbursements' => $query->orderBy('disbursement_date', 'desc')->paginate($this->perPage),
+            'disbursements' => $query->orderBy('nomor_spk', 'desc')->paginate($this->perPage),
             'aoSummary' => $aoSummary,
             'grandTotal' => $grandTotal,
-            'totalTarget' => $totalTarget,
+            'totalLimit' => $totalTarget,
             'aoCount' => $aoCount,
             'aoUsers' => $aoUsers,
         ]);

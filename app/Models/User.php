@@ -90,4 +90,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(CustomerVisit::class);
     }
+
+    /**
+     * Get the credit disbursements associated with the user.
+     */
+    public function creditDisbursements()
+    {
+        return $this->hasMany(CreditDisbursement::class);
+    }
 }

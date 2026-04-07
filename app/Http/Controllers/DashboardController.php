@@ -38,16 +38,15 @@ class DashboardController extends Controller
                 'approvedCount' => Evaluation::where('user_id', $user->id)->where('approval_status', 'approved')->count(),
                 'rejectedCount' => Evaluation::where('user_id', $user->id)->where('approval_status', 'rejected')->count(),
                 'totalVisits' => CustomerVisit::where('user_id', $user->id)->count(),
-                'totalDisbursement' => CreditDisbursement::where('user_id', $user->id)
-                    ->whereYear('disbursement_date', now()->format('Y'))
+                'totalDisbursement' => CreditDisbursement::whereYear('disbursement_date', now()->format('Y'))
                     ->whereMonth('disbursement_date', '<=', now()->format('m'))
                     ->sum('amount'),
-                'totalTarget' => ($user->disbursement_target ?? 400000000) * now()->format('n'),
+                'totalLimit' => ($user->disbursement_target ?? 400000000) * now()->format('n'),
             ];
         }
 
-        // Global target: sum of all active AO & Kabag targets * current month
-        $globalTarget = \App\Models\User::role(['AO', 'Kabag'])->sum('disbursement_target') * now()->format('n');
+        // Global limit: sum of all active AO & Kabag limits * current month
+        $globalLimit = \App\Models\User::role(['AO', 'Kabag'])->sum('disbursement_target') * now()->format('n');
 
         return [
             'totalCustomers' => Customer::count(),
@@ -58,7 +57,7 @@ class DashboardController extends Controller
             'totalDisbursement' => CreditDisbursement::whereYear('disbursement_date', now()->format('Y'))
                 ->whereMonth('disbursement_date', '<=', now()->format('m'))
                 ->sum('amount'),
-            'totalTarget' => $globalTarget,
+            'totalLimit' => $globalLimit,
         ];
     }
 

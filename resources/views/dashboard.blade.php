@@ -69,7 +69,7 @@
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                             </svg>
-                            <span class="text-[17px] font-black text-emerald-700 leading-none tracking-tight" x-text="'Rp ' + Number(stats.totalDisbursement || 0).toLocaleString('id-ID') + ' / Rp ' + Number(stats.totalTarget || 0).toLocaleString('id-ID')">Rp {{ number_format($totalDisbursement, 0, ',', '.') }} / Rp {{ number_format($totalTarget, 0, ',', '.') }}</span>
+                            <span class="text-[17px] font-black text-emerald-700 leading-none tracking-tight" x-text="'Rp ' + Number(stats.totalDisbursement || 0).toLocaleString('id-ID') + ' / Rp ' + Number(stats.totalLimit || 0).toLocaleString('id-ID')">Rp {{ number_format($totalDisbursement, 0, ',', '.') }} / Rp {{ number_format($totalLimit, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 @endif
@@ -83,7 +83,7 @@
                     class="p-4 bg-white/40 backdrop-blur-md rounded-xl border-2 shadow-lg flex items-center justify-between hover:bg-white/50 transition-all cursor-pointer transform hover:-translate-y-0.5"
                     :style="activeChart === card.key ? 'border-color:' + card.borderColor + '; box-shadow: 0 0 0 3px ' + card.ringColor + '; background: rgba(255,255,255,0.6)' : 'border-color: rgba(255,255,255,0.5)'">
                     <div>
-                        <p class="text-sm font-medium text-gray-600" x-text="card.label"></p>
+                        <p class="text-sm font-medium text-gray-600" x-text="card.label === 'Total Target' ? 'Limit Pencairan' : card.label"></p>
                         <p class="text-2xl font-bold text-gray-900" x-text="stats[card.key] ?? 0"></p>
                     </div>
                     <div class="p-2 rounded-lg" :style="'background:' + card.iconBg + '; color:' + card.iconColor">
@@ -134,7 +134,7 @@
                         rejectedCount: {{ $rejectedCount }},
                         totalVisits: {{ $totalVisits }},
                         totalDisbursement: {{ $totalDisbursement }},
-                        totalTarget: {{ $totalTarget }},
+                        totalLimit: {{ $totalLimit }},
                     },
                     cards: [
                         { key: 'totalCustomers', label: 'Jumlah Debitur', color: 'blue', chartKey: 'customers', borderColor: 'rgb(96,165,250)', ringColor: 'rgba(96,165,250,0.3)', iconBg: 'rgba(219,234,254,0.5)', iconColor: 'rgb(37,99,235)', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z' },

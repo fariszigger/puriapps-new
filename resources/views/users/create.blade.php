@@ -108,6 +108,19 @@
                         <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                     </select>
                 </div>
+
+                <div x-show="selectedRole === 'AO'" x-transition class="md:col-span-2">
+                    <label for="disbursement_target" class="block mb-2 text-sm font-medium text-gray-900 font-bold">Limit Pencairan Bulanan (Rp)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span class="text-gray-500 text-sm font-bold">Rp</span>
+                        </div>
+                        <input type="number" id="disbursement_target" name="disbursement_target"
+                            value="{{ old('disbursement_target', 400000000) }}"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-10"
+                            min="0" step="1000000">
+                    </div>
+                </div>
             </div>
 
             <div class="flex justify-end pt-4 space-x-3">

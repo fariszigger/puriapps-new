@@ -50,28 +50,44 @@
             </div>
         @endif
 
-        <form action="{{ route('credit-disbursements.update', $disbursement->id) }}" method="POST" class="space-y-5">
+        <form x-data="calculator()" action="{{ route('credit-disbursements.update', $disbursement->id) }}" method="POST" class="space-y-5">
             @csrf
             @method('PUT')
 
-            <div>
-                <label for="user_id" class="block mb-2 text-sm font-medium text-gray-900">Account Officer (AO) <span class="text-red-500">*</span></label>
-                <select id="user_id" name="user_id" required
-                    class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm">
-                    <option value="">Pilih AO</option>
-                    @foreach($aoUsers as $ao)
-                        <option value="{{ $ao->id }}" {{ old('user_id', $disbursement->user_id) == $ao->id ? 'selected' : '' }}>
-                            {{ $ao->name }} {{ $ao->code ? '(' . $ao->code . ')' : '' }}
-                        </option>
-                    @endforeach
-                </select>
+            <div class="grid flex-col grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                    <label for="user_id" class="block mb-2 text-sm font-medium text-gray-900">Account Officer (AO) <span class="text-red-500">*</span></label>
+                    <select id="user_id" name="user_id" required
+                        class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm">
+                        <option value="">Pilih AO</option>
+                        @foreach($aoUsers as $ao)
+                            <option value="{{ $ao->id }}" {{ old('user_id', $disbursement->user_id) == $ao->id ? 'selected' : '' }}>
+                                {{ $ao->name }} {{ $ao->code ? '(' . $ao->code . ')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="nomor_spk" class="block mb-2 text-sm font-medium text-gray-900">Nomor SPK</label>
+                    <input type="text" id="nomor_spk" name="nomor_spk" value="{{ old('nomor_spk', $disbursement->nomor_spk) }}"
+                        class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm"
+                        placeholder="Contoh: SPK/2026/001">
+                </div>
             </div>
 
-            <div>
-                <label for="customer_name" class="block mb-2 text-sm font-medium text-gray-900">Nama Nasabah <span class="text-red-500">*</span></label>
-                <input type="text" id="customer_name" name="customer_name" value="{{ old('customer_name', $disbursement->customer_name) }}" required
-                    class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm"
-                    placeholder="Masukkan nama nasabah">
+            <div class="grid flex-col grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                    <label for="customer_name" class="block mb-2 text-sm font-medium text-gray-900">Nama Nasabah <span class="text-red-500">*</span></label>
+                    <input type="text" id="customer_name" name="customer_name" value="{{ old('customer_name', $disbursement->customer_name) }}" required
+                        class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm"
+                        placeholder="Masukkan nama nasabah">
+                </div>
+                <div>
+                    <label for="address" class="block mb-2 text-sm font-medium text-gray-900">Alamat</label>
+                    <textarea id="address" name="address" rows="1"
+                        class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm"
+                        placeholder="Alamat domisili nasabah">{{ old('address', $disbursement->address) }}</textarea>
+                </div>
             </div>
 
             <div>
@@ -80,11 +96,62 @@
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <span class="text-gray-500 text-sm font-medium">Rp</span>
                     </div>
-                    <input type="number" id="amount" name="amount" value="{{ old('amount', $disbursement->amount) }}" required min="0" step="1"
+                    <input x-model="plafon" @input="calculate" type="number" id="amount" name="amount" required min="0" step="1"
                         class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 pl-10 backdrop-blur-sm"
                         placeholder="0">
                 </div>
                 <p class="mt-1 text-xs text-gray-500">Target pencairan per AO: Rp 400.000.000 / bulan</p>
+            </div>
+
+            <div class="grid flex-col grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                    <label for="jangka_waktu" class="block mb-2 text-sm font-medium text-gray-900">Jangka Waktu <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <input x-model="jangkaWaktu" @input="calculate" type="number" id="jangka_waktu" name="jangka_waktu" required min="1" step="1"
+                            class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 pr-16 backdrop-blur-sm"
+                            placeholder="e.g. 12">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <span class="text-gray-500 text-sm font-medium">Bulan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="suku_bunga" class="block mb-2 text-sm font-medium text-gray-900">Suku Bunga / Tahun <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <input x-model="sukuBunga" @input="calculate" type="number" id="suku_bunga" name="suku_bunga" required min="0" step="0.01"
+                            class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 pr-10 backdrop-blur-sm"
+                            placeholder="e.g. 12">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <span class="text-gray-500 text-sm font-medium">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid flex-col grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                    <label for="jenis_pinjaman" class="block mb-2 text-sm font-medium text-gray-900">Jenis Pinjaman <span class="text-red-500">*</span></label>
+                    <select x-model="jenisPinjaman" @change="calculate" id="jenis_pinjaman" name="jenis_pinjaman" required
+                        class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm">
+                        <option value="flat">Flat</option>
+                        <option value="anuitas">Anuitas</option>
+                        <option value="musiman">Musiman</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="angsuran" class="block mb-2 text-sm font-medium text-gray-900">Angsuran per Bulan <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span class="text-gray-500 text-sm font-medium">Rp</span>
+                        </div>
+                        <input x-model="angsuran" type="number" id="angsuran" name="angsuran" required min="0" step="1"
+                            class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 pl-10 backdrop-blur-sm"
+                            placeholder="0">
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Angsuran dihitung otomatis namun dapat diubah jika perlu.</p>
+                </div>
             </div>
 
             <div>
@@ -115,4 +182,48 @@
             </div>
         </form>
     </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('calculator', () => ({
+            plafon: '{{ old('amount', $disbursement->amount) }}',
+            jangkaWaktu: '{{ old('jangka_waktu', $disbursement->jangka_waktu) }}',
+            sukuBunga: '{{ old('suku_bunga', $disbursement->suku_bunga) }}',
+            jenisPinjaman: '{{ old('jenis_pinjaman', $disbursement->jenis_pinjaman) }}',
+            angsuran: '{{ old('angsuran', $disbursement->angsuran) }}',
+
+            calculate() {
+                const p = parseFloat(this.plafon.toString().replace(/\D/g, '')) || 0;
+                const t = parseInt(this.jangkaWaktu) || 0;
+                const r = parseFloat(this.sukuBunga) || 0;
+                
+                if (p === 0 || t === 0) return;
+                
+                const monthlyRate = (r / 100) / 12;
+                let installment = 0;
+                
+                if (this.jenisPinjaman === 'flat') {
+                    const principal = p / t;
+                    const interest = p * monthlyRate;
+                    installment = principal + interest;
+                } else if (this.jenisPinjaman === 'anuitas') {
+                    if (monthlyRate === 0) {
+                        installment = p / t;
+                    } else {
+                        const numerator = p * monthlyRate * Math.pow(1 + monthlyRate, t);
+                        const denominator = Math.pow(1 + monthlyRate, t) - 1;
+                        installment = numerator / denominator;
+                    }
+                } else if (this.jenisPinjaman === 'musiman') {
+                    installment = p * monthlyRate;
+                }
+                
+                this.angsuran = Math.round(installment);
+            }
+        }))
+    });
+</script>
+@endpush

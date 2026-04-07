@@ -39,10 +39,15 @@ class DashboardController extends Controller
                 'rejectedCount' => Evaluation::where('user_id', $user->id)->where('approval_status', 'rejected')->count(),
                 'totalVisits' => CustomerVisit::where('user_id', $user->id)->count(),
                 'totalDisbursement' => CreditDisbursement::where('user_id', $user->id)
-                    ->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$currentMonth])
+                    ->whereYear('disbursement_date', now()->format('Y'))
+                    ->whereMonth('disbursement_date', '<=', now()->format('m'))
                     ->sum('amount'),
+                'totalTarget' => ($user->disbursement_target ?? 400000000) * now()->format('n'),
             ];
         }
+
+        // Global target: sum of all active AO targets * current month
+        $globalTarget = \App\Models\User::role('AO')->sum('disbursement_target') * now()->format('n');
 
         return [
             'totalCustomers' => Customer::count(),
@@ -50,8 +55,10 @@ class DashboardController extends Controller
             'approvedCount' => Evaluation::where('approval_status', 'approved')->count(),
             'rejectedCount' => Evaluation::where('approval_status', 'rejected')->count(),
             'totalVisits' => CustomerVisit::count(),
-            'totalDisbursement' => CreditDisbursement::whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$currentMonth])
+            'totalDisbursement' => CreditDisbursement::whereYear('disbursement_date', now()->format('Y'))
+                ->whereMonth('disbursement_date', '<=', now()->format('m'))
                 ->sum('amount'),
+            'totalTarget' => $globalTarget,
         ];
     }
 
@@ -207,14 +214,23 @@ class DashboardController extends Controller
 
         // Apply month filter
         if ($month) {
+            $yearMonth = explode('-', $month);
             $customerQuery->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month]);
             $evaluationQuery->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month]);
             $visitQuery->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month]);
-            $disbursementQuery->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$month]);
+            
+            $disbursementQuery->whereYear('disbursement_date', $yearMonth[0])
+                ->whereMonth('disbursement_date', '<=', $yearMonth[1]);
+                
+            $m = intval($yearMonth[1]);
         } else {
             // Default to current month for disbursements when no filter
-            $disbursementQuery->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [now()->format('Y-m')]);
+            $disbursementQuery->whereYear('disbursement_date', now()->format('Y'))
+                ->whereMonth('disbursement_date', '<=', now()->format('m'));
+            $m = now()->format('n');
         }
+        
+        $totalTarget = ($isAo ? ($user->disbursement_target ?? 400000000) : \App\Models\User::role('AO')->sum('disbursement_target')) * $m;
 
         $stats = [
             'totalCustomers' => (clone $customerQuery)->count(),
@@ -223,6 +239,7 @@ class DashboardController extends Controller
             'rejectedCount' => (clone $evaluationQuery)->where('approval_status', 'rejected')->count(),
             'totalVisits' => (clone $visitQuery)->count(),
             'totalDisbursement' => (clone $disbursementQuery)->sum('amount'),
+            'totalTarget' => $totalTarget,
         ];
 
         // Chart data

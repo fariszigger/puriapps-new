@@ -30,6 +30,7 @@ Route::middleware(['authentication'])->group(function () {
     Route::resource('warning-letters', App\Http\Controllers\WarningLetterController::class);
 
     // Credit Disbursements
+    Route::get('/credit-disbursements/print', [App\Http\Controllers\CreditDisbursementController::class, 'print'])->name('credit-disbursements.print');
     Route::resource('credit-disbursements', App\Http\Controllers\CreditDisbursementController::class);
     
     // Collection History

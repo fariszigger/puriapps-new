@@ -39,8 +39,14 @@ class CreditDisbursementController extends Controller
 
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
+            'nomor_spk' => 'nullable|string|max:100',
             'customer_name' => 'required|string|max:255',
+            'address' => 'nullable|string',
             'amount' => 'required|numeric|min:0',
+            'jangka_waktu' => 'required|integer|min:1',
+            'suku_bunga' => 'required|numeric|min:0',
+            'jenis_pinjaman' => 'required|in:flat,anuitas,musiman',
+            'angsuran' => 'required|numeric|min:0',
             'disbursement_date' => 'required|date',
             'notes' => 'nullable|string',
         ]);
@@ -75,8 +81,14 @@ class CreditDisbursementController extends Controller
 
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
+            'nomor_spk' => 'nullable|string|max:100',
             'customer_name' => 'required|string|max:255',
+            'address' => 'nullable|string',
             'amount' => 'required|numeric|min:0',
+            'jangka_waktu' => 'required|integer|min:1',
+            'suku_bunga' => 'required|numeric|min:0',
+            'jenis_pinjaman' => 'required|in:flat,anuitas,musiman',
+            'angsuran' => 'required|numeric|min:0',
             'disbursement_date' => 'required|date',
             'notes' => 'nullable|string',
         ]);
@@ -85,6 +97,43 @@ class CreditDisbursementController extends Controller
 
         return redirect()->route('credit-disbursements.index')
             ->with('success', 'Data pencairan berhasil diperbarui.');
+    }
+
+    public function print(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->cannot('view credit-disbursements')) {
+            abort(403);
+        }
+
+        $filterMonth = $request->query('month', date('Y-m'));
+        $filterAo = $request->query('ao');
+
+        $query = CreditDisbursement::with('user:id,name,code,disbursement_target')->orderBy('disbursement_date', 'asc');
+
+        if ($filterMonth) {
+            $query->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$filterMonth]);
+        }
+        if ($filterAo) {
+            $query->where('user_id', $filterAo);
+        }
+
+        $disbursements = $query->get();
+
+        // Calculate totals for print
+        $totalAmount = $disbursements->sum('amount');
+        
+        $aoUsers = User::role('AO')->get(['id', 'name', 'disbursement_target']);
+        $targetMap = $aoUsers->pluck('disbursement_target', 'id');
+
+        // Target total logic depends on filtered AO
+        if ($filterAo) {
+            $totalTarget = $targetMap->get($filterAo, 400000000);
+        } else {
+            $totalTarget = $aoUsers->sum('disbursement_target');
+        }
+
+        return view('credit-disbursements.print', compact('disbursements', 'filterMonth', 'filterAo', 'totalAmount', 'totalTarget'));
     }
 
     public function destroy($id)

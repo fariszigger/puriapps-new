@@ -39,8 +39,8 @@
                     <div class="bg-white/60 backdrop-blur-sm rounded-xl border border-white/50 p-4 shadow-sm hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between mb-2">
                             <div>
-                                <p class="text-sm font-bold text-gray-900">{{ $summary['name'] }}</p>
-                                <p class="text-[10px] font-bold text-gray-400 uppercase">{{ $summary['code'] }}</p>
+                                <p class="text-sm font-bold text-gray-900">{{ $summary['code'] }}</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ $summary['name'] }}</p>
                             </div>
                             <span class="text-xs font-bold px-2 py-1 rounded-full
                                 {{ $summary['percentage'] >= 100 ? 'bg-emerald-100 text-emerald-700' : ($summary['percentage'] >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
@@ -104,6 +104,14 @@
                 </select>
             </div>
 
+            <a href="{{ route('credit-disbursements.print', ['month' => $filterMonth, 'ao' => $filterAo]) }}" target="_blank"
+                class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-all shadow-sm whitespace-nowrap mr-2">
+                <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Cetak Laporan
+            </a>
+
             @can('create credit-disbursements')
                 <a href="{{ route('credit-disbursements.create') }}"
                     class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 focus:ring-4 focus:outline-none focus:ring-emerald-300 transition-all shadow-lg hover:shadow-emerald-500/30 whitespace-nowrap">
@@ -122,10 +130,14 @@
             <thead class="text-xs text-gray-700 uppercase bg-gray-50/50 backdrop-blur-sm">
                 <tr>
                     <th scope="col" class="px-6 py-3">No</th>
-                    <th scope="col" class="px-6 py-3">Tanggal</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">SPK</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Tanggal</th>
                     <th scope="col" class="px-6 py-3">AO</th>
-                    <th scope="col" class="px-6 py-3">Nasabah</th>
-                    <th scope="col" class="px-6 py-3">Jumlah</th>
+                    <th scope="col" class="px-6 py-3">Nasabah & Alamat</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Plafond</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Tenor</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Bunga</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Angsuran</th>
                     <th scope="col" class="px-6 py-3">Catatan</th>
                     @if(auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements'))
                         <th scope="col" class="px-6 py-3">Aksi</th>
@@ -139,24 +151,36 @@
                         <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                             {{ $disbursements->total() - (($disbursements->currentPage() - 1) * $disbursements->perPage()) - $loop->index }}
                         </td>
+                        <td class="px-6 py-4 font-mono text-xs text-gray-500">
+                            {{ $item->nomor_spk ?? '-' }}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             {{ $item->disbursement_date->format('d M Y') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div>
-                                <span class="font-medium text-gray-900">{{ $item->user->name ?? '-' }}</span>
-                                @if($item->user->code ?? null)
-                                    <span class="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-bold uppercase">{{ $item->user->code }}</span>
-                                @endif
-                            </div>
+                            <span class="px-2 py-1 rounded bg-gray-100/80 text-gray-700 font-bold uppercase text-xs tracking-wider">
+                                {{ $item->user->code ?? '-' }}
+                            </span>
                         </td>
-                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                        <td class="px-6 py-4 font-medium text-gray-900">
                             {{ $item->customer_name }}
+                            @if($item->address)
+                                <br><span class="text-xs text-gray-500 font-normal leading-tight">{{ $item->address }}</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="font-bold text-emerald-700">Rp {{ number_format($item->amount, 0, ',', '.') }}</span>
                         </td>
-                        <td class="px-6 py-4 max-w-[200px] truncate text-gray-500">
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-700">
+                            {{ $item->jangka_waktu }} bln
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-700">
+                            {{ number_format($item->suku_bunga, 2, ',', '.') }}%
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                            Rp {{ number_format($item->angsuran, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 max-w-[150px] truncate text-gray-500" title="{{ $item->notes }}">
                             {{ $item->notes ?? '-' }}
                         </td>
                         @if(auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements'))

@@ -12,6 +12,20 @@ class CreditDisbursement extends Model
 
     protected $guarded = ['id'];
 
+    protected $fillable = [
+        'user_id',
+        'nomor_spk',
+        'customer_name',
+        'address',
+        'amount',
+        'jangka_waktu',
+        'suku_bunga',
+        'jenis_pinjaman',
+        'angsuran',
+        'disbursement_date',
+        'notes',
+    ];
+
     protected $casts = [
         'amount' => 'float',
         'disbursement_date' => 'date',

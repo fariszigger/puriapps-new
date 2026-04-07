@@ -28,6 +28,9 @@ Route::middleware(['authentication'])->group(function () {
 
     // Warning Letters
     Route::resource('warning-letters', App\Http\Controllers\WarningLetterController::class);
+
+    // Credit Disbursements
+    Route::resource('credit-disbursements', App\Http\Controllers\CreditDisbursementController::class);
     
     // Collection History
     Route::get('/collection-history', [App\Http\Controllers\CollectionHistoryController::class, 'index'])->name('collection-history.index');

@@ -45,6 +45,7 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|exists:roles,name',
             'status' => 'required|string|in:active,inactive',
+            'disbursement_target' => 'nullable|numeric|min:0',
         ]);
 
         $user = \App\Models\User::create([
@@ -54,6 +55,7 @@ class UserController extends Controller
             'code' => $validated['code'],
             'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
             'status' => $validated['status'],
+            'disbursement_target' => $validated['disbursement_target'] ?? 400000000,
         ]);
 
         $user->assignRole($validated['role']);
@@ -82,6 +84,7 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|string|exists:roles,name',
             'status' => 'required|string|in:active,inactive',
+            'disbursement_target' => 'nullable|numeric|min:0',
         ]);
 
         $userData = [
@@ -90,6 +93,7 @@ class UserController extends Controller
             'username' => $validated['username'],
             'code' => $validated['code'],
             'status' => $validated['status'],
+            'disbursement_target' => $validated['disbursement_target'] ?? $user->disbursement_target,
         ];
 
         if (!empty($validated['password'])) {

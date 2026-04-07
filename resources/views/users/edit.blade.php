@@ -89,10 +89,10 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-data="{ selectedRole: '{{ old('role', $user->roles->first()?->name) }}' }">
                 <div>
                     <label for="role" class="block mb-2 text-sm font-medium text-gray-900">Role</label>
-                    <select id="role" name="role"
+                    <select id="role" name="role" x-model="selectedRole"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                         required>
                         @foreach(\Spatie\Permission\Models\Role::all() as $r)
@@ -110,6 +110,20 @@
                         <option value="inactive" {{ old('status', $user->status) == 'inactive' ? 'selected' : '' }}>Inactive
                         </option>
                     </select>
+                </div>
+
+                <div x-show="selectedRole === 'AO'" x-transition class="md:col-span-2">
+                    <label for="disbursement_target" class="block mb-2 text-sm font-medium text-gray-900">Target Pencairan Bulanan (Rp)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span class="text-gray-500 text-sm">Rp</span>
+                        </div>
+                        <input type="number" id="disbursement_target" name="disbursement_target"
+                            value="{{ old('disbursement_target', $user->disbursement_target) }}"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-10"
+                            min="0" step="1000000">
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Default: Rp 400.000.000. Untuk AO baru bisa disesuaikan ke Rp 250.000.000.</p>
                 </div>
             </div>
 

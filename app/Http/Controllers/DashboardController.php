@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\CreditDisbursement;
 use App\Models\Evaluation;
 use App\Models\CustomerVisit;
 use App\Models\WarningLetter;
@@ -27,6 +28,8 @@ class DashboardController extends Controller
 
     private function getDashboardStats($user): array
     {
+        $currentMonth = now()->format('Y-m');
+
         // Stats — AO sees only their own data, other roles see global
         if (!$user->can('view all data')) {
             return [
@@ -35,6 +38,9 @@ class DashboardController extends Controller
                 'approvedCount' => Evaluation::where('user_id', $user->id)->where('approval_status', 'approved')->count(),
                 'rejectedCount' => Evaluation::where('user_id', $user->id)->where('approval_status', 'rejected')->count(),
                 'totalVisits' => CustomerVisit::where('user_id', $user->id)->count(),
+                'totalDisbursement' => CreditDisbursement::where('user_id', $user->id)
+                    ->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$currentMonth])
+                    ->sum('amount'),
             ];
         }
 
@@ -44,6 +50,8 @@ class DashboardController extends Controller
             'approvedCount' => Evaluation::where('approval_status', 'approved')->count(),
             'rejectedCount' => Evaluation::where('approval_status', 'rejected')->count(),
             'totalVisits' => CustomerVisit::count(),
+            'totalDisbursement' => CreditDisbursement::whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$currentMonth])
+                ->sum('amount'),
         ];
     }
 
@@ -188,10 +196,13 @@ class DashboardController extends Controller
         $evaluationQuery = Evaluation::query();
         $visitQuery = CustomerVisit::query();
 
+        $disbursementQuery = CreditDisbursement::query();
+
         if ($isAo) {
             $customerQuery->where('user_id', $user->id);
             $evaluationQuery->where('user_id', $user->id);
             $visitQuery->where('user_id', $user->id);
+            $disbursementQuery->where('user_id', $user->id);
         }
 
         // Apply month filter
@@ -199,6 +210,10 @@ class DashboardController extends Controller
             $customerQuery->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month]);
             $evaluationQuery->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month]);
             $visitQuery->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month]);
+            $disbursementQuery->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$month]);
+        } else {
+            // Default to current month for disbursements when no filter
+            $disbursementQuery->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [now()->format('Y-m')]);
         }
 
         $stats = [
@@ -207,6 +222,7 @@ class DashboardController extends Controller
             'approvedCount' => (clone $evaluationQuery)->where('approval_status', 'approved')->count(),
             'rejectedCount' => (clone $evaluationQuery)->where('approval_status', 'rejected')->count(),
             'totalVisits' => (clone $visitQuery)->count(),
+            'totalDisbursement' => (clone $disbursementQuery)->sum('amount'),
         ];
 
         // Chart data

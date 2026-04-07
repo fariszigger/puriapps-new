@@ -28,6 +28,7 @@ class User extends Authenticatable
         'code',
         'is_online',
         'last_activity_at',
+        'disbursement_target',
     ];
 
     /**

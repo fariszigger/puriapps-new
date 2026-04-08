@@ -11,7 +11,7 @@
                 </div>
                 <input wire:model.live.debounce.300ms="search" type="search" id="visit-search"
                     class="block w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white/50 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
-                    placeholder="Cari berdasarkan Nama Nasabah, Alamat, Kolektibilitas...">
+                    placeholder="Cari Nasabah, Alamat, Kolektibilitas, atau AO...">
             </div>
         </div>
 
@@ -38,7 +38,8 @@
                     <th scope="col" class="px-6 py-3">Kolektibilitas</th>
                     <th scope="col" class="px-6 py-3">Ketemu</th>
                     <th scope="col" class="px-6 py-3">Hasil</th>
-                    <th scope="col" class="px-6 py-3">Ke-</th>
+                    <th scope="col" class="px-6 py-3 text-center">AO</th>
+                    <th scope="col" class="px-6 py-3 text-center">Ke-</th>
                     <th scope="col" class="px-6 py-3">Tanggal</th>
                     <th scope="col" class="px-6 py-3">Action</th>
                 </tr>
@@ -107,6 +108,11 @@
                                 <span class="text-gray-400">-</span>
                             @endif
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="px-2 py-1 rounded bg-gray-100/80 text-gray-700 font-bold uppercase text-xs tracking-wider" title="{{ $visit->user->name ?? '-' }}">
+                                {{ $visit->user->code ?? '-' }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 font-bold text-center">{{ $visit->penagihan_ke }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $visit->created_at->format('d M Y') }}</td>
                         <td class="px-6 py-4">
@@ -151,8 +157,13 @@
                     </tr>
                 @empty
                     <tr class="bg-white/40 border-b border-white/40">
-                        <td colspan="9" class="px-6 py-4 text-center text-gray-500">
-                            Belum ada data kunjungan.
+                        <td colspan="10" class="px-6 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center gap-2">
+                                <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Belum ada data kunjungan.</span>
+                            </div>
                         </td>
                     </tr>
                 @endforelse

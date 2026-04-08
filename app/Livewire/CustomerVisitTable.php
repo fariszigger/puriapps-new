@@ -54,7 +54,11 @@ class CustomerVisitTable extends Component
                 })
                 ->orWhere('address', 'like', '%' . $this->search . '%')
                 ->orWhere('kolektibilitas', 'like', '%' . $this->search . '%')
-                ->orWhere('ketemu_dengan', 'like', '%' . $this->search . '%');
+                ->orWhere('ketemu_dengan', 'like', '%' . $this->search . '%')
+                ->orWhereHas('user', function ($uq) {
+                    $uq->where('name', 'like', '%' . $this->search . '%')
+                       ->orWhere('code', 'like', '%' . $this->search . '%');
+                });
             });
         });
 

@@ -143,7 +143,7 @@
             @foreach($aoGroups as $aoCode => $items)
                 <div class="mb-4 mt-8 flex items-center justify-between border-b border-gray-300 pb-1">
                     <h3 class="text-sm font-bold text-gray-800">Account Officer: <span class="bg-gray-800 text-white px-2 py-0.5 rounded text-[10px] ml-1 mr-1">{{ $aoCode }}</span> — {{ $items->first()->user->name ?? '-' }}</h3>
-                    <span class="text-[10px] text-gray-500 font-medium italic">{{ $items->count() }} Transaksi</span>
+                    <span class="text-[10px] text-gray-500 font-medium italic">{{ $items->count() }} Pencairan</span>
                 </div>
 
                 <table class="recap-table mb-2 relative">
@@ -192,7 +192,7 @@
                                 Rp {{ number_format($realization, 0, ',', '.') }}
                             </th>
                             <th colspan="2" class="text-center py-2 text-[10px] font-black font-mono border-x border-gray-400">
-                                <span class="block text-[8px] text-gray-500 font-normal">{{ $viewMode === 'yearly' ? 'LIMIT TAHUNAN' : 'LIMIT BULANAN' }}</span>
+                                <span class="block text-[8px] text-gray-500 font-normal">{{ $viewMode === 'yearly' ? 'TARGET TAHUNAN' : 'TARGET BULANAN' }}</span>
                                 Rp {{ number_format($aoTarget, 0, ',', '.') }}
                             </th>
                             <th class="text-right py-2 text-[10px] font-black font-mono border-l border-gray-400 {{ $diff > 0 ? 'text-red-700 bg-red-50' : 'text-emerald-700 bg-emerald-50' }}">
@@ -218,7 +218,7 @@
             <div class="mt-8 pt-4 border-t-2 border-black">
                 <div class="flex justify-end gap-x-12">
                     <div class="text-right">
-                        <span class="text-xs text-gray-500 uppercase font-bold pr-2">Total Transaksi:</span>
+                        <span class="text-xs text-gray-500 uppercase font-bold pr-2">Total Pencairan:</span>
                         <span class="text-sm font-black">{{ $disbursements->count() }} Pencairan</span>
                     </div>
                     <div class="text-right">

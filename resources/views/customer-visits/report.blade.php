@@ -258,11 +258,11 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="border-r-0 pb-1">Penagihan Ke</td>
+                                <td class="border-r-0 pb-1">Baki Debet</td>
+                                <td class="pb-1 font-bold text-red-600">: Rp
+                                    {{ number_format($visit->baki_debet ?? 0, 0, ',', '.') }}</td>
+                                <td class="border-r-0 border-l border-gray-600 pb-1">Penagihan Ke</td>
                                 <td class="pb-1">: <span class="font-bold">{{ $visit->penagihan_ke ?? '-' }}</span></td>
-                                <td class="border-r-0 border-l border-gray-600 pb-1">Tanggal</td>
-                                <td class="pb-1">: {{ formatIndonesianDate($visit->created_at) }}
-                                    {{ $visit->created_at->format('H:i') }}</td>
                             </tr>
 
                             <!-- HASIL PENAGIHAN -->

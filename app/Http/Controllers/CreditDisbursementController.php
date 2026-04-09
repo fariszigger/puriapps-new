@@ -107,6 +107,7 @@ class CreditDisbursementController extends Controller
         }
 
         $filterMonth = $request->query('month', date('Y-m'));
+        $filterMonthEnd = $request->query('month_end', date('Y-m'));
         $filterAo = $request->query('ao');
         $viewMode = $request->query('view_mode', 'monthly');
 
@@ -115,11 +116,14 @@ class CreditDisbursementController extends Controller
         if ($viewMode === 'yearly' && $filterMonth) {
             $year = date('Y', strtotime($filterMonth));
             $query->whereYear('disbursement_date', $year);
+        } elseif ($viewMode === 'period' && $filterMonth && $filterMonthEnd) {
+            $start = $filterMonth . '-01';
+            $end = date('Y-m-t', strtotime($filterMonthEnd . '-01'));
+            $query->whereBetween('disbursement_date', [$start, $end]);
         } elseif ($filterMonth) {
             $query->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$filterMonth]);
         }
-
-        if ($filterAo) {
+         if ($filterAo) {
             $query->where('user_id', $filterAo);
         }
 
@@ -142,9 +146,19 @@ class CreditDisbursementController extends Controller
             $baseTarget = $aoUsers->sum('disbursement_target');
         }
         
-        $totalTarget = $viewMode === 'yearly' ? $baseTarget * 12 : $baseTarget;
+        $multiplier = 1;
+        if ($viewMode === 'yearly') {
+            $multiplier = 12;
+        } elseif ($viewMode === 'period' && $filterMonth && $filterMonthEnd) {
+            $d1 = new \DateTime($filterMonth . '-01');
+            $d2 = new \DateTime($filterMonthEnd . '-01');
+            $multiplier = (($d2->format('Y') - $d1->format('Y')) * 12) + ($d2->format('m') - $d1->format('m')) + 1;
+            $multiplier = max(1, $multiplier);
+        }
+        
+        $totalTarget = $baseTarget * $multiplier;
 
-        return view('credit-disbursements.print', compact('disbursements', 'groupedDisbursements', 'filterMonth', 'filterAo', 'totalAmount', 'totalTarget', 'viewMode'));
+        return view('credit-disbursements.print', compact('disbursements', 'groupedDisbursements', 'filterMonth', 'filterMonthEnd', 'filterAo', 'totalAmount', 'totalTarget', 'viewMode'));
     }
 
     public function destroy($id)

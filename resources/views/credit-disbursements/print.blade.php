@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Pencairan Kredit {{ $viewMode === 'yearly' ? 'Tahunan' : 'Bulanan' }} - {{ $filterMonth }}</title>
+    <title>Laporan Pencairan Kredit {{ $viewMode === 'yearly' ? 'Tahunan' : ($viewMode === 'period' ? 'Periode' : 'Bulanan') }} - {{ $filterMonth }}</title>
     <link rel="icon" type="image/png" href="{{ asset('build/assets/logo-icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -103,10 +103,12 @@
         </div>
 
         <div class="text-center mb-6">
-            <h1 class="text-lg font-bold uppercase tracking-wider underline">LAPORAN PENCAIRAN KREDIT {{ $viewMode === 'yearly' ? 'TAHUNAN' : 'BULANAN' }}</h1>
+            <h1 class="text-lg font-bold uppercase tracking-wider underline">LAPORAN PENCAIRAN KREDIT {{ $viewMode === 'yearly' ? 'TAHUNAN' : ($viewMode === 'period' ? 'PERIODE' : 'BULANAN') }}</h1>
             <p class="text-sm font-semibold text-gray-700 mt-1">
                 @if($viewMode === 'yearly')
                     Tahun: {{ date('Y', strtotime($filterMonth)) }}
+                @elseif($viewMode === 'period')
+                    Periode: {{ \Carbon\Carbon::parse($filterMonth . '-01')->translatedFormat('F Y') }} s/d {{ \Carbon\Carbon::parse($filterMonthEnd . '-01')->translatedFormat('F Y') }}
                 @else
                     Bulan: {{ \Carbon\Carbon::parse($filterMonth . '-01')->translatedFormat('F Y') }}
                 @endif
@@ -181,7 +183,18 @@
                     <tfoot>
                         @php 
                             $baseTarget = $items->first()->user->disbursement_target ?? 400000000;
-                            $aoTarget = $viewMode === 'yearly' ? $baseTarget * 12 : $baseTarget;
+                            
+                            $aoMultiplier = 1;
+                            if ($viewMode === 'yearly') {
+                                $aoMultiplier = 12;
+                            } elseif ($viewMode === 'period' && $filterMonth && $filterMonthEnd) {
+                                $d1 = new \DateTime($filterMonth . '-01');
+                                $d2 = new \DateTime($filterMonthEnd . '-01');
+                                $aoMultiplier = (($d2->format('Y') - $d1->format('Y')) * 12) + ($d2->format('m') - $d1->format('m')) + 1;
+                                $aoMultiplier = max(1, $aoMultiplier);
+                            }
+                            
+                            $aoTarget = $baseTarget * $aoMultiplier;
                             $realization = $items->sum('amount');
                             $diff = $aoTarget - $realization;
                         @endphp
@@ -192,7 +205,7 @@
                                 Rp {{ number_format($realization, 0, ',', '.') }}
                             </th>
                             <th colspan="2" class="text-center py-2 text-[10px] font-black font-mono border-x border-gray-400">
-                                <span class="block text-[8px] text-gray-500 font-normal">{{ $viewMode === 'yearly' ? 'TARGET TAHUNAN' : 'TARGET BULANAN' }}</span>
+                                <span class="block text-[8px] text-gray-500 font-normal">{{ $viewMode === 'yearly' ? 'TARGET TAHUNAN' : ($viewMode === 'period' ? 'TARGET PERIODE' : 'TARGET BULANAN') }}</span>
                                 Rp {{ number_format($aoTarget, 0, ',', '.') }}
                             </th>
                             <th class="text-right py-2 text-[10px] font-black font-mono border-l border-gray-400 {{ $diff > 0 ? 'text-red-700 bg-red-50' : 'text-emerald-700 bg-emerald-50' }}">

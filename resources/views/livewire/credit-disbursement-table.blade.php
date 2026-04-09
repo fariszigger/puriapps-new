@@ -9,7 +9,11 @@
                     </svg>
                 </span>
                 Ringkasan Pencairan
-                @if($filterMonth)
+                @if($viewMode === 'period' && $filterMonth && $filterMonthEnd)
+                    <span class="text-sm font-normal text-gray-500">
+                        — {{ \Carbon\Carbon::parse($filterMonth . '-01')->translatedFormat('F Y') }} s/d {{ \Carbon\Carbon::parse($filterMonthEnd . '-01')->translatedFormat('F Y') }}
+                    </span>
+                @elseif($filterMonth)
                     <span class="text-sm font-normal text-gray-500">
                         — {{ \Carbon\Carbon::parse($filterMonth . '-01')->translatedFormat('F Y') }}
                     </span>
@@ -89,6 +93,10 @@
                         class="flex-1 sm:flex-none px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all duration-300 {{ $viewMode === 'monthly' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 hover:text-emerald-600' }}">
                         Bulanan
                     </button>
+                    <button wire:click="$set('viewMode', 'period')" 
+                        class="flex-1 sm:flex-none px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all duration-300 {{ $viewMode === 'period' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 hover:text-emerald-600' }}">
+                        Periode
+                    </button>
                     <button wire:click="$set('viewMode', 'yearly')" 
                         class="flex-1 sm:flex-none px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all duration-300 {{ $viewMode === 'yearly' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 hover:text-emerald-600' }}">
                         Tahunan
@@ -98,22 +106,38 @@
 
             {{-- Right: Filters & Actions --}}
             <div class="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto border-t lg:border-t-0 pt-4 lg:pt-0 border-gray-100">
-                {{-- Date Filter --}}
-                <div class="relative min-w-[140px]">
+                <div class="flex flex-wrap items-center gap-2">
                     @if($viewMode === 'monthly')
-                        <input type="month" wire:model.live="filterMonth"
-                            class="w-full pl-4 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all cursor-pointer">
+                        <div class="relative min-w-[140px]">
+                            <input type="month" wire:model.live="filterMonth"
+                                class="w-full pl-4 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all cursor-pointer">
+                        </div>
+                    @elseif($viewMode === 'period')
+                        <div class="flex items-center gap-2">
+                            <div class="relative min-w-[140px]">
+                                <span class="absolute -top-4 left-2 text-[8px] font-bold text-emerald-600 uppercase">Dari</span>
+                                <input type="month" wire:model.live="filterMonth"
+                                    class="w-full pl-4 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all cursor-pointer">
+                            </div>
+                            <div class="relative min-w-[140px]">
+                                <span class="absolute -top-4 left-2 text-[8px] font-bold text-emerald-600 uppercase">Sampai</span>
+                                <input type="month" wire:model.live="filterMonthEnd"
+                                    class="w-full pl-4 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all cursor-pointer">
+                            </div>
+                        </div>
                     @else
-                        <select wire:model.live="filterMonth"
-                            class="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all appearance-none cursor-pointer">
-                            @for($y = date('Y'); $y >= 2024; $y--)
-                                <option value="{{ $y }}-01">{{ $y }}</option>
-                            @endfor
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                        <div class="relative min-w-[140px]">
+                            <select wire:model.live="filterMonth"
+                                class="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/50 transition-all appearance-none cursor-pointer">
+                                @for($y = date('Y'); $y >= 2024; $y--)
+                                    <option value="{{ $y }}-01">{{ $y }}</option>
+                                @endfor
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-600">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -136,7 +160,7 @@
                 </select>
 
                 {{-- Print Button --}}
-                <a href="{{ route('credit-disbursements.print', ['month' => $filterMonth, 'ao' => $filterAo, 'view_mode' => $viewMode]) }}" 
+                <a href="{{ route('credit-disbursements.print', ['month' => $filterMonth, 'month_end' => $filterMonthEnd, 'ao' => $filterAo, 'view_mode' => $viewMode]) }}" 
                     target="_blank"
                     class="flex items-center gap-2 px-5 py-2.5 bg-white font-black text-[10px] uppercase tracking-widest text-emerald-700 border-2 border-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm group">
                     <svg class="w-4 h-4 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">

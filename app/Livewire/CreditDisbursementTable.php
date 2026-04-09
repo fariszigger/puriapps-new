@@ -14,13 +14,15 @@ class CreditDisbursementTable extends Component
     public $search = '';
     public $perPage = 10;
     public $filterMonth = '';
+    public $filterMonthEnd = '';
     public $filterAo = '';
-    public $viewMode = 'monthly'; // 'monthly', 'yearly'
+    public $viewMode = 'monthly'; // 'monthly', 'yearly', 'period'
 
     protected $queryString = [
         'search' => ['except' => ''],
         'perPage' => ['except' => 10],
         'filterMonth' => ['except' => ''],
+        'filterMonthEnd' => ['except' => ''],
         'filterAo' => ['except' => ''],
         'viewMode' => ['except' => 'monthly'],
     ];
@@ -28,6 +30,7 @@ class CreditDisbursementTable extends Component
     public function mount()
     {
         $this->filterMonth = now()->format('Y-m');
+        $this->filterMonthEnd = now()->format('Y-m');
     }
 
     public function updatingSearch()
@@ -41,6 +44,11 @@ class CreditDisbursementTable extends Component
     }
 
     public function updatingFilterMonth()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterMonthEnd()
     {
         $this->resetPage();
     }
@@ -75,6 +83,10 @@ class CreditDisbursementTable extends Component
         if ($this->viewMode === 'yearly' && $this->filterMonth) {
             $year = date('Y', strtotime($this->filterMonth));
             $query->whereYear('disbursement_date', $year);
+        } elseif ($this->viewMode === 'period' && $this->filterMonth && $this->filterMonthEnd) {
+            $start = $this->filterMonth . '-01';
+            $end = date('Y-m-t', strtotime($this->filterMonthEnd . '-01'));
+            $query->whereBetween('disbursement_date', [$start, $end]);
         } elseif ($this->filterMonth) {
             $query->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$this->filterMonth]);
         }
@@ -100,6 +112,10 @@ class CreditDisbursementTable extends Component
         if ($this->viewMode === 'yearly' && $this->filterMonth) {
             $year = date('Y', strtotime($this->filterMonth));
             $summaryQuery->whereYear('disbursement_date', $year);
+        } elseif ($this->viewMode === 'period' && $this->filterMonth && $this->filterMonthEnd) {
+            $start = $this->filterMonth . '-01';
+            $end = date('Y-m-t', strtotime($this->filterMonthEnd . '-01'));
+            $summaryQuery->whereBetween('disbursement_date', [$start, $end]);
         } elseif ($this->filterMonth) {
             $summaryQuery->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$this->filterMonth]);
         }
@@ -116,7 +132,18 @@ class CreditDisbursementTable extends Component
             ->get()
             ->map(function ($item) use ($targetMap) {
                 $baseTarget = $targetMap->get($item->user_id, 400000000);
-                $target = $this->viewMode === 'yearly' ? $baseTarget * 12 : $baseTarget;
+                
+                $multiplier = 1;
+                if ($this->viewMode === 'yearly') {
+                    $multiplier = 12;
+                } elseif ($this->viewMode === 'period' && $this->filterMonth && $this->filterMonthEnd) {
+                    $d1 = new \DateTime($this->filterMonth . '-01');
+                    $d2 = new \DateTime($this->filterMonthEnd . '-01');
+                    $multiplier = (($d2->format('Y') - $d1->format('Y')) * 12) + ($d2->format('m') - $d1->format('m')) + 1;
+                    $multiplier = max(1, $multiplier);
+                }
+
+                $target = $baseTarget * $multiplier;
                 return [
                     'user_id' => $item->user_id,
                     'name' => $item->user->name ?? '-',
@@ -131,7 +158,17 @@ class CreditDisbursementTable extends Component
         $grandTotal = $aoSummary->sum('total_amount');
         $aoCount = $aoUsers->count();
         $baseTotalTarget = $aoUsers->sum('disbursement_target');
-        $totalTarget = $this->viewMode === 'yearly' ? $baseTotalTarget * 12 : $baseTotalTarget;
+        
+        $totalMultiplier = 1;
+        if ($this->viewMode === 'yearly') {
+            $totalMultiplier = 12;
+        } elseif ($this->viewMode === 'period' && $this->filterMonth && $this->filterMonthEnd) {
+            $d1 = new \DateTime($this->filterMonth . '-01');
+            $d2 = new \DateTime($this->filterMonthEnd . '-01');
+            $totalMultiplier = (($d2->format('Y') - $d1->format('Y')) * 12) + ($d2->format('m') - $d1->format('m')) + 1;
+            $totalMultiplier = max(1, $totalMultiplier);
+        }
+        $totalTarget = $baseTotalTarget * $totalMultiplier;
 
         return view('livewire.credit-disbursement-table', [
             'disbursements' => $query->orderBy('nomor_spk', 'desc')->paginate($this->perPage),

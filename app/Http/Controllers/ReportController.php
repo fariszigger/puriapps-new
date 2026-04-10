@@ -122,6 +122,13 @@ class ReportController extends Controller
             'dates' => $dates,
             'periodLabel' => $periodLabel,
             'totalVisits' => $visits->count(),
+            'counts' => [
+                'kol_1' => $visits->where('kolektibilitas', '1')->count(),
+                'kol_2' => $visits->where('kolektibilitas', '2')->count(),
+                'kol_3' => $visits->where('kolektibilitas', '3')->count(),
+                'kol_4' => $visits->where('kolektibilitas', '4')->count(),
+                'kol_5' => $visits->where('kolektibilitas', '5')->count(),
+            ],
         ]);
     }
 
@@ -210,6 +217,14 @@ class ReportController extends Controller
             $user = $userVisits->first()->user;
             return [
                 'user' => $user,
+                'counts' => [
+                    'total' => $userVisits->count(),
+                    'kol_1' => $userVisits->where('kolektibilitas', '1')->count(),
+                    'kol_2' => $userVisits->where('kolektibilitas', '2')->count(),
+                    'kol_3' => $userVisits->where('kolektibilitas', '3')->count(),
+                    'kol_4' => $userVisits->where('kolektibilitas', '4')->count(),
+                    'kol_5' => $userVisits->where('kolektibilitas', '5')->count(),
+                ],
                 'dates' => $userVisits->groupBy(function ($visit) {
                     return $visit->created_at->format('Y-m-d');
                 })->map(function ($dateVisits) {
@@ -239,6 +254,13 @@ class ReportController extends Controller
             'recapData' => $recapData,
             'periodLabel' => $periodLabel,
             'totalVisitsOverall' => $visits->count(),
+            'totals' => [
+                'kol_1' => $visits->where('kolektibilitas', '1')->count(),
+                'kol_2' => $visits->where('kolektibilitas', '2')->count(),
+                'kol_3' => $visits->where('kolektibilitas', '3')->count(),
+                'kol_4' => $visits->where('kolektibilitas', '4')->count(),
+                'kol_5' => $visits->where('kolektibilitas', '5')->count(),
+            ],
         ]);
     }
 }

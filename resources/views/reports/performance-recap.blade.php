@@ -110,7 +110,17 @@
         <div class="text-center mb-4">
             <h1 class="text-lg font-bold uppercase tracking-wider">REKAP KUNJUNGAN SEMUA ACCOUNT OFFICER</h1>
             <p class="text-sm font-semibold text-gray-700 mt-1">Periode: {{ $periodLabel }}</p>
-            <p class="text-xs text-gray-500 mt-1">Total Kunjungan Keseluruhan: {{ $totalVisitsOverall }}</p>
+            
+            <div class="mt-2 flex items-center justify-center gap-4">
+                <span class="text-xs text-gray-500 font-bold uppercase tracking-tight">Total Keseluruhan: <span class="text-indigo-700 text-sm">{{ $totalVisitsOverall }}</span></span>
+                <div class="flex gap-2 text-[9px] uppercase font-bold tracking-tighter border-l border-gray-300 pl-4">
+                    <span class="px-1.5 py-0.5 bg-green-100 text-green-800 rounded">Lancar: {{ $totals['kol_1'] }}</span>
+                    <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded">DPK: {{ $totals['kol_2'] }}</span>
+                    <span class="px-1.5 py-0.5 bg-orange-100 text-orange-800 rounded">KL: {{ $totals['kol_3'] }}</span>
+                    <span class="px-1.5 py-0.5 bg-red-100 text-red-800 rounded">D: {{ $totals['kol_4'] }}</span>
+                    <span class="px-1.5 py-0.5 bg-red-200 text-red-900 rounded">M: {{ $totals['kol_5'] }}</span>
+                </div>
+            </div>
         </div>
 
         @forelse($recapData as $aoData)
@@ -121,14 +131,26 @@
             @endif
 
             <!-- AO Header -->
-            <div class="mb-3 mt-2 bg-gray-100 rounded px-3 py-2 border border-gray-300">
-                <span class="font-bold text-sm">Account Officer: {{ $aoUser->name ?? '-' }}</span>
-                @if($aoUser->code ?? null)
-                    <span class="text-gray-500 ml-1">({{ $aoUser->code }})</span>
-                @endif
-                <span class="float-right text-gray-500 text-[10px]">
-                    Total Kunjungan: {{ $aoData['dates']->flatten(1)->count() }}
-                </span>
+            <div class="mb-3 mt-2 bg-gray-100 rounded px-4 py-3 border border-gray-300 flex items-center justify-between">
+                <div>
+                    <span class="font-bold text-sm">Account Officer: {{ $aoUser->name ?? '-' }}</span>
+                    @if($aoUser->code ?? null)
+                        <span class="text-gray-500 ml-1">({{ $aoUser->code }})</span>
+                    @endif
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="flex gap-2 text-[9px] uppercase font-bold tracking-tighter">
+                        <span class="px-1.5 py-0.5 bg-green-100 text-green-800 rounded">Lancar: {{ $aoData['counts']['kol_1'] }}</span>
+                        <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded">DPK: {{ $aoData['counts']['kol_2'] }}</span>
+                        <span class="px-1.5 py-0.5 bg-orange-100 text-orange-800 rounded">KL: {{ $aoData['counts']['kol_3'] }}</span>
+                        <span class="px-1.5 py-0.5 bg-red-100 text-red-800 rounded">D: {{ $aoData['counts']['kol_4'] }}</span>
+                        <span class="px-1.5 py-0.5 bg-red-200 text-red-900 rounded">M: {{ $aoData['counts']['kol_5'] }}</span>
+                    </div>
+                    <div class="border-l border-gray-300 pl-4">
+                        <span class="font-black text-sm text-indigo-700">TOTAL: {{ $aoData['counts']['total'] }}</span>
+                    </div>
+                </div>
             </div>
 
             <table class="recap-table mb-6">

@@ -92,7 +92,12 @@
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider w-16">No</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Account Officer (AO)</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Kantor Cabang</th>
-                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">Total Kunjungan</th>
+                                <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">Lancar</th>
+                                <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">DPK</th>
+                                <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">KL</th>
+                                <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">D</th>
+                                <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">M</th>
+                                <th scope="col" class="px-4 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">Total</th>
                                 <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-indigo-900 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
@@ -116,9 +121,34 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                         {{ $ao->office_branch ?? 'Pusat' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-sm font-bold {{ $ao->visits_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
-                                            {{ $ao->visits_count }} Kunjungan
+                                    <td class="px-2 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_1_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $ao->visits_kol_1_count }}
+                                        </span>
+                                    </td>
+                                    <td class="px-2 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_2_count > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $ao->visits_kol_2_count }}
+                                        </span>
+                                    </td>
+                                    <td class="px-2 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_3_count > 0 ? 'bg-orange-100 text-orange-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $ao->visits_kol_3_count }}
+                                        </span>
+                                    </td>
+                                    <td class="px-2 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_4_count > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $ao->visits_kol_4_count }}
+                                        </span>
+                                    </td>
+                                    <td class="px-2 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_5_count > 0 ? 'bg-red-200 text-red-900' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $ao->visits_kol_5_count }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-black {{ $ao->visits_count > 0 ? 'bg-indigo-100 text-indigo-800 shadow-sm' : 'bg-gray-100 text-gray-500' }}">
+                                            {{ $ao->visits_count }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

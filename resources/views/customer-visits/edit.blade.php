@@ -197,7 +197,7 @@
                         </select>
 
                         {{-- Baki Debet (only for KL/Diragukan/Macet) --}}
-                        <div x-show="['3','4','5'].includes(kol)" x-transition class="mt-3">
+                        <div x-transition class="mt-3">
                             <label for="baki_debet_display" class="block mb-2 text-sm font-medium text-gray-900">Baki Debet
                                 (Rp)</label>
                             <div class="relative">
@@ -239,7 +239,7 @@
                     </div>
 
                     {{-- ================= 5. KONDISI SAAT INI (Rich Text) ================= --}}
-                    <div class="space-y-4" x-show="!['1','2'].includes(kol)" x-transition>
+                    <div class="space-y-4" x-transition>
                         <div class="flex items-center justify-between border-b-2 border-gray-100 pb-2">
                             <h2 class="text-xl font-semibold text-gray-900">Kondisi Saat Ini</h2>
                             <button type="button" @click="openTemplateModal('kondisi')"
@@ -257,7 +257,7 @@
                     </div>
 
                     {{-- ================= 6. RENCANA PENYELESAIAN (Rich Text) ================= --}}
-                    <div class="space-y-4" x-show="!['1','2'].includes(kol)" x-transition>
+                    <div class="space-y-4" x-transition>
                         <div class="flex items-center justify-between border-b-2 border-gray-100 pb-2">
                             <h2 class="text-xl font-semibold text-gray-900">Rencana Penyelesaian</h2>
                             <button type="button" @click="openTemplateModal('rencana')"
@@ -275,7 +275,7 @@
                     </div>
 
                     {{-- ================= 7. HASIL PENAGIHAN ================= --}}
-                    <div class="space-y-4" x-show="!['1','2'].includes(kol)" x-transition>
+                    <div class="space-y-4" x-transition>
                         <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Hasil Penagihan
                         </h2>
 
@@ -286,17 +286,17 @@
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
                                     <span class="text-sm font-medium text-gray-900">Bayar</span>
                                 </label>
-                                <label class="flex items-center gap-2 cursor-pointer" x-show="!['1','2'].includes(kol)">
+                                <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="radio" name="hasil_penagihan" value="janji_bayar" x-model="hasilPenagihan"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
                                     <span class="text-sm font-medium text-gray-900">Janji Bayar</span>
                                 </label>
-                                <label class="flex items-center gap-2 cursor-pointer" x-show="!['1','2'].includes(kol)">
+                                <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="radio" name="hasil_penagihan" value="tidak_ada_janji" x-model="hasilPenagihan"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
                                     <span class="text-sm font-medium text-gray-900">Tidak Ada Janji</span>
                                 </label>
-                                <label class="flex items-center gap-2 cursor-pointer" x-show="!['1','2'].includes(kol)">
+                                <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="radio" name="hasil_penagihan" value="janji_lainnya" x-model="hasilPenagihan"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
                                     <span class="text-sm font-medium text-gray-900">Janji Lainnya</span>

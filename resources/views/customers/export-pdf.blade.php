@@ -48,7 +48,6 @@
                 <th style="width: 80px;">No. Telp</th>
                 <th>Pekerjaan</th>
                 <th>Alamat</th>
-                <th>AO Pendamping</th>
             </tr>
         </thead>
         <tbody>
@@ -61,7 +60,6 @@
                     <td>{{ $customer->phone_number }}</td>
                     <td>{{ $customer->job ?? '-' }}</td>
                     <td>{{ $customer->address }}</td>
-                    <td>{{ $customer->user->name ?? '-' }}</td>
                 </tr>
             @endforeach
         </tbody>

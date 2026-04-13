@@ -61,7 +61,6 @@
                 <th>Tempat Lahir</th>
                 <th>Tanggal Lahir</th>
                 <th>Alamat</th>
-                <th>AO Pendamping</th>
                 <th>Tanggal Terdaftar</th>
             </tr>
         </thead>
@@ -79,7 +78,6 @@
                     <td>{{ $customer->pob }}</td>
                     <td>{{ \Carbon\Carbon::parse($customer->dob)->format('d/m/Y') }}</td>
                     <td>{{ $customer->address }}</td>
-                    <td>{{ $customer->user->name ?? '-' }}</td>
                     <td>{{ $customer->created_at->format('d/m/Y H:i') }}</td>
                 </tr>
             @endforeach

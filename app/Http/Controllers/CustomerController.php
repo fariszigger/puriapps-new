@@ -4,16 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Exports\CustomersExport;
 
 class CustomerController extends Controller
 {
     public function exportXls()
     {
         if (auth()->user()->cannot('view customers')) abort(403);
-        return Excel::download(new CustomersExport, 'Register_Debitur_' . date('Y-m-d') . '.xlsx');
+        
+        $customers = Customer::with('user')->get();
+        
+        $filename = 'Register_Debitur_' . date('Y-m-d') . '.xls';
+
+        $headers = [
+            'Content-Type' => 'application/vnd.ms-excel',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        return response()->view('customers.export-xls', compact('customers'), 200, $headers);
     }
 
     public function exportPdf()

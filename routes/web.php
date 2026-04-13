@@ -31,6 +31,8 @@ Route::middleware(['authentication'])->group(function () {
 
     // Credit Disbursements
     Route::get('/credit-disbursements/print', [App\Http\Controllers\CreditDisbursementController::class, 'print'])->name('credit-disbursements.print');
+    Route::get('/credit-disbursements/export', [App\Http\Controllers\CreditDisbursementController::class, 'export'])->name('credit-disbursements.export');
+    Route::get('/credit-disbursements/analytics', [App\Http\Controllers\CreditDisbursementController::class, 'analytics'])->name('credit-disbursements.analytics');
     Route::resource('credit-disbursements', App\Http\Controllers\CreditDisbursementController::class);
     
     // Collection History

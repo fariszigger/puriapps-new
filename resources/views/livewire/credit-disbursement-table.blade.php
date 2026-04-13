@@ -197,6 +197,7 @@
                     <th scope="col" class="px-6 py-3 whitespace-nowrap">Tenor</th>
                     <th scope="col" class="px-6 py-3 whitespace-nowrap">Bunga</th>
                     <th scope="col" class="px-6 py-3 whitespace-nowrap">Angsuran</th>
+                    <th scope="col" class="px-6 py-3">Status</th>
                     @if(auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements'))
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     @endif
@@ -238,6 +239,13 @@
                         <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                             Rp {{ number_format($item->angsuran, 0, ',', '.') }}
                         </td>
+                        <td class="px-6 py-4">
+                            @if($item->status == 'aktif' || $item->status == 'active' || empty($item->status))
+                                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-bold uppercase tracking-wider">Aktif</span>
+                            @else
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold uppercase tracking-wider">Lunas</span>
+                            @endif
+                        </td>
                         @if(auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements'))
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-2">
@@ -268,7 +276,7 @@
                     </tr>
                 @empty
                     <tr class="bg-white/40 border-b border-white/40">
-                        <td colspan="{{ (auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements')) ? 10 : 9 }}" class="px-6 py-16 text-center text-gray-500">
+                        <td colspan="{{ (auth()->user()->can('edit credit-disbursements') || auth()->user()->can('delete credit-disbursements')) ? 11 : 10 }}" class="px-6 py-16 text-center text-gray-500">
                             <div class="flex flex-col items-center gap-3">
                                 <div class="w-16 h-16 bg-gray-100/50 rounded-full flex items-center justify-center mb-1">
                                     <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -154,10 +154,21 @@
                 </div>
             </div>
 
-            <div>
-                <label for="disbursement_date" class="block mb-2 text-sm font-medium text-gray-900">Tanggal Pencairan <span class="text-red-500">*</span></label>
-                <input type="date" id="disbursement_date" name="disbursement_date" value="{{ old('disbursement_date', $disbursement->disbursement_date->format('Y-m-d')) }}" required
-                    class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm">
+            <div class="grid flex-col grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                    <label for="disbursement_date" class="block mb-2 text-sm font-medium text-gray-900">Tanggal Pencairan <span class="text-red-500">*</span></label>
+                    <input type="date" id="disbursement_date" name="disbursement_date" value="{{ old('disbursement_date', $disbursement->disbursement_date->format('Y-m-d')) }}" required
+                        class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm">
+                </div>
+
+                <div>
+                    <label for="status" class="block mb-2 text-sm font-medium text-gray-900">Status Pencairan <span class="text-red-500">*</span></label>
+                    <select id="status" name="status" required
+                        class="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-3 backdrop-blur-sm">
+                        <option value="aktif" {{ old('status', $disbursement->status) == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="lunas" {{ old('status', $disbursement->status) == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                    </select>
+                </div>
             </div>
 
             <div>

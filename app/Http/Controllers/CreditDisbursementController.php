@@ -49,6 +49,7 @@ class CreditDisbursementController extends Controller
             'angsuran' => 'required|numeric|min:0',
             'disbursement_date' => 'required|date',
             'notes' => 'nullable|string',
+            'status' => 'required|in:aktif,lunas',
         ]);
 
         CreditDisbursement::create($validated);
@@ -91,6 +92,7 @@ class CreditDisbursementController extends Controller
             'angsuran' => 'required|numeric|min:0',
             'disbursement_date' => 'required|date',
             'notes' => 'nullable|string',
+            'status' => 'required|in:aktif,lunas',
         ]);
 
         $disbursement->update($validated);

@@ -14,6 +14,8 @@ Route::middleware(['authentication'])->group(function () {
     Route::get('/', [\App\Http\Controllers\DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard/stats', [\App\Http\Controllers\DashboardController::class, 'stats'])->name('dashboard.stats');
 
+    Route::get('/customers/export-xls', [App\Http\Controllers\CustomerController::class, 'exportXls'])->name('customers.export-xls');
+    Route::get('/customers/export-pdf', [App\Http\Controllers\CustomerController::class, 'exportPdf'])->name('customers.export-pdf');
     Route::get('/customers/{customer}/print', [App\Http\Controllers\CustomerController::class, 'print'])->name('customers.print');
     Route::resource('customers', \App\Http\Controllers\CustomerController::class);
     Route::get('/evaluations/{evaluation}/print', [App\Http\Controllers\EvaluationController::class, 'print'])->name('evaluations.print');

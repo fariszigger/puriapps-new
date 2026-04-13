@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class CustomerController extends Controller
 {
@@ -30,7 +29,7 @@ class CustomerController extends Controller
         if (auth()->user()->cannot('view customers')) abort(403);
         
         $customers = Customer::with('user')->get();
-        $pdf = Pdf::loadView('customers.export-pdf', compact('customers'));
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('customers.export-pdf', compact('customers'));
         $pdf->setPaper('a4', 'landscape');
         
         return $pdf->download('Register_Debitur_' . date('Y-m-d') . '.pdf');

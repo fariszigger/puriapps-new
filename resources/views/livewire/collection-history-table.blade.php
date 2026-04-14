@@ -36,6 +36,102 @@
         </div>
     </div>
 
+    @unless(auth()->user()->hasRole('AO'))
+    <!-- Period Filter Section -->
+    <div class="flex flex-wrap items-center gap-3 bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/50 shadow-sm mb-6">
+        <div class="flex items-center gap-2">
+            <div class="p-1.5 bg-blue-100 text-blue-600 rounded-lg border border-blue-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <label class="text-sm font-bold text-gray-700">Periode:</label>
+            <select wire:model.live="filter"
+                class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-all shadow-sm">
+                <option value="daily">Harian</option>
+                <option value="weekly">Mingguan</option>
+                <option value="monthly">Bulanan</option>
+            </select>
+        </div>
+
+        @if($filter === 'daily')
+            <div class="flex items-center gap-2 pl-3 border-l border-white/60">
+                <label class="text-sm font-medium text-gray-600">Tanggal:</label>
+                <input type="date" wire:model.live="selectedDate"
+                    class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-all shadow-sm">
+            </div>
+        @elseif($filter === 'weekly')
+            <div class="flex items-center gap-2 pl-3 border-l border-white/60">
+                <label class="text-sm font-medium text-gray-600">Bulan:</label>
+                <input type="month" wire:model.live="selectedMonth"
+                    class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-all shadow-sm">
+            </div>
+            <div class="flex items-center gap-2 pl-3 border-l border-white/60">
+                <label class="text-sm font-medium text-gray-600">Minggu Ke-:</label>
+                <select wire:model.live="selectedWeek"
+                    class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-all shadow-sm">
+                    @php
+                        try {
+                            $date = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth);
+                        } catch (\Exception $e) {
+                            $date = \Carbon\Carbon::now();
+                        }
+                        $weeksCount = ceil($date->daysInMonth / 7);
+                    @endphp
+                    @for ($i = 1; $i <= $weeksCount; $i++)
+                        <option value="{{ $i }}">Minggu {{ $i }}</option>
+                    @endfor
+                </select>
+            </div>
+        @elseif($filter === 'monthly')
+            <div class="flex items-center gap-2 pl-3 border-l border-white/60">
+                <label class="text-sm font-medium text-gray-600">Bulan:</label>
+                <input type="month" wire:model.live="selectedMonth"
+                    class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-all shadow-sm">
+            </div>
+        @endif
+
+        <div class="flex items-center gap-2 pl-3 border-l border-white/60">
+            <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg border border-indigo-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </div>
+            <label class="text-sm font-bold text-gray-700">AO:</label>
+            <select wire:model.live="aoCodeFilter"
+                class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 transition-all shadow-sm min-w-[120px]">
+                <option value="">Semua AO</option>
+                @foreach($aoUsers as $ao)
+                    <option value="{{ $ao->code }}">{{ $ao->code }} - {{ $ao->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="flex items-center gap-2 pl-3 border-l border-white/60">
+            <div class="p-1.5 bg-amber-100 text-amber-600 rounded-lg border border-amber-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                </svg>
+            </div>
+            <label class="text-sm font-bold text-gray-700">Penagihan Ke:</label>
+            <select wire:model.live="penagihanFilter"
+                class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2 transition-all shadow-sm min-w-[80px]">
+                <option value="">Semua</option>
+                @for($i = 1; $i <= $maxPenagihan; $i++)
+                    <option value="{{ $i }}">{{ $i }}</option>
+                @endfor
+            </select>
+        </div>
+
+        <div wire:loading class="px-2">
+            <svg class="animate-spin h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+        </div>
+    </div>
+    @endunless
+
     <!-- Table Section -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg border border-white/40">
         <table class="w-full text-sm text-left text-gray-500">

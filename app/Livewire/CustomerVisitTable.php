@@ -20,6 +20,7 @@ class CustomerVisitTable extends Component
     public $startDate;
     public $endDate;
     public $aoCodeFilter = '';
+    public $penagihanFilter = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -29,6 +30,7 @@ class CustomerVisitTable extends Component
         'selectedDate' => ['except' => ''],
         'selectedWeek' => ['except' => 1],
         'aoCodeFilter' => ['except' => ''],
+        'penagihanFilter' => ['except' => ''],
     ];
 
 
@@ -73,6 +75,11 @@ class CustomerVisitTable extends Component
     }
 
     public function updatedAoCodeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPenagihanFilter()
     {
         $this->resetPage();
     }
@@ -171,6 +178,10 @@ class CustomerVisitTable extends Component
             });
         });
 
+        $query->when($this->penagihanFilter, function ($q) {
+            $q->where('penagihan_ke', $this->penagihanFilter);
+        });
+
         $query->when(!empty($this->search), function ($query) {
             $query->where(function ($q) {
                 $q->whereHas('customer', function ($cq) {
@@ -189,6 +200,7 @@ class CustomerVisitTable extends Component
         return view('livewire.customer-visit-table', [
             'visits' => $query->orderBy('id', 'desc')->paginate($this->perPage),
             'aoUsers' => \App\Models\User::role('AO')->whereNotNull('code')->orderBy('code')->get(),
+            'maxPenagihan' => \App\Models\CustomerVisit::max('penagihan_ke') ?? 1,
         ]);
     }
 }

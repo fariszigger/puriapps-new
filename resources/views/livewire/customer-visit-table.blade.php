@@ -99,6 +99,22 @@
             </select>
         </div>
 
+        <div class="flex items-center gap-2 pl-3 border-l border-white/60">
+            <div class="p-1.5 bg-amber-100 text-amber-600 rounded-lg border border-amber-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                </svg>
+            </div>
+            <label class="text-sm font-bold text-gray-700">Penagihan Ke:</label>
+            <select wire:model.live="penagihanFilter"
+                class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2 transition-all shadow-sm min-w-[80px]">
+                <option value="">Semua</option>
+                @for($i = 1; $i <= $maxPenagihan; $i++)
+                    <option value="{{ $i }}">{{ $i }}</option>
+                @endfor
+            </select>
+        </div>
+
         <div wire:loading class="px-2">
             <svg class="animate-spin h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

@@ -110,10 +110,11 @@
 
 <body>
 
-    <!-- Print Button Bar (Hidden on print) -->
-    <div class="no-print p-4 bg-gray-100 border-b flex items-center justify-between fixed top-0 w-full z-50 shadow-sm">
-        <div class="flex items-center gap-2 text-[11px] text-gray-500 italic">
-            <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="w-full overflow-x-auto pb-10">
+        <!-- Print Button Bar (Hidden on print) -->
+    <div class="no-print p-2 md:p-4 bg-gray-100 border-b flex flex-col md:flex-row items-center justify-between fixed top-0 w-full z-50 shadow-sm gap-2 md:gap-0">
+        <div class="flex items-center gap-2 text-[10px] md:text-[11px] text-gray-500 italic text-center md:text-left">
+            <svg class="w-4 h-4 text-blue-500 flex-shrink-0 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
@@ -128,7 +129,7 @@
         </div>
     </div>
 
-    <div class="content-container mt-[70px] print:mt-0">
+    <div class="content-container mt-[120px] md:mt-[70px] print:mt-0 min-w-[800px] print:min-w-0">
         <table class="w-full select-auto">
             <!-- HEADER (Repeats on every printed page) -->
             <thead class="print-header">
@@ -436,6 +437,7 @@
                 </tr>
             </tbody>
         </table>
+    </div>
     </div>
 
 </body>

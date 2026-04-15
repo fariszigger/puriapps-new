@@ -374,21 +374,29 @@
                             :class="event.type === 'dob' ? 'bg-blue-100' : (event.type === 'visit' ? 'bg-green-100' : (event.type === 'sp' ? 'bg-red-100' : (event.type === 'payday' ? 'bg-emerald-100' : 'bg-orange-100')))">
                             <span x-text="event.type === 'dob' ? '🎂' : (event.type === 'visit' ? '📍' : (event.type === 'sp' ? '📄' : (event.type === 'payday' ? '💳' : '💰')))"></span>
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-xs font-bold text-gray-900 truncate">
+                        <div class="min-w-0 flex-grow">
+                            <p class="text-[11px] font-bold text-gray-900 truncate flex items-center gap-1">
                                 <span x-text="event.name"></span>
                                 <template x-if="event.ao_code">
-                                    <span class="ml-1 text-[9px] px-1 py-0.5 rounded bg-gray-100 text-gray-500 font-bold uppercase" x-text="event.ao_code"></span>
+                                    <span class="text-[9px] px-1 py-0.5 rounded bg-blue-50 text-blue-500 font-bold uppercase border border-blue-100" x-text="event.ao_code"></span>
                                 </template>
                             </p>
                             <div class="flex items-center gap-1.5 mt-0.5">
-                                <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase"
+                                <span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase"
                                     :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : (event.type === 'visit' ? 'bg-green-100 text-green-700' : (event.type === 'sp' ? 'bg-red-100 text-red-700' : (event.type === 'payday' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700')))"
                                     x-text="event.type === 'dob' ? 'Ultah' : (event.type === 'visit' ? 'Kunjungan' : (event.type === 'sp' ? 'Follow Up SP' : (event.type === 'payday' ? 'Jadwal Bayar' : 'Janji Bayar')))">
                                 </span>
                                 <span class="text-[10px] text-gray-500" x-text="event.display_date"></span>
                                 <span x-show="event.type === 'dob' && event.age" class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-700" x-text="'ke-' + event.age"></span>
                             </div>
+                            
+                            <!-- Amount Display for Payday and Janji Bayar -->
+                            <template x-if="event.type === 'payday' || event.type === 'janji_bayar'">
+                                <div class="mt-1 flex items-center gap-1">
+                                    <span class="text-[10px] font-bold text-gray-700">Rp</span>
+                                    <span class="text-xs font-black text-gray-900 tracking-tight" x-text="Number(event.angsuran || event.jumlah || 0).toLocaleString('id-ID')"></span>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -540,8 +548,8 @@
                                         @elseif($isPast) (Terlewat) @endif
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">
-                                    {{ $janji->jumlah_bayar ? number_format($janji->jumlah_bayar, 0, ',', '.') : '-' }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                    Rp {{ number_format($janji->jumlah_pembayaran ?: $janji->jumlah_bayar, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                     <a href="{{ route('calendar.index') }}"

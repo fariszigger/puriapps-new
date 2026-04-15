@@ -116,7 +116,7 @@ class DashboardController extends Controller
                     if ($dobThisYear->between($today, $next7)) {
                         $next7Events->push([
                             'type' => 'dob',
-                            'date' => $customer->$field,
+                            'date' => $dobThisYear->format('Y-m-d'),
                             'display_date' => $dobThisYear->format('d M'),
                             'name' => $name,
                             'age' => $today->year - \Carbon\Carbon::parse($customer->$field)->year,
@@ -219,7 +219,27 @@ class DashboardController extends Controller
             }
         }
 
-        return $next7Events->sortBy('date')->values();
+        return $next7Events->sort(function ($a, $b) use ($today) {
+            $dateA = $a['type'] === 'dob' ? \Carbon\Carbon::parse($a['date'])->setYear($today->year)->format('Y-m-d') : $a['date'];
+            $dateB = $b['type'] === 'dob' ? \Carbon\Carbon::parse($b['date'])->setYear($today->year)->format('Y-m-d') : $b['date'];
+            
+            if ($dateA != $dateB) {
+                return strcmp($dateA, $dateB);
+            }
+            
+            $priority = [
+                'janji_bayar' => 1,
+                'payday' => 2,
+                'sp' => 3,
+                'visit' => 4,
+                'dob' => 5
+            ];
+            
+            $pA = $priority[$a['type']] ?? 9;
+            $pB = $priority[$b['type']] ?? 9;
+            
+            return $pA <=> $pB;
+        })->values();
     }
 
     public function stats()

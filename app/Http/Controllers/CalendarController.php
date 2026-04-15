@@ -236,11 +236,26 @@ class CalendarController extends Controller
             }
             $eventDate = Carbon::parse($event['date']);
             return $eventDate->between($today, $next7);
-        })->sortBy(function ($event) use ($today) {
-            if ($event['type'] === 'dob') {
-                return Carbon::parse($event['date'])->setYear($today->year)->format('Y-m-d');
+        })->sort(function ($a, $b) use ($today) {
+            $dateA = $a['type'] === 'dob' ? Carbon::parse($a['date'])->setYear($today->year)->format('Y-m-d') : $a['date'];
+            $dateB = $b['type'] === 'dob' ? Carbon::parse($b['date'])->setYear($today->year)->format('Y-m-d') : $b['date'];
+            
+            if ($dateA != $dateB) {
+                return strcmp($dateA, $dateB);
             }
-            return $event['date'];
+            
+            $priority = [
+                'janji_bayar' => 1,
+                'payday' => 2,
+                'sp' => 3,
+                'visit' => 4,
+                'dob' => 5
+            ];
+            
+            $pA = $priority[$a['type']] ?? 9;
+            $pB = $priority[$b['type']] ?? 9;
+            
+            return $pA <=> $pB;
         })->values();
     }
 

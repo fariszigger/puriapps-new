@@ -266,7 +266,13 @@
             lusaDate: '{{ \Carbon\Carbon::today()->addDays(2)->format('Y-m-d') }}',
             events: {{ json_encode($next7Events->toArray()) }},
             get filteredEvents() {
-                if (this.filter === 'all') return this.events.filter(e => e.type !== 'dob' && e.type !== 'payday');
+                if (this.filter === 'all') {
+                    return [...this.events].sort((a, b) => {
+                        if (a.date !== b.date) return a.date.localeCompare(b.date);
+                        const p = { 'janji_bayar': 1, 'payday': 2, 'sp': 3, 'visit': 4, 'dob': 5 };
+                        return (p[a.type] || 9) - (p[b.type] || 9);
+                    });
+                }
                 if (this.filter === 'payday') {
                     return this.events.filter(e => {
                         if(e.type !== 'payday') return false;

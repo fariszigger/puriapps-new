@@ -558,7 +558,7 @@
             janjiBayarEvents.forEach(e => { if (e.date === dateStr) events.push(e); });
             warningLetterEvents.forEach(e => { if (e.date === dateStr) events.push(e); });
             paydayEvents.forEach(e => { if (e.date === dateStr) events.push(e); });
-            events.sort((a, b) => ({ 'payday': 0, 'janji_bayar': 1, 'sp': 2, 'dob': 3, 'visit': 4 }[a.type]) - ({ 'payday': 0, 'janji_bayar': 1, 'sp': 2, 'dob': 3, 'visit': 4 }[b.type]));
+            events.sort((a, b) => ({ 'janji_bayar': 1, 'payday': 2, 'sp': 3, 'visit': 4, 'dob': 5 }[a.type] || 9) - ({ 'janji_bayar': 1, 'payday': 2, 'sp': 3, 'visit': 4, 'dob': 5 }[b.type] || 9));
             return events;
         }
 

@@ -257,12 +257,26 @@
     @endpush
 
     <!-- 7 Hari Ke Depan -->
-    <div class="mb-8" x-data="{ 
+        <div class="mb-8" x-data="{ 
             filter: 'all', 
+            paydayFilter: 'today', 
             limit: 8, 
+            todayDate: '{{ \Carbon\Carbon::today()->format('Y-m-d') }}',
+            tomorrowDate: '{{ \Carbon\Carbon::today()->addDay()->format('Y-m-d') }}',
+            lusaDate: '{{ \Carbon\Carbon::today()->addDays(2)->format('Y-m-d') }}',
             events: {{ json_encode($next7Events->toArray()) }},
             get filteredEvents() {
-                if (this.filter === 'all') return this.events.filter(e => e.type !== 'dob');
+                if (this.filter === 'all') return this.events.filter(e => e.type !== 'dob' && e.type !== 'payday');
+                if (this.filter === 'payday') {
+                    return this.events.filter(e => {
+                        if(e.type !== 'payday') return false;
+                        if(this.paydayFilter === 'all') return true;
+                        if(this.paydayFilter === 'today') return e.date === this.todayDate;
+                        if(this.paydayFilter === 'tomorrow') return e.date === this.tomorrowDate;
+                        if(this.paydayFilter === 'day2') return e.date === this.lusaDate;
+                        return true;
+                    });
+                }
                 return this.events.filter(e => e.type === this.filter);
             }
         }">
@@ -308,6 +322,23 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
                     </a>
+                </div>
+
+                <!-- Sub-filters for Jadwal Bayar -->
+                <div class="flex items-center gap-2 mt-3 w-full border-t border-teal-100/50 pt-3" x-show="filter === 'payday'" x-transition style="display: none;">
+                    <span class="text-xs font-semibold text-gray-500 mr-1">Tampilkan:</span>
+                    <button @click="paydayFilter = 'all'"
+                        :class="paydayFilter === 'all' ? 'bg-gray-800 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                        class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all border border-gray-200">Semua (7 Hari)</button>
+                    <button @click="paydayFilter = 'today'"
+                        :class="paydayFilter === 'today' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
+                        class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all border border-emerald-200">Hari Ini</button>
+                    <button @click="paydayFilter = 'tomorrow'"
+                        :class="paydayFilter === 'tomorrow' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
+                        class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all border border-emerald-200">Besok</button>
+                    <button @click="paydayFilter = 'day2'"
+                        :class="paydayFilter === 'day2' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
+                        class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all border border-emerald-200">Lusa</button>
                 </div>
             </div>
 
@@ -506,75 +537,7 @@
         </div>
     @endif
 
-    <!-- Reminder Jadwal Bayar -->
-    @if(isset($pendingPaydays) && $pendingPaydays->count() > 0)
-        <div class="p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold tracking-tight text-gray-900 flex items-center gap-3">
-                    <span class="bg-emerald-100 text-emerald-600 p-2 rounded-xl">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
-                            </path>
-                        </svg>
-                    </span>
-                    Reminder Jadwal Bayar (3 Hari Ke Depan)
-                </h2>
-                <span
-                    class="inline-flex items-center justify-center px-3 py-1 text-sm font-bold text-emerald-800 bg-emerald-100 rounded-full shadow-sm">
-                    {{ $pendingPaydays->count() }} Jatuh Tempo
-                </span>
-            </div>
 
-            <div class="overflow-x-auto rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nasabah
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SPK</th>
-                            @if(auth()->user()->can('view all data'))
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AO</th>
-                            @endif
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
-                                Jatuh Tempo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jadwal Bayar
-                                (Rp)</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($pendingPaydays as $payday)
-                            <tr class="hover:bg-emerald-50/50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                    {{ $payday['customer_name'] }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $payday['nomor_spk'] ?? '-' }}
-                                </td>
-                                @if(auth()->user()->can('view all data'))
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-bold text-xs uppercase">{{ $payday['ao_code'] }}</span>
-                                    </td>
-                                @endif
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <span
-                                        class="px-2.5 py-1 rounded-full font-semibold text-[11px] tracking-wide 
-                                            {{ $payday['is_past'] ? 'bg-red-100 text-red-700' : ($payday['is_today'] ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700') }}">
-                                        {{ $payday['payday_formatted'] }}
-                                        @if($payday['is_today']) (Hari Ini)
-                                        @elseif($payday['is_past']) (Terlewat) @endif
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">
-                                    {{ $payday['angsuran'] ? number_format($payday['angsuran'], 0, ',', '.') : '-' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    @endif
 
     <!-- Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -158,7 +158,7 @@
                                                     @else bg-orange-100 text-orange-700 @endif">
                                             @if($event['type'] === 'dob') Ulang Tahun
                                             @elseif($event['type'] === 'visit') Kunjungan
-                                            @elseif($event['type'] === 'payday') Angsuran
+                                            @elseif($event['type'] === 'payday') Jadwal Bayar
                                             @elseif($event['type'] === 'sp') Follow Up SP
                                             @else Janji Bayar @endif
                                         </span>
@@ -176,7 +176,7 @@
                                         <p class="text-xs text-orange-600 font-semibold mt-1">Rp {{ number_format($event['jumlah'], 0, ',', '.') }}</p>
                                     @endif
                                     @if($event['type'] === 'payday' && isset($event['angsuran']))
-                                        <p class="text-xs text-emerald-600 font-semibold mt-1">Angsuran: Rp {{ number_format($event['angsuran'], 0, ',', '.') }}</p>
+                                        <p class="text-xs text-emerald-600 font-semibold mt-1">Jadwal Bayar: Rp {{ number_format($event['angsuran'], 0, ',', '.') }}</p>
                                     @endif
                                 </div>
                                 @php $globalCount++; @endphp
@@ -298,7 +298,7 @@
                 <button @click="setFilter('payday')"
                     class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
                     :class="filterType === 'payday' ? 'bg-emerald-600 text-white shadow' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'">
-                    Angsuran
+                    💳 Jadwal Bayar
                 </button>
             </div>
         </div>
@@ -340,7 +340,7 @@
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                                         :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : event.type === 'visit' ? 'bg-green-100 text-green-700' : event.type === 'sp' ? 'bg-red-100 text-red-700' : event.type === 'payday' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'"
-                                        x-text="event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : event.type === 'sp' ? 'Follow Up SP' : event.type === 'payday' ? 'Angsuran' : 'Janji Bayar'"></span>
+                                        x-text="event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : event.type === 'sp' ? 'Follow Up SP' : event.type === 'payday' ? 'Jadwal Bayar' : 'Janji Bayar'"></span>
                                 </td>
                                 <td class="px-4 py-3 text-sm font-semibold text-gray-800">
                                     <span x-text="event.name"></span>

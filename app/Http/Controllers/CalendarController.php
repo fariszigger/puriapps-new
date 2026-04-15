@@ -199,7 +199,7 @@ class CalendarController extends Controller
                     'type' => 'payday',
                     'date' => $paydayDate->format('Y-m-d'),
                     'name' => $d->customer_name,
-                    'label' => 'Angsuran - ' . $d->customer_name,
+                    'label' => 'Jadwal Bayar - ' . $d->customer_name,
                     'angsuran' => $d->angsuran,
                     'ao_code' => $d->user->code ?? $d->user->name ?? '-',
                     'nomor_spk' => $d->nomor_spk,

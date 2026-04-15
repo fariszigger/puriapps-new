@@ -96,7 +96,7 @@ class DashboardController extends Controller
     {
         $isAO = !$user->can('view all data');
         $today = \Carbon\Carbon::today();
-        $next7 = $today->copy()->addDays(7);
+        $next3 = $today->copy()->addDays(3);
 
         $query = CreditDisbursement::where('status', 'aktif');
 
@@ -119,7 +119,7 @@ class DashboardController extends Controller
                 $thisMonthPayday = $nextMonth->day(min($payDay, $nextMonth->daysInMonth));
             }
 
-            if ($thisMonthPayday->between($today, $next7)) {
+            if ($thisMonthPayday->between($today, $next3)) {
                 $paydays->push([
                     'id' => $d->id,
                     'customer_name' => $d->customer_name,
@@ -232,7 +232,8 @@ class DashboardController extends Controller
                 $thisMonthPayday = $nextMonth->day(min($payDay, $nextMonth->daysInMonth));
             }
 
-            if ($thisMonthPayday->between($today, $next7)) {
+            $next3 = $today->copy()->addDays(3);
+            if ($thisMonthPayday->between($today, $next3)) {
                 $next7Events->push([
                     'type' => 'payday',
                     'date' => $thisMonthPayday->format('Y-m-d'),

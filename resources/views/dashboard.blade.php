@@ -300,7 +300,7 @@
                         class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-red-200">SP</button>
                     <button @click="filter = 'payday'; limit = 8"
                         :class="filter === 'payday' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white/80 text-emerald-700 hover:bg-white'"
-                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-emerald-200">Angsuran</button>
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-emerald-200">Jadwal Bayar</button>
                     <a href="{{ route('calendar.index') }}"
                         class="ml-2 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-white hover:bg-gray-900 transition-all shadow-md flex items-center gap-1">
                         Kalender
@@ -330,7 +330,7 @@
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase"
                                     :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : (event.type === 'visit' ? 'bg-green-100 text-green-700' : (event.type === 'sp' ? 'bg-red-100 text-red-700' : (event.type === 'payday' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700')))"
-                                    x-text="event.type === 'dob' ? 'Ultah' : (event.type === 'visit' ? 'Kunjungan' : (event.type === 'sp' ? 'Follow Up SP' : (event.type === 'payday' ? 'Angsuran' : 'Janji Bayar')))">
+                                    x-text="event.type === 'dob' ? 'Ultah' : (event.type === 'visit' ? 'Kunjungan' : (event.type === 'sp' ? 'Follow Up SP' : (event.type === 'payday' ? 'Jadwal Bayar' : 'Janji Bayar')))">
                                 </span>
                                 <span class="text-[10px] text-gray-500" x-text="event.display_date"></span>
                                 <span x-show="event.type === 'dob' && event.age" class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-700" x-text="'ke-' + event.age"></span>
@@ -506,7 +506,7 @@
         </div>
     @endif
 
-    <!-- Reminder Angsuran -->
+    <!-- Reminder Jadwal Bayar -->
     @if(isset($pendingPaydays) && $pendingPaydays->count() > 0)
         <div class="p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl mb-8">
             <div class="flex items-center justify-between mb-4">
@@ -518,7 +518,7 @@
                             </path>
                         </svg>
                     </span>
-                    Reminder Angsuran (7 Hari Ke Depan)
+                    Reminder Jadwal Bayar (3 Hari Ke Depan)
                 </h2>
                 <span
                     class="inline-flex items-center justify-center px-3 py-1 text-sm font-bold text-emerald-800 bg-emerald-100 rounded-full shadow-sm">
@@ -538,7 +538,7 @@
                             @endif
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
                                 Jatuh Tempo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Angsuran
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jadwal Bayar
                                 (Rp)</th>
                         </tr>
                     </thead>

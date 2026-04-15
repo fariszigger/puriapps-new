@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Carbon\Carbon;
@@ -207,7 +208,24 @@ class CollectionHistoryTable extends Component
             });
         }
 
-        $customers = $query->orderBy('name', 'asc')->paginate($this->perPage);
+        // Add select subquery to track the latest activity date within the filtered period for sorting
+        $query->addSelect([
+            'latest_activity_at' => DB::table('customer_visits')
+                ->select('created_at')
+                ->whereColumn('customer_id', 'customers.id')
+                ->where('is_accompanying', false)
+                ->whereBetween('created_at', [$this->startDate, $this->endDate])
+                ->unionAll(
+                    DB::table('warning_letters')
+                        ->select('created_at')
+                        ->whereColumn('customer_id', 'customers.id')
+                        ->whereBetween('created_at', [$this->startDate, $this->endDate])
+                )
+                ->orderBy('created_at', 'desc')
+                ->limit(1)
+        ]);
+
+        $customers = $query->orderBy('latest_activity_at', 'desc')->paginate($this->perPage);
 
         // Calculate "Tindakan Terakhir" based on system creation time for accuracy
         foreach ($customers as $customer) {

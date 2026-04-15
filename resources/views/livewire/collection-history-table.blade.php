@@ -137,6 +137,7 @@
         <table class="w-full text-sm text-left text-gray-500">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50/50 backdrop-blur-sm">
                 <tr>
+                    <th scope="col" class="px-6 py-3">No</th>
                     <th scope="col" class="px-6 py-3">Nama Nasabah</th>
                     <th scope="col" class="px-6 py-3">Alamat</th>
                     <th scope="col" class="px-6 py-3">AO</th>
@@ -147,6 +148,9 @@
             <tbody>
                 @forelse($customers as $customer)
                     <tr class="bg-white/40 border-b border-white/40 hover:bg-white/60 transition-colors">
+                        <td class="px-6 py-4 font-bold text-gray-900 whitespace-nowrap">
+                            {{ $customers->firstItem() + $loop->index }}
+                        </td>
                         <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                             {{ $customer->name }}
                         </td>
@@ -189,7 +193,7 @@
                     </tr>
                 @empty
                     <tr class="bg-white/40 border-b border-white/40">
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center text-gray-400">
                                 <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 

@@ -470,9 +470,7 @@
                                         $isToday = $tgl->isToday();
                                         $isPast = $tgl->isPast() && !$isToday;
                                     @endphp
-                                    <span
-                                        class="px-2.5 py-1 rounded-full font-semibold text-[11px] tracking-wide 
-                                                                                                                                                                                                                                                                     {{ $isPast ? 'bg-red-100 text-red-700' : ($isToday ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700') }}">
+                                    <span class="px-2.5 py-1 rounded-full font-semibold text-[11px] tracking-wide {{ $isPast ? 'bg-red-100 text-red-700' : ($isToday ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700') }}">
                                         {{ $tgl->format('d M Y') }}
                                         @if($isToday) (Hari Ini)
                                         @elseif($isPast) (Terlewat) @endif

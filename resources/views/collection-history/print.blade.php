@@ -81,44 +81,52 @@
 
     <!-- A4 Document -->
     <div class="a4-container !py-8 !px-10">
-        <!-- Header: Matching Recap Style -->
-        <div class="flex items-center justify-between border-b-2 border-black pb-2 mb-4">
-            <div class="flex items-center gap-3">
-                <img src="{{ asset('build/assets/logobpr.png') }}" alt="Logo" class="h-10 w-auto object-contain">
-                <div>
-                    <h1 class="text-lg font-bold uppercase tracking-tight">History Penagihan Nasabah</h1>
-                    <p class="text-[10px] text-gray-500 italic">PuriApps v2 - Sistem Informasi Kredit</p>
-                </div>
+        <!-- Header: Matching Customer Visit Report Style -->
+        <div class="flex items-center justify-between border-b-2 border-black pb-1 mb-2 mt-1">
+            <div class="flex items-center gap-2">
+                <img src="{{ asset('build/assets/logobpr.png') }}" alt="BPR Puri Logo"
+                    class="h-10 w-auto object-contain">
             </div>
-            <div class="text-right text-[10px] text-gray-500 italic">
-                Dicetak: {{ now()->translatedFormat('d F Y H:i') }}
+            <div class="text-[11px] text-right italic font-normal text-gray-500">
+                History Penagihan / 
+                {{ now()->translatedFormat('d F Y H:i') }}
             </div>
         </div>
 
-        <!-- Compact Customer Identity -->
-        <div class="border border-gray-300 rounded p-3 mb-4 bg-gray-50/50">
-            <div class="grid grid-cols-3 gap-x-4 gap-y-1 text-[11px]">
-                <div class="col-span-1">
-                    <span class="text-gray-500 block text-[9px] uppercase font-bold">Nama Nasabah</span>
-                    <span class="font-bold text-sm">{{ $customer->name }}</span>
-                </div>
-                <div class="col-span-1">
-                    <span class="text-gray-500 block text-[9px] uppercase font-bold">No. Telepon</span>
-                    <span class="font-medium text-gray-800">{{ $customer->phone_number ?? '-' }}</span>
-                </div>
-                <div class="col-span-1">
-                    <span class="text-gray-500 block text-[9px] uppercase font-bold">NIK / No. Identitas</span>
-                    <span class="font-medium text-gray-800">{{ $customer->identity_number ?? '-' }}</span>
-                </div>
-                <div class="col-span-2">
-                    <span class="text-gray-500 block text-[9px] uppercase font-bold">Alamat</span>
-                    <span class="font-medium text-gray-800 line-clamp-1">{{ $customer->address ?? '-' }}</span>
-                </div>
-                <div class="col-span-1">
-                    <span class="text-gray-500 block text-[9px] uppercase font-bold">No. PK / Plafon</span>
-                    <span class="font-medium text-gray-800">{{ $customer->evaluations->first()->credit_agreement_number ?? '-' }}</span>
-                </div>
+        <div class="flex items-center justify-between border-b-2 border-black pb-1 mb-4 relative">
+            <div class="w-full text-center">
+                <h1 class="text-lg font-bold uppercase tracking-wider">RIWAYAT PENAGIHAN NASABAH</h1>
             </div>
+        </div>
+
+        <div class="mb-4 text-[11px] pl-10">
+            <table class="w-full table-fixed">
+                <tr>
+                    <td class="font-bold pb-1 align-top w-44">Identitas Debitur</td>
+                    <td class="w-4 pb-1 align-top">:</td>
+                    <td class="pb-1 align-top">
+                        <span class="font-bold text-[12px]">{{ $customer->name ?? '-' }}</span>
+                        (NIK : {{ $customer->identity_number ?? '-' }})
+                    </td>
+                </tr>
+                <tr>
+                    <td class="font-bold pb-1 align-top">No. PK / Plafon</td>
+                    <td class="w-4 pb-1 align-top">:</td>
+                    <td class="pb-1 align-top">
+                        <span class="font-bold">{{ $customer->evaluations->first()->credit_agreement_number ?? '-' }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="font-bold pb-1 align-top">No. Telepon</td>
+                    <td class="w-4 pb-1 align-top">:</td>
+                    <td class="pb-1 align-top">{{ $customer->phone_number ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td class="font-bold pb-1 align-top">Alamat</td>
+                    <td class="w-4 pb-1 align-top">:</td>
+                    <td class="pb-1 align-top">{{ $customer->address ?? '-' }}</td>
+                </tr>
+            </table>
         </div>
 
         <!-- History Content -->
@@ -173,9 +181,17 @@
                                         <div class="flex-1">
                                             <p class="text-gray-700 italic">"{{ $item['details'] }}"</p>
                                             @if($item['raw_data']->hasil_penagihan === 'janji_bayar' && $item['raw_data']->tanggal_janji_bayar)
-                                                <div class="mt-1.5 p-1.5 bg-orange-50 border border-orange-100 rounded text-[9px] flex justify-between items-center">
-                                                    <span class="font-bold text-orange-800">Janji Bayar: {{ \Carbon\Carbon::parse($item['raw_data']->tanggal_janji_bayar)->translatedFormat('d M Y') }}</span>
-                                                    <span class="font-bold text-orange-800">Rp {{ number_format($item['raw_data']->jumlah_pembayaran ?: $item['raw_data']->jumlah_bayar, 0, ',', '.') }}</span>
+                                                <div class="mt-1.5 p-1.5 bg-orange-50 border border-orange-100 rounded text-[9px] flex flex-col gap-1">
+                                                    <div class="flex justify-between items-center">
+                                                        <span class="font-bold text-orange-800">Janji Bayar: {{ \Carbon\Carbon::parse($item['raw_data']->tanggal_janji_bayar)->translatedFormat('d M Y') }}</span>
+                                                        <span class="font-bold text-orange-800">Rp {{ number_format($item['raw_data']->jumlah_bayar, 0, ',', '.') }}</span>
+                                                    </div>
+                                                    @if($item['raw_data']->janji_bayar_fulfilled)
+                                                        <div class="bg-green-100 border border-green-200 text-green-800 px-1.5 py-1 rounded flex justify-between items-center mt-0.5">
+                                                            <span class="font-bold">✅ Dibayar: {{ \Carbon\Carbon::parse($item['raw_data']->janji_bayar_fulfilled_at)->translatedFormat('d M Y') }}</span>
+                                                            <span class="font-bold">Rp {{ number_format($item['raw_data']->jumlah_pembayaran, 0, ',', '.') }}</span>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             @elseif($item['raw_data']->hasil_penagihan === 'tidak_ada_janji')
                                                 <div class="mt-1.5 p-1.5 bg-red-50 border border-red-100 rounded text-[9px]">

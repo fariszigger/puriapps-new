@@ -153,6 +153,7 @@ class CreditDisbursementTable extends Component
                     'limit' => $target,
                     'percentage' => $target > 0 ? round(($item->total_amount / $target) * 100, 1) : 0,
                 ];
+            });
 
         $grandTotal = $aoSummary->sum('total_amount');
         $aoCount = $aoUsers->count();
@@ -173,7 +174,7 @@ class CreditDisbursementTable extends Component
             'disbursements' => $query->orderBy('nomor_spk', 'desc')->paginate($this->perPage),
             'aoSummary' => $aoSummary,
             'grandTotal' => $grandTotal,
-            'totalLimit' => $totalTarget,
+            'totalTarget' => $totalTarget,
             'aoCount' => $aoCount,
             'aoUsers' => $aoUsers,
         ]);

@@ -136,8 +136,31 @@ class PerformanceReport extends Component
                 return 2;
             });
 
+        $kabagUsers = User::role('Kabag')
+            ->withCount(['customerVisits as visits_count' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate]);
+            }])
+            ->withCount(['customerVisits as visits_kol_1_count' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '1');
+            }])
+            ->withCount(['customerVisits as visits_kol_2_count' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '2');
+            }])
+            ->withCount(['customerVisits as visits_kol_3_count' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '3');
+            }])
+            ->withCount(['customerVisits as visits_kol_4_count' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '4');
+            }])
+            ->withCount(['customerVisits as visits_kol_5_count' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
+            }])
+            ->orderBy('name')
+            ->get();
+
         return view('livewire.performance-report', [
             'aosGroups' => $aos,
+            'kabagUsers' => $kabagUsers,
             'periodLabel' => $this->getPeriodLabel()
         ]);
     }

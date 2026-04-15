@@ -572,7 +572,7 @@
                     </tbody>
                 </table>
             </div>
-        </didiv>
+        </div>
     @endif
 
 

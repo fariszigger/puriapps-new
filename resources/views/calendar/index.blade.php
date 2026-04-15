@@ -432,9 +432,10 @@
                                                 {{ number_format($visit->jumlah_pembayaran, 0, ',', '.') }}</span>
                                         @endif
                                         @if($visit->janji_bayar_fulfilled)
-                                            <span
-                                                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 ml-1">✓
-                                                Lunas</span>
+                                            <span class="inline-flex flex-col gap-0.5 px-1.5 py-1 rounded bg-green-100 text-green-800 ml-1 mt-1">
+                                                <span class="text-[10px] font-bold text-green-700">✓ Sudah Bayar Rp {{ number_format($visit->jumlah_pembayaran ?? 0, 0, ',', '.') }}</span>
+                                                <span class="text-[9px] font-medium text-green-600">pd. {{ $visit->janji_bayar_fulfilled_at ? \Carbon\Carbon::parse($visit->janji_bayar_fulfilled_at)->format('d/m/Y') : '-' }}</span>
+                                            </span>
                                         @endif
                                     @elseif($visit->hasil_penagihan === 'tidak_ada_janji')
                                         <span class="text-red-600 font-semibold">Tidak Ada Janji</span>

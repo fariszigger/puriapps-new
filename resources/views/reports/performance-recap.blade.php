@@ -241,7 +241,7 @@
                                                     {{ number_format($visit['jumlah_pembayaran'], 0, ',', '.') }}</span>
                                             @endif
                                             @if($visit['janji_bayar_fulfilled'])
-                                                <br><span style="color:#16a34a;font-weight:bold;font-size:9px">✓ LUNAS</span>
+                                                <br><span style="color:#16a34a;font-weight:bold;font-size:9px">✓ SUDAH BAYAR Rp {{ number_format($visit['jumlah_pembayaran'] ?? 0, 0, ',', '.') }} pd. {{ $visit['janji_bayar_fulfilled_at'] ? \Carbon\Carbon::parse($visit['janji_bayar_fulfilled_at'])->format('d/m/Y') : '-' }}</span>
                                             @endif
                                         @elseif($visit['hasil_penagihan'] === 'tidak_ada_janji')
                                             <span style="color:#ef4444;font-weight:bold">Tidak Ada Janji</span>

@@ -189,13 +189,17 @@
                                             {{ number_format($visit->jumlah_pembayaran, 0, ',', '.') }}</span>
                                     @endif
                                     @if($visit->janji_bayar_fulfilled)
-                                        <span
-                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 w-fit">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                    d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Lunas
+                                        <span class="inline-flex flex-col gap-0.5 px-2 py-1 rounded-lg text-xs font-bold bg-green-100 text-green-800 w-fit shadow-sm mt-1">
+                                            <span class="flex items-center gap-1">
+                                                <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                        d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                Sudah Bayar Rp {{ number_format($visit->jumlah_pembayaran ?? 0, 0, ',', '.') }}
+                                            </span>
+                                            <span class="text-[10px] font-medium text-green-700">
+                                                pd. {{ $visit->janji_bayar_fulfilled_at ? \Carbon\Carbon::parse($visit->janji_bayar_fulfilled_at)->format('d/m/Y') : '-' }}
+                                            </span>
                                         </span>
                                     @endif
                                 </div>

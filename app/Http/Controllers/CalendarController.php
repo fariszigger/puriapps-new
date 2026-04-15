@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\CreditDisbursement;
 use App\Models\CustomerVisit;
 use App\Models\WarningLetter;
 use Carbon\Carbon;
@@ -18,9 +19,10 @@ class CalendarController extends Controller
         $visitEvents = $this->getVisitEvents($isAO, $user);
         $janjiBayarEvents = $this->getJanjiBayarEvents($isAO, $user);
         $warningLetterEvents = $this->getWarningLetterEvents($isAO, $user);
+        $paydayEvents = $this->getPaydayEvents($isAO, $user);
 
         $today = Carbon::today();
-        $allEvents = collect(array_merge($dobEvents, $visitEvents, $janjiBayarEvents, $warningLetterEvents));
+        $allEvents = collect(array_merge($dobEvents, $visitEvents, $janjiBayarEvents, $warningLetterEvents, $paydayEvents));
 
         $thisMonthEvents = $this->filterThisMonthEvents($allEvents, $today);
         $next7Events = $this->filterNext7DayEvents($allEvents, $today);
@@ -31,6 +33,7 @@ class CalendarController extends Controller
             'visitEvents' => $visitEvents,
             'janjiBayarEvents' => $janjiBayarEvents,
             'warningLetterEvents' => $warningLetterEvents,
+            'paydayEvents' => $paydayEvents,
             'thisMonthEvents' => $thisMonthEvents,
             'next7Events' => $next7Events,
             'todayDate' => $today->format('Y-m-d'),
@@ -164,6 +167,44 @@ class CalendarController extends Controller
                 'letter_id' => $letter->id,
                 'letter_type' => $letter->type,
             ];
+        }
+
+        return $events;
+    }
+
+    private function getPaydayEvents(bool $isAO, $user): array
+    {
+        $query = CreditDisbursement::with('user:id,name,code')
+            ->where('status', 'aktif');
+
+        if ($isAO) {
+            $query->where('user_id', $user->id);
+        }
+
+        $disbursements = $query->get();
+        $events = [];
+        $currentYear = Carbon::now()->year;
+
+        foreach ($disbursements as $d) {
+            $payDay = $d->disbursement_date->day;
+
+            // Generate payday events for 12 months around current date
+            for ($i = -1; $i <= 12; $i++) {
+                $month = Carbon::now()->addMonths($i);
+                $actualDay = min($payDay, $month->daysInMonth);
+                $paydayDate = $month->copy()->day($actualDay);
+
+                $events[] = [
+                    'id' => 'payday-' . $d->id . '-' . $paydayDate->format('Y-m'),
+                    'type' => 'payday',
+                    'date' => $paydayDate->format('Y-m-d'),
+                    'name' => $d->customer_name,
+                    'label' => 'Angsuran - ' . $d->customer_name,
+                    'angsuran' => $d->angsuran,
+                    'ao_code' => $d->user->code ?? $d->user->name ?? '-',
+                    'nomor_spk' => $d->nomor_spk,
+                ];
+            }
         }
 
         return $events;

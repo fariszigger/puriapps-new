@@ -298,6 +298,9 @@
                     <button @click="filter = 'sp'; limit = 8"
                         :class="filter === 'sp' ? 'bg-red-600 text-white shadow-md' : 'bg-white/80 text-red-700 hover:bg-white'"
                         class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-red-200">SP</button>
+                    <button @click="filter = 'payday'; limit = 8"
+                        :class="filter === 'payday' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white/80 text-emerald-700 hover:bg-white'"
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-emerald-200">Angsuran</button>
                     <a href="{{ route('calendar.index') }}"
                         class="ml-2 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-white hover:bg-gray-900 transition-all shadow-md flex items-center gap-1">
                         Kalender
@@ -314,8 +317,8 @@
                     <div
                         class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-3 flex items-center gap-3 hover:shadow-md transition-shadow">
                         <div class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm"
-                            :class="event.type === 'dob' ? 'bg-blue-100' : (event.type === 'visit' ? 'bg-green-100' : (event.type === 'sp' ? 'bg-red-100' : 'bg-orange-100'))">
-                            <span x-text="event.type === 'dob' ? '🎂' : (event.type === 'visit' ? '📍' : (event.type === 'sp' ? '📄' : '💰'))"></span>
+                            :class="event.type === 'dob' ? 'bg-blue-100' : (event.type === 'visit' ? 'bg-green-100' : (event.type === 'sp' ? 'bg-red-100' : (event.type === 'payday' ? 'bg-emerald-100' : 'bg-orange-100')))">
+                            <span x-text="event.type === 'dob' ? '🎂' : (event.type === 'visit' ? '📍' : (event.type === 'sp' ? '📄' : (event.type === 'payday' ? '💳' : '💰')))"></span>
                         </div>
                         <div class="min-w-0">
                             <p class="text-xs font-bold text-gray-900 truncate">
@@ -326,8 +329,8 @@
                             </p>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase"
-                                    :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : (event.type === 'visit' ? 'bg-green-100 text-green-700' : (event.type === 'sp' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'))"
-                                    x-text="event.type === 'dob' ? 'Ultah' : (event.type === 'visit' ? 'Kunjungan' : (event.type === 'sp' ? 'Follow Up SP' : 'Janji Bayar'))">
+                                    :class="event.type === 'dob' ? 'bg-blue-100 text-blue-700' : (event.type === 'visit' ? 'bg-green-100 text-green-700' : (event.type === 'sp' ? 'bg-red-100 text-red-700' : (event.type === 'payday' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700')))"
+                                    x-text="event.type === 'dob' ? 'Ultah' : (event.type === 'visit' ? 'Kunjungan' : (event.type === 'sp' ? 'Follow Up SP' : (event.type === 'payday' ? 'Angsuran' : 'Janji Bayar')))">
                                 </span>
                                 <span class="text-[10px] text-gray-500" x-text="event.display_date"></span>
                                 <span x-show="event.type === 'dob' && event.age" class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-700" x-text="'ke-' + event.age"></span>
@@ -494,6 +497,76 @@
                                                 d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                                         </svg>
                                     </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
+    <!-- Reminder Angsuran -->
+    @if(isset($pendingPaydays) && $pendingPaydays->count() > 0)
+        <div class="p-6 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 shadow-xl mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold tracking-tight text-gray-900 flex items-center gap-3">
+                    <span class="bg-emerald-100 text-emerald-600 p-2 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                    </span>
+                    Reminder Angsuran (7 Hari Ke Depan)
+                </h2>
+                <span
+                    class="inline-flex items-center justify-center px-3 py-1 text-sm font-bold text-emerald-800 bg-emerald-100 rounded-full shadow-sm">
+                    {{ $pendingPaydays->count() }} Jatuh Tempo
+                </span>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nasabah
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SPK</th>
+                            @if(auth()->user()->can('view all data'))
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AO</th>
+                            @endif
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
+                                Jatuh Tempo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Angsuran
+                                (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($pendingPaydays as $payday)
+                            <tr class="hover:bg-emerald-50/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    {{ $payday['customer_name'] }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $payday['nomor_spk'] ?? '-' }}
+                                </td>
+                                @if(auth()->user()->can('view all data'))
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-bold text-xs uppercase">{{ $payday['ao_code'] }}</span>
+                                    </td>
+                                @endif
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span
+                                        class="px-2.5 py-1 rounded-full font-semibold text-[11px] tracking-wide 
+                                            {{ $payday['is_past'] ? 'bg-red-100 text-red-700' : ($payday['is_today'] ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700') }}">
+                                        {{ $payday['payday_formatted'] }}
+                                        @if($payday['is_today']) (Hari Ini)
+                                        @elseif($payday['is_past']) (Terlewat) @endif
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">
+                                    {{ $payday['angsuran'] ? number_format($payday['angsuran'], 0, ',', '.') : '-' }}
                                 </td>
                             </tr>
                         @endforeach

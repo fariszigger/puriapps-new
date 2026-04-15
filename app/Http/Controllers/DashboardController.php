@@ -17,11 +17,13 @@ class DashboardController extends Controller
         $stats = $this->getDashboardStats($user);
         $pendingEvaluations = $this->getPendingEvaluations($user);
         $pendingJanjiBayar = $this->getPendingJanjiBayar($user);
+        $pendingPaydays = $this->getPendingPaydays($user);
         $next7Events = $this->getNext7DaysEvents($user);
 
         return view('dashboard', array_merge($stats, [
             'pendingEvaluations' => $pendingEvaluations,
             'pendingJanjiBayar' => $pendingJanjiBayar,
+            'pendingPaydays' => $pendingPaydays,
             'next7Events' => $next7Events,
         ]));
     }
@@ -88,6 +90,53 @@ class DashboardController extends Controller
         }
 
         return collect();
+    }
+
+    private function getPendingPaydays($user)
+    {
+        $isAO = !$user->can('view all data');
+        $today = \Carbon\Carbon::today();
+        $next7 = $today->copy()->addDays(7);
+
+        $query = CreditDisbursement::where('status', 'aktif');
+
+        if ($isAO) {
+            $query->where('user_id', $user->id);
+        }
+
+        $disbursements = $query->get();
+        $paydays = collect();
+
+        foreach ($disbursements as $d) {
+            $payDay = $d->disbursement_date->day;
+
+            // Calculate this month's payday
+            $thisMonthPayday = $today->copy()->day(min($payDay, $today->daysInMonth));
+
+            // If this month's payday already passed, use next month
+            if ($thisMonthPayday->lt($today)) {
+                $nextMonth = $today->copy()->addMonth();
+                $thisMonthPayday = $nextMonth->day(min($payDay, $nextMonth->daysInMonth));
+            }
+
+            if ($thisMonthPayday->between($today, $next7)) {
+                $paydays->push([
+                    'id' => $d->id,
+                    'customer_name' => $d->customer_name,
+                    'angsuran' => $d->angsuran,
+                    'amount' => $d->amount,
+                    'nomor_spk' => $d->nomor_spk,
+                    'payday' => $thisMonthPayday->format('Y-m-d'),
+                    'payday_formatted' => $thisMonthPayday->format('d M Y'),
+                    'ao_name' => $d->user->name ?? '-',
+                    'ao_code' => $d->user->code ?? '-',
+                    'is_today' => $thisMonthPayday->isToday(),
+                    'is_past' => $thisMonthPayday->isPast() && !$thisMonthPayday->isToday(),
+                ]);
+            }
+        }
+
+        return $paydays->sortBy('payday')->values();
     }
 
     private function getNext7DaysEvents($user)
@@ -164,6 +213,35 @@ class DashboardController extends Controller
                 'name' => $v->customer->name ?? '-',
                 'ao_code' => $v->user->code ?? $v->user->name ?? '-',
             ]);
+        }
+
+        // Payday events in next 7 days
+        $paydayQuery = CreditDisbursement::with('user:id,name,code')
+            ->where('status', 'aktif');
+
+        if ($isAO) {
+            $paydayQuery->where('user_id', $user->id);
+        }
+
+        foreach ($paydayQuery->get() as $d) {
+            $payDay = $d->disbursement_date->day;
+            $thisMonthPayday = $today->copy()->day(min($payDay, $today->daysInMonth));
+
+            if ($thisMonthPayday->lt($today)) {
+                $nextMonth = $today->copy()->addMonth();
+                $thisMonthPayday = $nextMonth->day(min($payDay, $nextMonth->daysInMonth));
+            }
+
+            if ($thisMonthPayday->between($today, $next7)) {
+                $next7Events->push([
+                    'type' => 'payday',
+                    'date' => $thisMonthPayday->format('Y-m-d'),
+                    'display_date' => $thisMonthPayday->format('d M'),
+                    'name' => $d->customer_name,
+                    'ao_code' => $d->user->code ?? $d->user->name ?? '-',
+                    'angsuran' => $d->angsuran,
+                ]);
+            }
         }
 
         // Warning Letter Follow-ups in next 7 days (letter_date + 21 days)

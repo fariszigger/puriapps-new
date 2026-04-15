@@ -120,13 +120,7 @@
                         <span class="font-bold">{{ $spkNumber }}</span>
                     </td>
                 </tr>
-                <tr>
-                    <td class="font-bold pb-1 align-top">No. PK / Plafon</td>
-                    <td class="w-4 pb-1 align-top">:</td>
-                    <td class="pb-1 align-top">
-                        <span class="font-bold">{{ $customer->evaluations->first()->credit_agreement_number ?? '-' }}</span>
-                    </td>
-                </tr>
+
                 <tr>
                     <td class="font-bold pb-1 align-top">No. Telepon</td>
                     <td class="w-4 pb-1 align-top">:</td>
@@ -191,11 +185,16 @@
                                     <div class="flex gap-4">
                                         <div class="flex-1">
                                             <p class="text-gray-700 italic">"{{ $item['details'] }}"</p>
-                                            @if($item['raw_data']->hasil_penagihan === 'janji_bayar' && $item['raw_data']->tanggal_janji_bayar)
+                                            @if($item['raw_data']->hasil_penagihan === 'bayar')
+                                                <div class="mt-1.5 p-1.5 bg-green-50 border border-green-100 rounded text-[9px] flex justify-between items-center">
+                                                    <span class="font-bold text-green-800">Pembayaran Langsung</span>
+                                                    <span class="font-bold text-green-800">Rp {{ number_format($item['raw_data']->jumlah_bayar, 0, ',', '.') }}</span>
+                                                </div>
+                                            @elseif($item['raw_data']->hasil_penagihan === 'janji_bayar' && $item['raw_data']->tanggal_janji_bayar)
                                                 <div class="mt-1.5 p-1.5 bg-orange-50 border border-orange-100 rounded text-[9px] flex flex-col gap-1">
                                                     <div class="flex justify-between items-center">
                                                         <span class="font-bold text-orange-800">Janji Bayar: {{ \Carbon\Carbon::parse($item['raw_data']->tanggal_janji_bayar)->translatedFormat('d M Y') }}</span>
-                                                        <span class="font-bold text-orange-800">Rp {{ number_format($item['raw_data']->jumlah_bayar, 0, ',', '.') }}</span>
+                                                        <span class="font-bold text-orange-800">Rp {{ number_format($item['raw_data']->jumlah_pembayaran ?: $item['raw_data']->jumlah_bayar, 0, ',', '.') }}</span>
                                                     </div>
                                                     @if($item['raw_data']->janji_bayar_fulfilled)
                                                         <div class="bg-green-100 border border-green-200 text-green-800 px-1.5 py-1 rounded flex justify-between items-center mt-0.5">

@@ -110,6 +110,17 @@
                     </td>
                 </tr>
                 <tr>
+                    <td class="font-bold pb-1 align-top">No. SPK / Rekening</td>
+                    <td class="w-4 pb-1 align-top">:</td>
+                    <td class="pb-1 align-top">
+                        @php
+                            $firstVisit = $history->firstWhere('type', 'visit');
+                            $spkNumber = $firstVisit ? ($firstVisit['raw_data']->spk_number ?? '-') : '-';
+                        @endphp
+                        <span class="font-bold">{{ $spkNumber }}</span>
+                    </td>
+                </tr>
+                <tr>
                     <td class="font-bold pb-1 align-top">No. PK / Plafon</td>
                     <td class="w-4 pb-1 align-top">:</td>
                     <td class="pb-1 align-top">
@@ -265,7 +276,10 @@
 
         <!-- Footer -->
         <div class="mt-6 pt-2 border-t border-gray-200 text-center">
-            <p class="text-[8px] text-gray-400 italic">Dokumen ini merupakan output resmi sistem KRD PuriApps v2.</p>
+            <p class="text-[8px] text-gray-400 italic">
+                Dokumen ini di-generate secara otomatis oleh sistem pada {{ now()->translatedFormat('d F Y H:i') }}.<br>
+                Tidak memerlukan tanda tangan basah ("Mengetahui" atau "Account Officer") karena telah diverifikasi dan divalidasi oleh sistem.
+            </p>
         </div>
     </div>
 

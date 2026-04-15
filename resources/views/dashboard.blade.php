@@ -267,7 +267,7 @@
             events: {{ json_encode($next7Events->toArray()) }},
             get filteredEvents() {
                 if (this.filter === 'all') {
-                    return [...this.events].sort((a, b) => {
+                    return this.events.filter(e => e.type === 'visit' || e.type === 'janji_bayar').sort((a, b) => {
                         if (a.date !== b.date) return a.date.localeCompare(b.date);
                         const p = { 'janji_bayar': 1, 'payday': 2, 'sp': 3, 'visit': 4, 'dob': 5 };
                         return (p[a.type] || 9) - (p[b.type] || 9);

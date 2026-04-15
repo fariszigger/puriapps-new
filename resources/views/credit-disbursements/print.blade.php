@@ -131,7 +131,7 @@
             <div class="text-right">
                 <span class="block text-gray-600 text-xs uppercase font-bold tracking-wider mb-1">Persentase</span>
                 <span class="text-lg font-black font-mono {{ $totalAmount >= $totalTarget ? 'text-green-700' : 'text-orange-600' }}">
-                    {{ $totalTarget > 0 ? min(100, round(($totalAmount / $totalTarget) * 100, 1)) : 0 }}%
+                    {{ $totalTarget > 0 ? round(($totalAmount / $totalTarget) * 100, 1) : 0 }}%
                 </span>
             </div>
         </div>

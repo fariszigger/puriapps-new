@@ -151,9 +151,8 @@ class CreditDisbursementTable extends Component
                     'total_amount' => $item->total_amount,
                     'total_count' => $item->total_count,
                     'limit' => $target,
-                    'percentage' => $target > 0 ? min(100, round(($item->total_amount / $target) * 100, 1)) : 0,
+                    'percentage' => $target > 0 ? round(($item->total_amount / $target) * 100, 1) : 0,
                 ];
-            });
 
         $grandTotal = $aoSummary->sum('total_amount');
         $aoCount = $aoUsers->count();

@@ -694,7 +694,7 @@
                     dotsRow.className = 'flex flex-wrap gap-1 mb-1';
                     const types = [...new Set(events.map(e => e.type))];
                     types.forEach(type => {
-                        if (type === 'dob') return; // User requested to hide blue circle
+                        if (type === 'dob' || type === 'payday') return; // Hide dots for Birthday and Jadwal Bayar
                         const dot = document.createElement('div');
                         const color = type === 'visit' ? '#22c55e' : '#f97316';
                         dot.className = 'w-2 h-2 rounded-full';
@@ -767,7 +767,7 @@
                 </button>`;
             }
 
-            const typeName = event.type === 'dob' ? 'Ulang Tahun' : event.type === 'visit' ? 'Kunjungan' : event.type === 'sp' ? 'Follow Up SP' : 'Janji Bayar';
+            const typeName = event.type === 'dob' ? 'Ulang Tahun' : (event.type === 'visit' ? 'Kunjungan' : (event.type === 'sp' ? 'Follow Up SP' : (event.type === 'payday' ? 'Jadwal Bayar' : 'Janji Bayar')));
 
             return `
                 <div id="detail-${event.id}" class="rounded-xl p-3.5 transition-all" style="background:${c.bg};color:${c.text}">

@@ -275,6 +275,17 @@
                         if(this.paydayFilter === 'tomorrow') return e.date === this.tomorrowDate;
                         if(this.paydayFilter === 'day2') return e.date === this.lusaDate;
                         return true;
+                    }).sort((a, b) => {
+                        let nameA = (a.ao_code || '').toUpperCase();
+                        let nameB = (b.ao_code || '').toUpperCase();
+                        if (nameA < nameB) return -1;
+                        if (nameA > nameB) return 1;
+                        // If same AO, sort by name
+                        let custA = (a.name || '').toUpperCase();
+                        let custB = (b.name || '').toUpperCase();
+                        if (custA < custB) return -1;
+                        if (custA > custB) return 1;
+                        return 0;
                     });
                 }
                 return this.events.filter(e => e.type === this.filter);
@@ -323,23 +334,24 @@
                         </svg>
                     </a>
                 </div>
+            </div>
 
-                <!-- Sub-filters for Jadwal Bayar -->
-                <div class="flex items-center gap-2 mt-3 w-full border-t border-teal-100/50 pt-3" x-show="filter === 'payday'" x-transition style="display: none;">
-                    <span class="text-xs font-semibold text-gray-500 mr-1">Tampilkan:</span>
-                    <button @click="paydayFilter = 'all'"
-                        :class="paydayFilter === 'all' ? 'bg-gray-800 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100'"
-                        class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all border border-gray-200">Semua (7 Hari)</button>
-                    <button @click="paydayFilter = 'today'"
-                        :class="paydayFilter === 'today' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
-                        class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all border border-emerald-200">Hari Ini</button>
-                    <button @click="paydayFilter = 'tomorrow'"
-                        :class="paydayFilter === 'tomorrow' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
-                        class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all border border-emerald-200">Besok</button>
+            <!-- Sub-filters for Jadwal Bayar -->
+            <div class="flex flex-wrap items-center gap-2 mb-4 p-3 bg-white/60 rounded-xl border border-teal-100 shadow-sm" x-show="filter === 'payday'" x-transition style="display: none;">
+                <span class="text-xs font-bold text-gray-500 mr-1 uppercase tracking-wider">Tampilkan:</span>
+                <button @click="paydayFilter = 'all'"
+                    :class="paydayFilter === 'all' ? 'bg-gray-800 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                    class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-gray-200">Semua (7 Hari)</button>
+                <button @click="paydayFilter = 'today'"
+                    :class="paydayFilter === 'today' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
+                    class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-emerald-200">Hari Ini</button>
+                <button @click="paydayFilter = 'tomorrow'"
+                    :class="paydayFilter === 'tomorrow' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
+                    class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-emerald-200">Besok</button>
+
                     <button @click="paydayFilter = 'day2'"
                         :class="paydayFilter === 'day2' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
-                        class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all border border-emerald-200">Lusa</button>
-                </div>
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-emerald-200">Lusa</button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2"

@@ -341,7 +341,7 @@
                 <span class="text-xs font-bold text-gray-500 mr-1 uppercase tracking-wider">Tampilkan:</span>
                 <button @click="paydayFilter = 'all'"
                     :class="paydayFilter === 'all' ? 'bg-gray-800 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100'"
-                    class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-gray-200">Semua (7 Hari)</button>
+                    class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-gray-200">Semua (3 Hari)</button>
                 <button @click="paydayFilter = 'today'"
                     :class="paydayFilter === 'today' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50'"
                     class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-emerald-200">Hari Ini</button>
@@ -357,8 +357,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2"
                 x-show="filteredEvents.length > 0">
                 <template x-for="(event, index) in filteredEvents.slice(0, limit)" :key="index">
-                    <div
-                        class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-3 flex items-center gap-3 hover:shadow-md transition-shadow">
+                    <div style="display: contents;">
+                        <!-- AO Separator (only for Jadwal Bayar) -->
+                        <template x-if="filter === 'payday' && (index === 0 || event.ao_code !== filteredEvents[index-1].ao_code)">
+                            <div class="col-span-full flex items-center gap-3 mt-4 mb-1">
+                                <h4 class="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full border border-gray-200 shadow-sm uppercase tracking-wider">
+                                    AO: <span class="text-emerald-700 ml-1" x-text="event.ao_code || 'UNASSIGNED'"></span>
+                                </h4>
+                                <div class="h-px bg-gray-200 flex-grow"></div>
+                            </div>
+                        </template>
+
+                        <div
+                            class="bg-white/70 backdrop-blur-sm rounded-lg border border-white/50 p-3 flex items-center gap-3 hover:shadow-md transition-shadow">
                         <div class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm"
                             :class="event.type === 'dob' ? 'bg-blue-100' : (event.type === 'visit' ? 'bg-green-100' : (event.type === 'sp' ? 'bg-red-100' : (event.type === 'payday' ? 'bg-emerald-100' : 'bg-orange-100')))">
                             <span x-text="event.type === 'dob' ? '🎂' : (event.type === 'visit' ? '📍' : (event.type === 'sp' ? '📄' : (event.type === 'payday' ? '💳' : '💰')))"></span>
@@ -380,6 +391,7 @@
                             </div>
                         </div>
                     </div>
+                </div>
                 </template>
             </div>
 

@@ -258,7 +258,8 @@
                             Rp {{ number_format($item->angsuran, 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4">
-                            @if($item->status == 'aktif' || $item->status == 'active' || empty($item->status))
+                            @php $status = strtolower($item->status); @endphp
+                            @if($status == 'aktif' || $status == 'active' || empty($status))
                                 <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-bold uppercase tracking-wider">Aktif</span>
                             @else
                                 <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold uppercase tracking-wider">Lunas</span>

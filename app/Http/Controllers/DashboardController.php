@@ -169,7 +169,7 @@ class DashboardController extends Controller
 
         // Payday events in next 7 days
         $paydayQuery = CreditDisbursement::with('user:id,name,code')
-            ->where('status', 'aktif');
+            ->whereIn('status', ['aktif', 'Aktif', 'active', 'Active']);
 
         if ($isAO) {
             $paydayQuery->where('user_id', $user->id);
@@ -193,6 +193,7 @@ class DashboardController extends Controller
                     'name' => $d->customer_name,
                     'ao_code' => $d->user->code ?? $d->user->name ?? '-',
                     'angsuran' => $d->angsuran,
+                    'nomor_spk' => $d->nomor_spk,
                 ]);
             }
         }

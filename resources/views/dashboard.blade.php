@@ -398,9 +398,14 @@
                             
                             <!-- Amount Display for Payday and Janji Bayar -->
                             <template x-if="event.type === 'payday' || event.type === 'janji_bayar'">
-                                <div class="mt-1 flex items-center gap-1">
-                                    <span class="text-[10px] font-bold text-gray-700">Rp</span>
-                                    <span class="text-xs font-black text-gray-900 tracking-tight" x-text="Number(event.angsuran || event.jumlah || 0).toLocaleString('id-ID')"></span>
+                                <div class="mt-1 flex flex-col gap-0.5">
+                                    <template x-if="event.type === 'payday' && event.nomor_spk">
+                                        <span class="text-[9px] font-mono text-gray-400 leading-none" x-text="event.nomor_spk"></span>
+                                    </template>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-[10px] font-bold text-gray-700">Rp</span>
+                                        <span class="text-xs font-black text-gray-900 tracking-tight" x-text="Number(event.angsuran || event.jumlah || 0).toLocaleString('id-ID')"></span>
+                                    </div>
                                 </div>
                             </template>
                         </div>

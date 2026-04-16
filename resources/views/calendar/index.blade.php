@@ -176,7 +176,12 @@
                                         <p class="text-xs text-orange-600 font-semibold mt-1">Rp {{ number_format($event['jumlah'], 0, ',', '.') }}</p>
                                     @endif
                                     @if($event['type'] === 'payday' && isset($event['angsuran']))
-                                        <p class="text-xs text-emerald-600 font-semibold mt-1">Jadwal Bayar: Rp {{ number_format($event['angsuran'], 0, ',', '.') }}</p>
+                                        <div class="mt-1 flex flex-col gap-0.5">
+                                            @if(isset($event['nomor_spk']))
+                                                <span class="text-[9px] font-mono text-gray-400 leading-none">{{ $event['nomor_spk'] }}</span>
+                                            @endif
+                                            <p class="text-xs text-emerald-600 font-semibold">Jadwal Bayar: Rp {{ number_format($event['angsuran'], 0, ',', '.') }}</p>
+                                        </div>
                                     @endif
                                 </div>
                                 @php $globalCount++; @endphp
@@ -351,7 +356,10 @@
                                 <td class="px-4 py-3 text-sm text-gray-600">
                                     <span x-show="event.type === 'dob'" x-text="'Usia ' + getAge(event.date) + ' tahun'"></span>
                                     <span x-show="event.type === 'janji_bayar' && event.jumlah" x-text="'Rp ' + formatRupiah(event.jumlah)"></span>
-                                    <span x-show="event.type === 'payday' && event.angsuran" x-text="'Rp ' + formatRupiah(event.angsuran)"></span>
+                                    <div x-show="event.type === 'payday' && event.angsuran" class="flex flex-col gap-0.5">
+                                        <span x-show="event.nomor_spk" class="text-[9px] font-mono text-gray-400 leading-none" x-text="event.nomor_spk"></span>
+                                        <span x-text="'Rp ' + formatRupiah(event.angsuran)"></span>
+                                    </div>
                                     <span x-show="event.type === 'visit' || (event.type === 'janji_bayar' && !event.jumlah)">-</span>
                                 </td>
                             </tr>
@@ -759,6 +767,11 @@
                 detail = `🎂 Usia ${event.age} tahun`;
             } else if (event.type === 'visit') {
                 detail = `Kolektibilitas: ${event.kolektibilitas || '-'}`;
+            } else if (event.type === 'payday') {
+                detail = `Rp ${Number(event.angsuran).toLocaleString('id-ID')}`;
+                if (event.nomor_spk) {
+                    detail = `<span class="block text-[9px] font-mono opacity-60 mb-0.5">${event.nomor_spk}</span>` + detail;
+                }
             } else if (event.type === 'janji_bayar') {
                 detail = event.jumlah ? `Rp ${Number(event.jumlah).toLocaleString('id-ID')}` : '';
                 extra = `<button onclick="event.stopPropagation();togglePromise(${event.visit_id},'${event.id}')" class="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:shadow-sm" style="background:${c.text}15;color:${c.text}">
@@ -794,6 +807,11 @@
                 detail = `Usia ${event.age} thn`;
             } else if (event.type === 'visit') {
                 detail = `Kol: ${event.kolektibilitas || '-'}`;
+            } else if (event.type === 'payday') {
+                detail = event.angsuran ? `Rp ${Number(event.angsuran).toLocaleString('id-ID')}` : '';
+                if (event.nomor_spk) {
+                    detail = `<span class="block text-[8px] font-mono opacity-60 leading-none mb-0.5">${event.nomor_spk}</span>` + detail;
+                }
             } else if (event.type === 'janji_bayar') {
                 detail = event.jumlah ? `Rp ${Number(event.jumlah).toLocaleString('id-ID')}` : '';
                 checkBtn = `<button onclick="event.stopPropagation();togglePromise(${event.visit_id},'${event.id}')" class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all shadow-sm hover:scale-110" style="background:${c.text}20;color:${c.text}" title="Tandai Lunas">

@@ -175,7 +175,7 @@ class CalendarController extends Controller
     private function getPaydayEvents(bool $isAO, $user): array
     {
         $query = CreditDisbursement::with('user:id,name,code')
-            ->where('status', 'aktif');
+            ->whereIn('status', ['aktif', 'Aktif', 'active', 'Active']);
 
         if ($isAO) {
             $query->where('user_id', $user->id);

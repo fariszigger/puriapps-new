@@ -18,8 +18,7 @@ class CollectionHistoryTable extends Component
     public $selectedMonth;
     public $selectedDate;
     public $selectedWeek = 1;
-    public $startDate;
-    public $endDate;
+
     public $aoCodeFilter = '';
     public $penagihanFilter = '';
 
@@ -46,31 +45,25 @@ class CollectionHistoryTable extends Component
         if ($this->selectedWeek == 1 && !request()->has('selectedWeek')) {
              $this->selectedWeek = min(5, (int) ceil(Carbon::now()->day / 7));
         }
-        
-        $this->updateDateRange();
     }
 
     public function updatedFilter()
     {
-        $this->updateDateRange();
         $this->resetPage();
     }
 
     public function updatedSelectedMonth()
     {
-        $this->updateDateRange();
         $this->resetPage();
     }
 
     public function updatedSelectedDate()
     {
-        $this->updateDateRange();
         $this->resetPage();
     }
 
     public function updatedSelectedWeek()
     {
-        $this->updateDateRange();
         $this->resetPage();
     }
 
@@ -84,7 +77,7 @@ class CollectionHistoryTable extends Component
         $this->resetPage();
     }
 
-    private function updateDateRange()
+    private function getDateRange()
     {
         $now = Carbon::now();
         if ($this->filter === 'daily') {
@@ -92,16 +85,14 @@ class CollectionHistoryTable extends Component
                 $date = Carbon::parse($this->selectedDate);
             } catch (\Exception $e) {
                 $date = $now;
-                $this->selectedDate = $date->format('Y-m-d');
             }
-            $this->startDate = $date->copy()->startOfDay();
-            $this->endDate = $date->copy()->endOfDay();
+            $startDate = $date->copy()->startOfDay();
+            $endDate = $date->copy()->endOfDay();
         } elseif ($this->filter === 'weekly') {
             try {
                 $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
             } catch (\Exception $e) {
                 $date = $now;
-                $this->selectedMonth = $date->format('Y-m');
             }
             $startOfMonth = $date->copy()->startOfMonth();
             
@@ -115,31 +106,32 @@ class CollectionHistoryTable extends Component
             $startDay = ($week - 1) * 7 + 1;
             $endDay = $week * 7;
             
-            $this->startDate = $startOfMonth->copy()->addDays($startDay - 1)->startOfDay();
+            $startDate = $startOfMonth->copy()->addDays($startDay - 1)->startOfDay();
             
             if ($week == $maxWeeks) {
-                $this->endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+                $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
             } else {
                 $potentialEndDate = $startOfMonth->copy()->addDays($endDay - 1)->endOfDay();
-                $this->endDate = $potentialEndDate > $startOfMonth->copy()->endOfMonth() 
+                $endDate = $potentialEndDate > $startOfMonth->copy()->endOfMonth() 
                                 ? $startOfMonth->copy()->endOfMonth()->endOfDay() 
                                 : $potentialEndDate;
             }
             
-            if ($this->startDate > $startOfMonth->copy()->endOfMonth()) {
-                $this->startDate = $startOfMonth->copy()->endOfMonth()->startOfDay();
-                $this->endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            if ($startDate > $startOfMonth->copy()->endOfMonth()) {
+                $startDate = $startOfMonth->copy()->endOfMonth()->startOfDay();
+                $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
             }
         } else {
             try {
                 $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
             } catch (\Exception $e) {
                 $date = Carbon::now();
-                $this->selectedMonth = $date->format('Y-m');
             }
-            $this->startDate = $date->copy()->startOfMonth();
-            $this->endDate = $date->copy()->endOfMonth();
+            $startDate = $date->copy()->startOfMonth();
+            $endDate = $date->copy()->endOfMonth();
         }
+
+        return [$startDate, $endDate];
     }
 
     public function updatingSearch()
@@ -154,8 +146,10 @@ class CollectionHistoryTable extends Component
 
     public function render()
     {
-        $visitConstraints = function($vq) {
-            $vq->whereBetween('created_at', [$this->startDate, $this->endDate]);
+        [$startDate, $endDate] = $this->getDateRange();
+
+        $visitConstraints = function($vq) use ($startDate, $endDate) {
+            $vq->whereBetween('created_at', [$startDate, $endDate]);
             if ($this->penagihanFilter) {
                 $vq->where('penagihan_ke', $this->penagihanFilter);
             }
@@ -166,8 +160,8 @@ class CollectionHistoryTable extends Component
             }
         };
 
-        $letterConstraints = function($wq) {
-            $wq->whereBetween('created_at', [$this->startDate, $this->endDate]);
+        $letterConstraints = function($wq) use ($startDate, $endDate) {
+            $wq->whereBetween('created_at', [$startDate, $endDate]);
             if ($this->aoCodeFilter) {
                 $wq->whereHas('user', function($wuq) {
                     $wuq->where('code', $this->aoCodeFilter);
@@ -214,12 +208,12 @@ class CollectionHistoryTable extends Component
                 ->select('created_at')
                 ->whereColumn('customer_id', 'customers.id')
                 ->where('is_accompanying', false)
-                ->whereBetween('created_at', [$this->startDate, $this->endDate])
+                ->whereBetween('created_at', [$startDate, $endDate])
                 ->unionAll(
                     DB::table('warning_letters')
                         ->select('created_at')
                         ->whereColumn('customer_id', 'customers.id')
-                        ->whereBetween('created_at', [$this->startDate, $this->endDate])
+                        ->whereBetween('created_at', [$startDate, $endDate])
                 )
                 ->orderBy('created_at', 'desc')
                 ->limit(1)

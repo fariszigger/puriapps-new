@@ -281,6 +281,7 @@ class CalendarController extends Controller
                 'jumlah_pembayaran' => request()->has('jumlah_pembayaran') ? request()->jumlah_pembayaran : $customerVisit->jumlah_pembayaran,
                 'janji_bayar_fulfilled' => false,
                 'janji_bayar_fulfilled_at' => null,
+                'jumlah_bayar_fulfilled' => null,
             ]);
 
             return response()->json([
@@ -297,9 +298,11 @@ class CalendarController extends Controller
             'janji_bayar_fulfilled_at' => $fulfilled ? now() : null,
         ];
 
-        // Save jumlah_pembayaran if provided during fulfillment
+        // Save jumlah_bayar_fulfilled if provided during fulfillment
         if ($fulfilled && request()->has('jumlah_pembayaran')) {
-            $updateData['jumlah_pembayaran'] = request()->jumlah_pembayaran;
+            $updateData['jumlah_bayar_fulfilled'] = request()->jumlah_pembayaran;
+        } else {
+            $updateData['jumlah_bayar_fulfilled'] = null;
         }
 
         $customerVisit->update($updateData);
@@ -351,6 +354,7 @@ class CalendarController extends Controller
                             'jumlah_pembayaran' => $visit->jumlah_pembayaran,
                             'janji_bayar_fulfilled' => $visit->janji_bayar_fulfilled,
                             'janji_bayar_fulfilled_at' => $visit->janji_bayar_fulfilled_at,
+                            'jumlah_bayar_fulfilled' => $visit->jumlah_bayar_fulfilled,
                             'time' => $visit->created_at->format('H:i'),
                         ];
                     });

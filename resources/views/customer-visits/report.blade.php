@@ -292,7 +292,7 @@
                                                 @if($visit->janji_bayar_fulfilled)
                                                     <br><span class="text-xs text-gray-700 font-normal ml-2"><span
                                                             class="font-bold text-green-700">SUDAH BAYAR</span> — Rp
-                                                        {{ number_format($visit->jumlah_pembayaran ?? 0, 0, ',', '.') }} pd.
+                                                        {{ number_format($visit->jumlah_bayar_fulfilled ?? 0, 0, ',', '.') }} pd.
                                                         {{ $visit->janji_bayar_fulfilled_at ? formatIndonesianDate($visit->janji_bayar_fulfilled_at) : '-' }}</span>
                                                 @endif
                                             @elseif($visit->hasil_penagihan === 'tidak_ada_janji')

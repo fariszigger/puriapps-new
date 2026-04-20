@@ -195,7 +195,7 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                                         d="M5 13l4 4L19 7" />
                                                 </svg>
-                                                Sudah Bayar Rp {{ number_format($visit->jumlah_pembayaran ?? 0, 0, ',', '.') }}
+                                                Sudah Bayar Rp {{ number_format($visit->jumlah_bayar_fulfilled ?? 0, 0, ',', '.') }}
                                             </span>
                                             <span class="text-[10px] font-medium text-green-700">
                                                 pd. {{ $visit->janji_bayar_fulfilled_at ? \Carbon\Carbon::parse($visit->janji_bayar_fulfilled_at)->format('d/m/Y') : '-' }}

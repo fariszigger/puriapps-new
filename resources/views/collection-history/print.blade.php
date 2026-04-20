@@ -199,7 +199,7 @@
                                                     @if($item['raw_data']->janji_bayar_fulfilled)
                                                         <div class="bg-green-100 border border-green-200 text-green-800 px-1.5 py-1 rounded flex justify-between items-center mt-0.5">
                                                             <span class="font-bold">✅ Dibayar: {{ \Carbon\Carbon::parse($item['raw_data']->janji_bayar_fulfilled_at)->translatedFormat('d M Y') }}</span>
-                                                            <span class="font-bold">Rp {{ number_format($item['raw_data']->jumlah_pembayaran, 0, ',', '.') }}</span>
+                                                            <span class="font-bold">Rp {{ number_format($item['raw_data']->jumlah_bayar_fulfilled, 0, ',', '.') }}</span>
                                                         </div>
                                                     @endif
                                                 </div>

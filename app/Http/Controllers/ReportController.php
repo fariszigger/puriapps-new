@@ -113,6 +113,7 @@ class ReportController extends Controller
                     'jumlah_pembayaran' => $visit->jumlah_pembayaran,
                     'janji_bayar_fulfilled' => $visit->janji_bayar_fulfilled,
                     'janji_bayar_fulfilled_at' => $visit->janji_bayar_fulfilled_at,
+                    'jumlah_bayar_fulfilled' => $visit->jumlah_bayar_fulfilled,
                     'time' => $visit->created_at->format('H:i'),
                 ];
             });
@@ -245,6 +246,7 @@ class ReportController extends Controller
                             'jumlah_pembayaran' => $visit->jumlah_pembayaran,
                             'janji_bayar_fulfilled' => $visit->janji_bayar_fulfilled,
                             'janji_bayar_fulfilled_at' => $visit->janji_bayar_fulfilled_at,
+                            'jumlah_bayar_fulfilled' => $visit->jumlah_bayar_fulfilled,
                             'time' => $visit->created_at->format('H:i'),
                         ];
                     });

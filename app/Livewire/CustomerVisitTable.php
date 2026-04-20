@@ -193,7 +193,7 @@ class CustomerVisitTable extends Component
 
         return view('livewire.customer-visit-table', [
             'visits' => $query->orderBy('id', 'desc')->paginate($this->perPage),
-            'aoUsers' => \App\Models\User::role('AO')->whereNotNull('code')->orderBy('code')->get(),
+            'aoUsers' => \App\Models\User::role(['AO', 'Kabag'])->with('roles')->whereNotNull('code')->orderBy('code')->get(),
             'maxPenagihan' => \App\Models\CustomerVisit::max('penagihan_ke') ?? 1,
         ]);
     }

@@ -89,12 +89,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
             </div>
-            <label class="text-sm font-bold text-gray-700">AO / Kabag:</label>
+            <label class="text-sm font-bold text-gray-700">AO:</label>
             <select wire:model.live="aoCodeFilter"
                 class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 transition-all shadow-sm min-w-[120px]">
                 <option value="">Semua</option>
                 @foreach($aoUsers as $ao)
-                    <option value="{{ $ao->code }}">{{ $ao->code }} - {{ $ao->name }} @if($ao->hasRole('Kabag')) (Kabag) @endif</option>
+                    <option value="{{ $ao->code }}">{{ $ao->code }} - {{ $ao->name }}</option>
                 @endforeach
             </select>
         </div>

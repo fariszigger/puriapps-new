@@ -14,7 +14,7 @@
                     $overallPaid += $kabagUsers->sum('direct_paid_sum') + $kabagUsers->sum('fulfilled_paid_sum');
                 @endphp
                 <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full font-black shadow-sm border border-emerald-200">
-                    Total Realisasi: Rp {{ number_format($overallPaid, 0, ',', '.') }}
+                    Total Bayar: Rp {{ number_format($overallPaid, 0, ',', '.') }}
                 </span>
             </div>
         </div>

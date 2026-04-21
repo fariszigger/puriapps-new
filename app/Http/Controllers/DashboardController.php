@@ -281,7 +281,7 @@ class DashboardController extends Controller
             $m = now()->format('n');
         }
         
-        $totalTarget = ($isAo ? ($user->disbursement_target ?? 400000000) : \App\Models\User::role('AO')->sum('disbursement_target')) * $m;
+        $totalTarget = ($isAo ? ($user->disbursement_target ?? 400000000) : \App\Models\User::role(['AO', 'Kabag'])->sum('disbursement_target')) * $m;
 
         $stats = [
             'totalCustomers' => (clone $customerQuery)->count(),
@@ -290,7 +290,7 @@ class DashboardController extends Controller
             'rejectedCount' => (clone $evaluationQuery)->where('approval_status', 'rejected')->count(),
             'totalVisits' => (clone $visitQuery)->count(),
             'totalDisbursement' => (clone $disbursementQuery)->sum('amount'),
-            'totalTarget' => $totalTarget,
+            'totalLimit' => $totalTarget,
         ];
 
         // Chart data

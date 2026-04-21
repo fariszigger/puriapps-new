@@ -100,6 +100,7 @@ class CreditDisbursementTable extends Component
         $query->when(!empty($this->search), function ($query) {
             $query->where(function ($q) {
                 $q->where('customer_name', 'like', '%' . $this->search . '%')
+                  ->orWhere('nomor_spk', 'like', '%' . $this->search . '%')
                   ->orWhereHas('user', function ($uq) {
                       $uq->where('name', 'like', '%' . $this->search . '%')
                           ->orWhere('code', 'like', '%' . $this->search . '%');

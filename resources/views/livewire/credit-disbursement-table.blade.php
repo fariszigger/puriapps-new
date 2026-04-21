@@ -84,7 +84,7 @@
                     </div>
                     <input wire:model.live.debounce.300ms="search" type="search"
                         class="block w-full pl-10 pr-4 py-2.5 text-sm text-gray-900 border border-gray-200 rounded-xl bg-white/80 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner"
-                        placeholder="Cari nasabah atau AO...">
+                        placeholder="Cari nasabah, AO, atau No. SPK...">
                 </div>
 
                 {{-- Mode Toggle --}}

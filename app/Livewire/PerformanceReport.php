@@ -125,6 +125,12 @@ class PerformanceReport extends Component
             ->withCount(['customerVisits as visits_kol_5_count' => function ($query) {
                 $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
             }])
+            ->withSum(['customerVisits as direct_paid_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate]);
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate]);
+            }], 'jumlah_bayar_fulfilled')
             ->orderBy('name')
             ->get()
             ->groupBy(function($ao) {
@@ -155,6 +161,12 @@ class PerformanceReport extends Component
             ->withCount(['customerVisits as visits_kol_5_count' => function ($query) {
                 $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
             }])
+            ->withSum(['customerVisits as direct_paid_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate]);
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate]);
+            }], 'jumlah_bayar_fulfilled')
             ->orderBy('name')
             ->get();
 

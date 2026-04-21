@@ -113,6 +113,7 @@
             
             <div class="mt-2 flex items-center justify-center gap-4">
                 <span class="text-xs text-gray-500 font-bold uppercase tracking-tight">Total Keseluruhan: <span class="text-indigo-700 text-sm">{{ $totalVisitsOverall }}</span></span>
+                <span class="text-xs text-gray-500 font-bold uppercase tracking-tight border-l border-gray-300 pl-4">Total Realisasi: <span class="text-green-700 text-sm">Rp {{ number_format($totals['total_paid'] ?? 0, 0, ',', '.') }}</span></span>
                 <div class="flex gap-2 text-[9px] uppercase font-bold tracking-tighter border-l border-gray-300 pl-4">
                     <span class="px-1.5 py-0.5 bg-green-100 text-green-800 rounded">Lancar: {{ $totals['kol_1'] }}</span>
                     <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded">DPK: {{ $totals['kol_2'] }}</span>
@@ -257,6 +258,10 @@
                                 </tr>
                         @endforeach
                     @endforeach
+                    <tr style="background-color: #f3f4f6;">
+                        <td colspan="6" class="text-right font-black uppercase text-[10px]">Total Realisasi Bayar (+ Janji Bayar Fulfilled)</td>
+                        <td class="font-black text-[11px] text-green-700">Rp {{ number_format($aoData['counts']['total_paid'] ?? 0, 0, ',', '.') }}</td>
+                    </tr>
                 </tbody>
             </table>
         @empty

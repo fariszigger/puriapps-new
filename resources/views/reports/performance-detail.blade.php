@@ -240,6 +240,10 @@
                                     </tr>
                         @endforeach
                     @endforeach
+                    <tr style="background-color: #f3f4f6;">
+                        <td colspan="6" class="text-right font-black uppercase text-[10px]">Total Realisasi Bayar (+ Janji Bayar Fulfilled)</td>
+                        <td class="font-black text-[11px] text-green-700">Rp {{ number_format($totalPaid ?? 0, 0, ',', '.') }}</td>
+                    </tr>
                 </tbody>
             </table>
         @else

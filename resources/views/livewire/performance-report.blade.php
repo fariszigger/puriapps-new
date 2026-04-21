@@ -4,8 +4,19 @@
             <h2 class="text-xl font-bold text-gray-900 border-l-4 border-indigo-500 pl-3">
                 Laporan Kunjungan AO
             </h2>
-            <p class="text-sm text-gray-500 mt-1">Periode: <strong class="text-indigo-700">{{ $periodLabel }}</strong>
-            </p>
+            <p class="text-sm text-gray-500 mt-1">Periode: <strong class="text-indigo-700">{{ $periodLabel }}</strong></p>
+            <div class="mt-2 text-sm">
+                @php
+                    $overallPaid = 0;
+                    foreach($aosGroups as $group) {
+                        $overallPaid += $group->sum('direct_paid_sum') + $group->sum('fulfilled_paid_sum');
+                    }
+                    $overallPaid += $kabagUsers->sum('direct_paid_sum') + $kabagUsers->sum('fulfilled_paid_sum');
+                @endphp
+                <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full font-black shadow-sm border border-emerald-200">
+                    Total Realisasi: Rp {{ number_format($overallPaid, 0, ',', '.') }}
+                </span>
+            </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
@@ -97,7 +108,8 @@
                                 <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">KL</th>
                                 <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">D</th>
                                 <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">M</th>
-                                <th scope="col" class="px-4 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">Total</th>
+                                <th scope="col" class="px-4 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">Kunjungan</th>
+                                <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-indigo-900 uppercase tracking-wider">Total Bayar</th>
                                 <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-indigo-900 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
@@ -147,9 +159,11 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-black {{ $ao->visits_count > 0 ? 'bg-indigo-100 text-indigo-800 shadow-sm' : 'bg-gray-100 text-gray-500' }}">
-                                            {{ $ao->visits_count }}
-                                        </span>
+                                        {{ $ao->visits_count }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-emerald-700">
+                                        Rp {{ number_format(($ao->direct_paid_sum ?? 0) + ($ao->fulfilled_paid_sum ?? 0), 0, ',', '.') }}
+
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('reports.performance-detail', ['user' => $ao->id, 'filter' => $filter, 'month' => $selectedMonth, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
@@ -188,7 +202,8 @@
                                 <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">KL</th>
                                 <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">D</th>
                                 <th scope="col" class="px-2 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">M</th>
-                                <th scope="col" class="px-4 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">Total</th>
+                                <th scope="col" class="px-4 py-4 text-center text-xs font-bold text-indigo-900 uppercase tracking-wider">Kunjungan</th>
+                                <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-indigo-900 uppercase tracking-wider">Total Bayar</th>
                                 <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-indigo-900 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
@@ -238,9 +253,11 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-black {{ $ao->visits_count > 0 ? 'bg-indigo-100 text-indigo-800 shadow-sm' : 'bg-gray-100 text-gray-500' }}">
-                                            {{ $ao->visits_count }}
-                                        </span>
+                                        {{ $ao->visits_count }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-emerald-700">
+                                        Rp {{ number_format(($ao->direct_paid_sum ?? 0) + ($ao->fulfilled_paid_sum ?? 0), 0, ',', '.') }}
+
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('reports.performance-detail', ['user' => $ao->id, 'filter' => $filter, 'month' => $selectedMonth, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"

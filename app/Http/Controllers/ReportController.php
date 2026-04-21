@@ -131,6 +131,10 @@ class ReportController extends Controller
                 'kol_4' => $visits->where('kolektibilitas', '4')->count(),
                 'kol_5' => $visits->where('kolektibilitas', '5')->count(),
             ],
+            'totalPaid' => $visits->sum('jumlah_bayar') + 
+                          CustomerVisit::where('user_id', $user->id)
+                            ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+                            ->sum('jumlah_bayar_fulfilled'),
         ]);
     }
 
@@ -226,6 +230,10 @@ class ReportController extends Controller
                     'kol_3' => $userVisits->where('kolektibilitas', '3')->count(),
                     'kol_4' => $userVisits->where('kolektibilitas', '4')->count(),
                     'kol_5' => $userVisits->where('kolektibilitas', '5')->count(),
+                    'total_paid' => $userVisits->sum('jumlah_bayar') + 
+                                   CustomerVisit::where('user_id', $user->id)
+                                   ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+                                   ->sum('jumlah_bayar_fulfilled'),
                 ],
                 'dates' => $userVisits->groupBy(function ($visit) {
                     return $visit->created_at->format('Y-m-d');
@@ -264,6 +272,10 @@ class ReportController extends Controller
                 'kol_3' => $visits->where('kolektibilitas', '3')->count(),
                 'kol_4' => $visits->where('kolektibilitas', '4')->count(),
                 'kol_5' => $visits->where('kolektibilitas', '5')->count(),
+                'total_paid' => $visits->sum('jumlah_bayar') + 
+                               CustomerVisit::whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+                               ->whereHas('user', function($q) { $q->role('AO'); })
+                               ->sum('jumlah_bayar_fulfilled'),
             ],
         ]);
     }

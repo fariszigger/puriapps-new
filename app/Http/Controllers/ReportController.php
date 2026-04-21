@@ -219,7 +219,7 @@ class ReportController extends Controller
         // Group by user, then by date
         $recapData = $visits->groupBy(function ($visit) {
             return $visit->user_id;
-        })->map(function ($userVisits) {
+        })->map(function ($userVisits) use ($startDate, $endDate) {
             $user = $userVisits->first()->user;
             return [
                 'user' => $user,

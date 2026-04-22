@@ -165,39 +165,57 @@
                                         @endif
                                         <td class="text-center text-gray-600">{{ $visit['time'] }}</td>
                                         <td class="font-semibold">
-                                            <div class="flex items-start justify-between gap-2">
-                                                <div>
+                                            <div class="flex items-start gap-0 w-full">
+                                                <div class="w-[28%] shrink-0 pr-2">
                                                     <span class="leading-tight">{{ $visit['customer_name'] }}</span>
                                                     @if($visit['address'])
                                                         <br>
-                                                        <span class="text-[8px] text-gray-500 font-normal leading-tight inline-block mt-0.5 max-w-[130px]" style="white-space: normal;">{{ $visit['address'] }}</span>
+                                                        <span class="text-[8px] text-gray-500 font-normal leading-tight inline-block mt-0.5" style="white-space: normal;">{{ $visit['address'] }}</span>
                                                     @endif
                                                 </div>
-                                                @php
-                                                    $photos = [
-                                                        ['path' => $visit['photo_path'], 'label' => 'Lokasi'],
-                                                        ['path' => $visit['photo_rumah_path'], 'label' => 'Rumah'],
-                                                        ['path' => $visit['photo_orang_path'], 'label' => 'Orang'],
-                                                    ];
-                                                    $availablePhotos = array_filter($photos, fn($p) => !empty($p['path']));
-                                                @endphp
-                                                @if(count($availablePhotos) > 0)
-                                                    <div class="flex gap-1.5 flex-nowrap justify-end shrink-0 ml-2">
-                                                        @foreach($availablePhotos as $photo)
-                                                            @php
-                                                                $pathParts = explode('/', $photo['path']);
-                                                                $type = count($pathParts) >= 2 ? $pathParts[count($pathParts)-2] : 'photos';
-                                                                $filename = end($pathParts);
-                                                            @endphp
-                                                            <div class="text-center relative group">
-                                                                <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" alt="{{ $photo['label'] }}" class="w-8 h-8 md:w-10 md:h-10 object-cover rounded border border-gray-300">
-                                                                <div class="hidden group-hover:block absolute top-1/2 right-full -translate-y-1/2 mr-2 z-50">
-                                                                    <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" alt="{{ $photo['label'] }}" class="max-w-[200px] md:max-w-[300px] w-auto h-auto object-contain rounded-lg shadow-2xl border border-gray-200 bg-white p-1">
+
+                                                <div class="flex-1 px-2 border-l border-gray-100">
+                                                    @if(!empty($visit['kondisi_saat_ini']))
+                                                        <div class="mb-1">
+                                                            <span class="text-[7px] uppercase font-bold text-gray-400 block leading-none">Kondisi:</span>
+                                                            <div class="text-[8px] font-normal leading-tight text-gray-700">{!! Str::limit(strip_tags($visit['kondisi_saat_ini']), 100) !!}</div>
+                                                        </div>
+                                                    @endif
+                                                    @if(!empty($visit['rencana_penyelesaian']))
+                                                        <div>
+                                                            <span class="text-[7px] uppercase font-bold text-gray-400 block leading-none">Rencana:</span>
+                                                            <div class="text-[8px] font-normal leading-tight text-gray-700">{!! Str::limit(strip_tags($visit['rencana_penyelesaian']), 100) !!}</div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                <div class="w-[130px] shrink-0 ml-2">
+                                                    @php
+                                                        $photos = [
+                                                            ['path' => $visit['photo_path'], 'label' => 'Lokasi'],
+                                                            ['path' => $visit['photo_rumah_path'], 'label' => 'Rumah'],
+                                                            ['path' => $visit['photo_orang_path'], 'label' => 'Orang'],
+                                                        ];
+                                                        $availablePhotos = array_filter($photos, fn($p) => !empty($p['path']));
+                                                    @endphp
+                                                    @if(count($availablePhotos) > 0)
+                                                        <div class="flex gap-1.5 flex-nowrap justify-end">
+                                                            @foreach($availablePhotos as $photo)
+                                                                @php
+                                                                    $pathParts = explode('/', $photo['path']);
+                                                                    $type = count($pathParts) >= 2 ? $pathParts[count($pathParts)-2] : 'photos';
+                                                                    $filename = end($pathParts);
+                                                                @endphp
+                                                                <div class="text-center relative group">
+                                                                    <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" alt="{{ $photo['label'] }}" class="w-8 h-8 md:w-10 md:h-10 object-cover rounded border border-gray-300">
+                                                                    <div class="hidden group-hover:block absolute top-1/2 right-full -translate-y-1/2 mr-2 z-50">
+                                                                        <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" alt="{{ $photo['label'] }}" class="max-w-[200px] md:max-w-[300px] w-auto h-auto object-contain rounded-lg shadow-2xl border border-gray-200 bg-white p-1">
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                @endif
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="text-center">

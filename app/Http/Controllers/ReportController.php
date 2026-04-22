@@ -114,6 +114,8 @@ class ReportController extends Controller
                     'janji_bayar_fulfilled' => $visit->janji_bayar_fulfilled,
                     'janji_bayar_fulfilled_at' => $visit->janji_bayar_fulfilled_at,
                     'jumlah_bayar_fulfilled' => $visit->jumlah_bayar_fulfilled,
+                    'kondisi_saat_ini' => $visit->kondisi_saat_ini,
+                    'rencana_penyelesaian' => $visit->rencana_penyelesaian,
                     'time' => $visit->created_at->format('H:i'),
                 ];
             });
@@ -211,7 +213,7 @@ class ReportController extends Controller
         $visits = CustomerVisit::with(['customer:id,name', 'user:id,name,code'])
             ->whereBetween('created_at', [$startDate, $endDate])
             ->whereHas('user', function ($query) {
-                $query->role('AO'); // Only get visits created by AO users
+                $query->role(['AO', 'Kabag']); // Include both AO and Kabag roles
             })
             ->orderBy('created_at', 'asc')
             ->get();
@@ -255,6 +257,8 @@ class ReportController extends Controller
                             'janji_bayar_fulfilled' => $visit->janji_bayar_fulfilled,
                             'janji_bayar_fulfilled_at' => $visit->janji_bayar_fulfilled_at,
                             'jumlah_bayar_fulfilled' => $visit->jumlah_bayar_fulfilled,
+                            'kondisi_saat_ini' => $visit->kondisi_saat_ini,
+                            'rencana_penyelesaian' => $visit->rencana_penyelesaian,
                             'time' => $visit->created_at->format('H:i'),
                         ];
                     });
@@ -274,9 +278,63 @@ class ReportController extends Controller
                 'kol_5' => $visits->where('kolektibilitas', '5')->count(),
                 'total_paid' => $visits->sum('jumlah_bayar') + 
                                CustomerVisit::whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
-                               ->whereHas('user', function($q) { $q->role('AO'); })
+                               ->whereHas('user', function($q) { $q->role(['AO', 'Kabag']); })
                                ->sum('jumlah_bayar_fulfilled'),
             ],
         ]);
+    }
+
+    public function exportXls(Request $request)
+    {
+        if (auth()->user()->cannot('view performance reports')) {
+            abort(403);
+        }
+
+        $filter = $request->get('filter', 'monthly');
+        $monthStr = $request->get('month', Carbon::now()->format('Y-m'));
+        $dateStr = $request->get('date', Carbon::now()->format('Y-m-d'));
+        $week = $request->get('week', 1);
+
+        $now = Carbon::now();
+        if ($filter === 'daily') {
+            try { $date = Carbon::parse($dateStr); } catch (\Exception $e) { $date = $now; }
+            $startDate = $date->copy()->startOfDay();
+            $endDate = $date->copy()->endOfDay();
+        } elseif ($filter === 'weekly') {
+            try { $date = Carbon::createFromFormat('Y-m', $monthStr); } catch (\Exception $e) { $date = $now; }
+            $startOfMonth = $date->copy()->startOfMonth();
+            $startDay = ($week - 1) * 7 + 1;
+            $endDay = min($week * 7, $startOfMonth->daysInMonth);
+            $startDate = $startOfMonth->copy()->addDays($startDay - 1)->startOfDay();
+            $endDate = $startOfMonth->copy()->addDays($endDay - 1)->endOfDay();
+        } else {
+            try { $date = Carbon::createFromFormat('Y-m', $monthStr); } catch (\Exception $e) { $date = $now; }
+            $startDate = $date->copy()->startOfMonth();
+            $endDate = $date->copy()->endOfMonth();
+        }
+
+        $visits = CustomerVisit::with(['customer', 'user'])
+            ->join('users', 'customer_visits.user_id', '=', 'users.id')
+            ->select('customer_visits.*')
+            ->where(function($q) use ($startDate, $endDate) {
+                $q->whereBetween('customer_visits.created_at', [$startDate, $endDate])
+                  ->orWhereBetween('customer_visits.janji_bayar_fulfilled_at', [$startDate, $endDate]);
+            })
+            ->whereHas('user', function ($query) {
+                $query->role(['AO', 'Kabag']);
+            })
+            ->orderBy('users.name', 'asc')
+            ->orderBy('customer_visits.created_at', 'asc')
+            ->get();
+
+        $filename = 'Performance_Report_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d') . '.xls';
+
+        $headers = [
+            'Content-Type' => 'application/vnd.ms-excel',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        return response()->view('reports.performance-export-xls', compact('visits', 'startDate', 'endDate'), 200, $headers);
     }
 }

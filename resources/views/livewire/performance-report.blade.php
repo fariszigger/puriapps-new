@@ -1,22 +1,10 @@
-<div>
+<div x-data="{ tab: 'visits' }">
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div>
             <h2 class="text-xl font-bold text-gray-900 border-l-4 border-indigo-500 pl-3">
                 Laporan Kunjungan AO
             </h2>
             <p class="text-sm text-gray-500 mt-1">Periode: <strong class="text-indigo-700">{{ $periodLabel }}</strong></p>
-            <div class="mt-2 text-sm">
-                @php
-                    $overallPaid = 0;
-                    foreach($aosGroups as $group) {
-                        $overallPaid += $group->sum('direct_paid_sum') + $group->sum('fulfilled_paid_sum');
-                    }
-                    $overallPaid += $kabagUsers->sum('direct_paid_sum') + $kabagUsers->sum('fulfilled_paid_sum');
-                @endphp
-                <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full font-black shadow-sm border border-emerald-200">
-                    Total Bayar: Rp {{ number_format($overallPaid, 0, ',', '.') }}
-                </span>
-            </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
@@ -97,6 +85,17 @@
         </div>
     </div>
 
+    <div class="border-b border-gray-200 mb-6 flex overflow-x-auto">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <button @click="tab = 'visits'" :class="{'border-indigo-500 text-indigo-600': tab === 'visits', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'visits'}" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 outline-none focus:outline-none">
+                Berdasarkan Kunjungan
+            </button>
+            <button @click="tab = 'payments'" :class="{'border-indigo-500 text-indigo-600': tab === 'payments', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'payments'}" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 outline-none focus:outline-none">
+                Berdasarkan Pembayaran
+            </button>
+        </nav>
+    </div>
+
     @if($kabagUsers->count() > 0)
         <div class="mb-8">
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -144,28 +143,48 @@
                                         {{ $ao->office_branch ?? 'Pusat' }}
                                     </td>
                                     <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_1_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-50 text-gray-400' }}">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_1_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-50 text-gray-400' }}">
                                             {{ $ao->visits_kol_1_count }}
                                         </span>
+                                        @php $paid1 = ($ao->direct_paid_kol_1_sum ?? 0) + ($ao->fulfilled_paid_kol_1_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid1 > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid1 > 0 ? number_format($paid1, 0, ',', '.') : '0' }}
+                                        </span>
                                     </td>
                                     <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_2_count > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-50 text-gray-400' }}">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_2_count > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-50 text-gray-400' }}">
                                             {{ $ao->visits_kol_2_count }}
                                         </span>
+                                        @php $paid2 = ($ao->direct_paid_kol_2_sum ?? 0) + ($ao->fulfilled_paid_kol_2_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid2 > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid2 > 0 ? number_format($paid2, 0, ',', '.') : '0' }}
+                                        </span>
                                     </td>
                                     <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_3_count > 0 ? 'bg-orange-100 text-orange-800' : 'bg-gray-50 text-gray-400' }}">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_3_count > 0 ? 'bg-orange-100 text-orange-800' : 'bg-gray-50 text-gray-400' }}">
                                             {{ $ao->visits_kol_3_count }}
                                         </span>
-                                    </td>
-                                    <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_4_count > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-50 text-gray-400' }}">
-                                            {{ $ao->visits_kol_4_count }}
+                                        @php $paid3 = ($ao->direct_paid_kol_3_sum ?? 0) + ($ao->fulfilled_paid_kol_3_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid3 > 0 ? 'bg-orange-100 text-orange-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid3 > 0 ? number_format($paid3, 0, ',', '.') : '0' }}
                                         </span>
                                     </td>
                                     <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_5_count > 0 ? 'bg-red-200 text-red-900' : 'bg-gray-50 text-gray-400' }}">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_4_count > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $ao->visits_kol_4_count }}
+                                        </span>
+                                        @php $paid4 = ($ao->direct_paid_kol_4_sum ?? 0) + ($ao->fulfilled_paid_kol_4_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid4 > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid4 > 0 ? number_format($paid4, 0, ',', '.') : '0' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-2 py-4 whitespace-nowrap text-center">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_5_count > 0 ? 'bg-red-200 text-red-900' : 'bg-gray-50 text-gray-400' }}">
                                             {{ $ao->visits_kol_5_count }}
+                                        </span>
+                                        @php $paid5 = ($ao->direct_paid_kol_5_sum ?? 0) + ($ao->fulfilled_paid_kol_5_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid5 > 0 ? 'bg-red-200 text-red-900' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid5 > 0 ? number_format($paid5, 0, ',', '.') : '0' }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-center">
@@ -185,6 +204,59 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        <tfoot class="bg-indigo-50/80 border-t-2 border-indigo-200 font-bold">
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-right text-indigo-900 uppercase tracking-wider text-xs">Sub Total Pejabat Eksekutif</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $kabagKol1Visits = $kabagUsers->sum('visits_kol_1_count');
+                                        $kabagKol1Paid = $kabagUsers->sum('direct_paid_kol_1_sum') + $kabagUsers->sum('fulfilled_paid_kol_1_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $kabagKol1Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $kabagKol1Paid > 0 ? number_format($kabagKol1Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $kabagKol2Visits = $kabagUsers->sum('visits_kol_2_count');
+                                        $kabagKol2Paid = $kabagUsers->sum('direct_paid_kol_2_sum') + $kabagUsers->sum('fulfilled_paid_kol_2_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $kabagKol2Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $kabagKol2Paid > 0 ? number_format($kabagKol2Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $kabagKol3Visits = $kabagUsers->sum('visits_kol_3_count');
+                                        $kabagKol3Paid = $kabagUsers->sum('direct_paid_kol_3_sum') + $kabagUsers->sum('fulfilled_paid_kol_3_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $kabagKol3Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $kabagKol3Paid > 0 ? number_format($kabagKol3Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $kabagKol4Visits = $kabagUsers->sum('visits_kol_4_count');
+                                        $kabagKol4Paid = $kabagUsers->sum('direct_paid_kol_4_sum') + $kabagUsers->sum('fulfilled_paid_kol_4_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $kabagKol4Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $kabagKol4Paid > 0 ? number_format($kabagKol4Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $kabagKol5Visits = $kabagUsers->sum('visits_kol_5_count');
+                                        $kabagKol5Paid = $kabagUsers->sum('direct_paid_kol_5_sum') + $kabagUsers->sum('fulfilled_paid_kol_5_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $kabagKol5Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $kabagKol5Paid > 0 ? number_format($kabagKol5Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center text-indigo-900 text-xs">
+                                    {{ $kabagUsers->sum('visits_count') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-emerald-700 text-sm">
+                                    @php $kabagTotalPaid = $kabagUsers->sum('direct_paid_sum') + $kabagUsers->sum('fulfilled_paid_sum'); @endphp
+                                    Rp {{ number_format($kabagTotalPaid, 0, ',', '.') }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -238,28 +310,48 @@
                                         {{ $ao->office_branch ?? 'Pusat' }}
                                     </td>
                                     <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_1_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-50 text-gray-400' }}">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_1_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-50 text-gray-400' }}">
                                             {{ $ao->visits_kol_1_count }}
                                         </span>
+                                        @php $paid1 = ($ao->direct_paid_kol_1_sum ?? 0) + ($ao->fulfilled_paid_kol_1_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid1 > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid1 > 0 ? number_format($paid1, 0, ',', '.') : '0' }}
+                                        </span>
                                     </td>
                                     <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_2_count > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-50 text-gray-400' }}">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_2_count > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-50 text-gray-400' }}">
                                             {{ $ao->visits_kol_2_count }}
                                         </span>
+                                        @php $paid2 = ($ao->direct_paid_kol_2_sum ?? 0) + ($ao->fulfilled_paid_kol_2_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid2 > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid2 > 0 ? number_format($paid2, 0, ',', '.') : '0' }}
+                                        </span>
                                     </td>
                                     <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_3_count > 0 ? 'bg-orange-100 text-orange-800' : 'bg-gray-50 text-gray-400' }}">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_3_count > 0 ? 'bg-orange-100 text-orange-800' : 'bg-gray-50 text-gray-400' }}">
                                             {{ $ao->visits_kol_3_count }}
                                         </span>
-                                    </td>
-                                    <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_4_count > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-50 text-gray-400' }}">
-                                            {{ $ao->visits_kol_4_count }}
+                                        @php $paid3 = ($ao->direct_paid_kol_3_sum ?? 0) + ($ao->fulfilled_paid_kol_3_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid3 > 0 ? 'bg-orange-100 text-orange-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid3 > 0 ? number_format($paid3, 0, ',', '.') : '0' }}
                                         </span>
                                     </td>
                                     <td class="px-2 py-4 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_5_count > 0 ? 'bg-red-200 text-red-900' : 'bg-gray-50 text-gray-400' }}">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_4_count > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $ao->visits_kol_4_count }}
+                                        </span>
+                                        @php $paid4 = ($ao->direct_paid_kol_4_sum ?? 0) + ($ao->fulfilled_paid_kol_4_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid4 > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid4 > 0 ? number_format($paid4, 0, ',', '.') : '0' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-2 py-4 whitespace-nowrap text-center">
+                                        <span x-show="tab === 'visits'" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $ao->visits_kol_5_count > 0 ? 'bg-red-200 text-red-900' : 'bg-gray-50 text-gray-400' }}">
                                             {{ $ao->visits_kol_5_count }}
+                                        </span>
+                                        @php $paid5 = ($ao->direct_paid_kol_5_sum ?? 0) + ($ao->fulfilled_paid_kol_5_sum ?? 0); @endphp
+                                        <span x-show="tab === 'payments'" style="display: none;" class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold {{ $paid5 > 0 ? 'bg-red-200 text-red-900' : 'bg-gray-50 text-gray-400' }}">
+                                            {{ $paid5 > 0 ? number_format($paid5, 0, ',', '.') : '0' }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-center">
@@ -283,6 +375,59 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        <tfoot class="bg-indigo-50/80 border-t-2 border-indigo-200 font-bold">
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-right text-indigo-900 uppercase tracking-wider text-xs">Sub Total {{ $branch }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $aosKol1Visits = $aos->sum('visits_kol_1_count');
+                                        $aosKol1Paid = $aos->sum('direct_paid_kol_1_sum') + $aos->sum('fulfilled_paid_kol_1_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $aosKol1Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $aosKol1Paid > 0 ? number_format($aosKol1Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $aosKol2Visits = $aos->sum('visits_kol_2_count');
+                                        $aosKol2Paid = $aos->sum('direct_paid_kol_2_sum') + $aos->sum('fulfilled_paid_kol_2_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $aosKol2Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $aosKol2Paid > 0 ? number_format($aosKol2Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $aosKol3Visits = $aos->sum('visits_kol_3_count');
+                                        $aosKol3Paid = $aos->sum('direct_paid_kol_3_sum') + $aos->sum('fulfilled_paid_kol_3_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $aosKol3Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $aosKol3Paid > 0 ? number_format($aosKol3Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $aosKol4Visits = $aos->sum('visits_kol_4_count');
+                                        $aosKol4Paid = $aos->sum('direct_paid_kol_4_sum') + $aos->sum('fulfilled_paid_kol_4_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $aosKol4Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $aosKol4Paid > 0 ? number_format($aosKol4Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-center">
+                                    @php 
+                                        $aosKol5Visits = $aos->sum('visits_kol_5_count');
+                                        $aosKol5Paid = $aos->sum('direct_paid_kol_5_sum') + $aos->sum('fulfilled_paid_kol_5_sum');
+                                    @endphp
+                                    <span x-show="tab === 'visits'" class="text-indigo-900 text-xs">{{ $aosKol5Visits }}</span>
+                                    <span x-show="tab === 'payments'" style="display: none;" class="text-indigo-900 text-xs">{{ $aosKol5Paid > 0 ? number_format($aosKol5Paid, 0, ',', '.') : '0' }}</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center text-indigo-900 text-xs">
+                                    {{ $aos->sum('visits_count') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-emerald-700 text-sm">
+                                    @php $aosTotalPaid = $aos->sum('direct_paid_sum') + $aos->sum('fulfilled_paid_sum'); @endphp
+                                    Rp {{ number_format($aosTotalPaid, 0, ',', '.') }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -298,4 +443,119 @@
             </div>
         </div>
     @endforelse
+
+    @if($kabagUsers->count() > 0 || $aosGroups->count() > 0)
+        @php
+            $gtKol1Visits = $kabagUsers->sum('visits_kol_1_count');
+            $gtKol2Visits = $kabagUsers->sum('visits_kol_2_count');
+            $gtKol3Visits = $kabagUsers->sum('visits_kol_3_count');
+            $gtKol4Visits = $kabagUsers->sum('visits_kol_4_count');
+            $gtKol5Visits = $kabagUsers->sum('visits_kol_5_count');
+            $gtVisits = $kabagUsers->sum('visits_count');
+            
+            $gtKol1Paid = $kabagUsers->sum('direct_paid_kol_1_sum') + $kabagUsers->sum('fulfilled_paid_kol_1_sum');
+            $gtKol2Paid = $kabagUsers->sum('direct_paid_kol_2_sum') + $kabagUsers->sum('fulfilled_paid_kol_2_sum');
+            $gtKol3Paid = $kabagUsers->sum('direct_paid_kol_3_sum') + $kabagUsers->sum('fulfilled_paid_kol_3_sum');
+            $gtKol4Paid = $kabagUsers->sum('direct_paid_kol_4_sum') + $kabagUsers->sum('fulfilled_paid_kol_4_sum');
+            $gtKol5Paid = $kabagUsers->sum('direct_paid_kol_5_sum') + $kabagUsers->sum('fulfilled_paid_kol_5_sum');
+
+            foreach($aosGroups as $group) {
+                $gtKol1Visits += $group->sum('visits_kol_1_count');
+                $gtKol2Visits += $group->sum('visits_kol_2_count');
+                $gtKol3Visits += $group->sum('visits_kol_3_count');
+                $gtKol4Visits += $group->sum('visits_kol_4_count');
+                $gtKol5Visits += $group->sum('visits_kol_5_count');
+                $gtVisits += $group->sum('visits_count');
+
+                $gtKol1Paid += $group->sum('direct_paid_kol_1_sum') + $group->sum('fulfilled_paid_kol_1_sum');
+                $gtKol2Paid += $group->sum('direct_paid_kol_2_sum') + $group->sum('fulfilled_paid_kol_2_sum');
+                $gtKol3Paid += $group->sum('direct_paid_kol_3_sum') + $group->sum('fulfilled_paid_kol_3_sum');
+                $gtKol4Paid += $group->sum('direct_paid_kol_4_sum') + $group->sum('fulfilled_paid_kol_4_sum');
+                $gtKol5Paid += $group->sum('direct_paid_kol_5_sum') + $group->sum('fulfilled_paid_kol_5_sum');
+            }
+
+            $overallPaid = 0;
+            foreach($aosGroups as $group) {
+                $overallPaid += $group->sum('direct_paid_sum') + $group->sum('fulfilled_paid_sum');
+            }
+            $overallPaid += $kabagUsers->sum('direct_paid_sum') + $kabagUsers->sum('fulfilled_paid_sum');
+        @endphp
+        <div class="mb-8 mt-4">
+            <div class="bg-indigo-900 rounded-xl shadow-lg border border-indigo-800 overflow-hidden relative">
+                <div class="px-6 py-4 border-b border-indigo-800/50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-indigo-800">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-6 h-6 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Grand Total Keseluruhan
+                    </h3>
+                    <div class="text-white text-lg font-black">
+                        Total Keseluruhan Bayar: <span class="text-emerald-400">Rp {{ number_format($overallPaid, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto bg-indigo-900">
+                    <table class="min-w-full divide-y divide-indigo-800">
+                        <thead class="bg-indigo-900/50">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-indigo-200 uppercase tracking-wider w-1/5">Lancar</th>
+                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-indigo-200 uppercase tracking-wider w-1/5">DPK</th>
+                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-indigo-200 uppercase tracking-wider w-1/5">KL</th>
+                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-indigo-200 uppercase tracking-wider w-1/5">D</th>
+                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-indigo-200 uppercase tracking-wider w-1/5">M</th>
+                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-indigo-200 uppercase tracking-wider w-1/5">Total Kunjungan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-indigo-800">
+                            <tr>
+                                <td class="px-6 py-6 whitespace-nowrap text-center">
+                                    <div x-show="tab === 'visits'" class="text-3xl font-black text-white">
+                                        {{ $gtKol1Visits }}
+                                    </div>
+                                    <div x-show="tab === 'payments'" style="display: none;" class="text-xl font-black text-white">
+                                        {{ $gtKol1Paid > 0 ? 'Rp ' . number_format($gtKol1Paid, 0, ',', '.') : 'Rp 0' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6 whitespace-nowrap text-center">
+                                    <div x-show="tab === 'visits'" class="text-3xl font-black text-white">
+                                        {{ $gtKol2Visits }}
+                                    </div>
+                                    <div x-show="tab === 'payments'" style="display: none;" class="text-xl font-black text-white">
+                                        {{ $gtKol2Paid > 0 ? 'Rp ' . number_format($gtKol2Paid, 0, ',', '.') : 'Rp 0' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6 whitespace-nowrap text-center">
+                                    <div x-show="tab === 'visits'" class="text-3xl font-black text-white">
+                                        {{ $gtKol3Visits }}
+                                    </div>
+                                    <div x-show="tab === 'payments'" style="display: none;" class="text-xl font-black text-white">
+                                        {{ $gtKol3Paid > 0 ? 'Rp ' . number_format($gtKol3Paid, 0, ',', '.') : 'Rp 0' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6 whitespace-nowrap text-center">
+                                    <div x-show="tab === 'visits'" class="text-3xl font-black text-white">
+                                        {{ $gtKol4Visits }}
+                                    </div>
+                                    <div x-show="tab === 'payments'" style="display: none;" class="text-xl font-black text-white">
+                                        {{ $gtKol4Paid > 0 ? 'Rp ' . number_format($gtKol4Paid, 0, ',', '.') : 'Rp 0' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6 whitespace-nowrap text-center">
+                                    <div x-show="tab === 'visits'" class="text-3xl font-black text-white">
+                                        {{ $gtKol5Visits }}
+                                    </div>
+                                    <div x-show="tab === 'payments'" style="display: none;" class="text-xl font-black text-white">
+                                        {{ $gtKol5Paid > 0 ? 'Rp ' . number_format($gtKol5Paid, 0, ',', '.') : 'Rp 0' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6 whitespace-nowrap text-center">
+                                    <div class="text-3xl font-black text-indigo-300">
+                                        {{ $gtVisits }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

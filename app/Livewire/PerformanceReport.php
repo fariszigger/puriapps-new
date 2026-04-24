@@ -131,6 +131,36 @@ class PerformanceReport extends Component
             ->withSum(['customerVisits as fulfilled_paid_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate]);
             }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_1_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '1');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_1_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '1');
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_2_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '2');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_2_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '2');
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_3_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '3');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_3_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '3');
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_4_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '4');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_4_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '4');
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_5_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_5_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
+            }], 'jumlah_bayar_fulfilled')
             ->orderBy('name')
             ->get()
             ->groupBy(function($ao) {
@@ -166,6 +196,36 @@ class PerformanceReport extends Component
             }], 'jumlah_bayar')
             ->withSum(['customerVisits as fulfilled_paid_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate]);
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_1_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '1');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_1_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '1');
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_2_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '2');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_2_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '2');
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_3_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '3');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_3_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '3');
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_4_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '4');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_4_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '4');
+            }], 'jumlah_bayar_fulfilled')
+            ->withSum(['customerVisits as direct_paid_kol_5_sum' => function ($query) {
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
+            }], 'jumlah_bayar')
+            ->withSum(['customerVisits as fulfilled_paid_kol_5_sum' => function ($query) {
+                $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
             }], 'jumlah_bayar_fulfilled')
             ->orderBy('name')
             ->get();

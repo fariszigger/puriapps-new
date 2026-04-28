@@ -246,9 +246,17 @@
                                     <td>{{ $visit['ketemu_dengan'] }}</td>
                                     <td>
                                         @if($visit['hasil_penagihan'] === 'bayar')
-                                            <span style="color:#16a34a;font-weight:bold">Bayar</span>
-                                            @if($visit['jumlah_bayar'])
-                                                — Rp {{ number_format($visit['jumlah_bayar'], 0, ',', '.') }}
+                                            @if(!empty($visit['is_duplicate_bayar']))
+                                                <span style="color:#9ca3af;font-weight:bold;text-decoration:line-through">Bayar</span>
+                                                @if($visit['jumlah_bayar'])
+                                                    <span style="color:#9ca3af;text-decoration:line-through"> Rp {{ number_format($visit['jumlah_bayar'], 0, ',', '.') }}</span>
+                                                @endif
+                                                <br><span style="color:#f59e0b;font-size:8px;font-weight:bold">⚠ Tidak dihitung (sudah tercatat sebagai Sudah Bayar)</span>
+                                            @else
+                                                <span style="color:#16a34a;font-weight:bold">Bayar</span>
+                                                @if($visit['jumlah_bayar'])
+                                                    — Rp {{ number_format($visit['jumlah_bayar'], 0, ',', '.') }}
+                                                @endif
                                             @endif
                                         @elseif($visit['hasil_penagihan'] === 'janji_bayar')
                                             <span style="color:#ea580c;font-weight:bold">Janji Bayar</span>

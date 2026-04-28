@@ -94,10 +94,23 @@ class ReportController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
+        // Build a set of fulfilled-janji-bayar keys (customer_id|date) so we can
+        // detect duplicate "bayar" visits the AO entered for the same customer on
+        // the same day the admin already marked a janji_bayar as fulfilled.
+        $fulfilledKeys = $visits
+            ->where('janji_bayar_fulfilled', true)
+            ->filter(fn($v) => !empty($v->janji_bayar_fulfilled_at))
+            ->map(fn($v) => $v->customer_id . '|' . \Carbon\Carbon::parse($v->janji_bayar_fulfilled_at)->toDateString())
+            ->values()
+            ->toArray();
+
         $dates = $visits->groupBy(function ($visit) {
             return $visit->created_at->format('Y-m-d');
-        })->map(function ($dateVisits) {
-            return $dateVisits->map(function ($visit) {
+        })->map(function ($dateVisits) use ($fulfilledKeys) {
+            return $dateVisits->map(function ($visit) use ($fulfilledKeys) {
+                // Mark whether this bayar visit is a duplicate (shadowed by a fulfilled janji_bayar)
+                $isDuplicate = $visit->hasil_penagihan === 'bayar'
+                    && in_array($visit->customer_id . '|' . $visit->created_at->toDateString(), $fulfilledKeys);
                 return [
                     'id' => $visit->id,
                     'customer_name' => $visit->customer->name ?? '-',
@@ -117,9 +130,24 @@ class ReportController extends Controller
                     'kondisi_saat_ini' => $visit->kondisi_saat_ini,
                     'rencana_penyelesaian' => $visit->rencana_penyelesaian,
                     'time' => $visit->created_at->format('H:i'),
+                    'is_duplicate_bayar' => $isDuplicate,
                 ];
             });
         });
+
+        // Sum fulfilled janji_bayar amounts within the period
+        $fulfilledPaidSum = CustomerVisit::where('user_id', $user->id)
+            ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+            ->sum('jumlah_bayar_fulfilled');
+
+        // Sum direct bayar amounts, but skip visits that are duplicate of a fulfilled janji_bayar
+        $directPaidSum = $visits
+            ->filter(function ($v) use ($fulfilledKeys) {
+                if ($v->hasil_penagihan !== 'bayar') return false;
+                $key = $v->customer_id . '|' . $v->created_at->toDateString();
+                return !in_array($key, $fulfilledKeys);
+            })
+            ->sum('jumlah_bayar');
 
         return view('reports.performance-detail', [
             'aoUser' => $user,
@@ -133,10 +161,7 @@ class ReportController extends Controller
                 'kol_4' => $visits->where('kolektibilitas', '4')->count(),
                 'kol_5' => $visits->where('kolektibilitas', '5')->count(),
             ],
-            'totalPaid' => $visits->sum('jumlah_bayar') + 
-                          CustomerVisit::where('user_id', $user->id)
-                            ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
-                            ->sum('jumlah_bayar_fulfilled'),
+            'totalPaid' => $directPaidSum + $fulfilledPaidSum,
         ]);
     }
 
@@ -223,6 +248,28 @@ class ReportController extends Controller
             return $visit->user_id;
         })->map(function ($userVisits) use ($startDate, $endDate) {
             $user = $userVisits->first()->user;
+
+            // Build fulfilled-janji-bayar keys for this user's visits:
+            // key = customer_id|fulfilled_date — used to detect duplicate "bayar" entries
+            $userFulfilledKeys = $userVisits
+                ->where('janji_bayar_fulfilled', true)
+                ->filter(fn($v) => !empty($v->janji_bayar_fulfilled_at))
+                ->map(fn($v) => $v->customer_id . '|' . \Carbon\Carbon::parse($v->janji_bayar_fulfilled_at)->toDateString())
+                ->values()
+                ->toArray();
+
+            $userFulfilledSum = CustomerVisit::where('user_id', $user->id)
+                ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+                ->sum('jumlah_bayar_fulfilled');
+
+            $userDirectSum = $userVisits
+                ->filter(function ($v) use ($userFulfilledKeys) {
+                    if ($v->hasil_penagihan !== 'bayar') return false;
+                    $key = $v->customer_id . '|' . $v->created_at->toDateString();
+                    return !in_array($key, $userFulfilledKeys);
+                })
+                ->sum('jumlah_bayar');
+
             return [
                 'user' => $user,
                 'counts' => [
@@ -232,15 +279,14 @@ class ReportController extends Controller
                     'kol_3' => $userVisits->where('kolektibilitas', '3')->count(),
                     'kol_4' => $userVisits->where('kolektibilitas', '4')->count(),
                     'kol_5' => $userVisits->where('kolektibilitas', '5')->count(),
-                    'total_paid' => $userVisits->sum('jumlah_bayar') + 
-                                   CustomerVisit::where('user_id', $user->id)
-                                   ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
-                                   ->sum('jumlah_bayar_fulfilled'),
+                    'total_paid' => $userDirectSum + $userFulfilledSum,
                 ],
                 'dates' => $userVisits->groupBy(function ($visit) {
                     return $visit->created_at->format('Y-m-d');
-                })->map(function ($dateVisits) {
-                    return $dateVisits->map(function ($visit) {
+                })->map(function ($dateVisits) use ($userFulfilledKeys) {
+                    return $dateVisits->map(function ($visit) use ($userFulfilledKeys) {
+                        $isDuplicate = $visit->hasil_penagihan === 'bayar'
+                            && in_array($visit->customer_id . '|' . $visit->created_at->toDateString(), $userFulfilledKeys);
                         return [
                             'id' => $visit->id,
                             'customer_name' => $visit->customer->name ?? '-',
@@ -260,11 +306,32 @@ class ReportController extends Controller
                             'kondisi_saat_ini' => $visit->kondisi_saat_ini,
                             'rencana_penyelesaian' => $visit->rencana_penyelesaian,
                             'time' => $visit->created_at->format('H:i'),
+                            'is_duplicate_bayar' => $isDuplicate,
                         ];
                     });
                 }),
             ];
         })->values(); // Reset keys for clean looping in view
+
+        // Overall grand-total: also exclude duplicate bayar across all users
+        $allFulfilledKeys = $visits
+            ->where('janji_bayar_fulfilled', true)
+            ->filter(fn($v) => !empty($v->janji_bayar_fulfilled_at))
+            ->map(fn($v) => $v->user_id . '|' . $v->customer_id . '|' . \Carbon\Carbon::parse($v->janji_bayar_fulfilled_at)->toDateString())
+            ->values()
+            ->toArray();
+
+        $grandDirectSum = $visits
+            ->filter(function ($v) use ($allFulfilledKeys) {
+                if ($v->hasil_penagihan !== 'bayar') return false;
+                $key = $v->user_id . '|' . $v->customer_id . '|' . $v->created_at->toDateString();
+                return !in_array($key, $allFulfilledKeys);
+            })
+            ->sum('jumlah_bayar');
+
+        $grandFulfilledSum = CustomerVisit::whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+            ->whereHas('user', function($q) { $q->role(['AO', 'Kabag']); })
+            ->sum('jumlah_bayar_fulfilled');
 
         return view('reports.performance-recap', [
             'recapData' => $recapData,
@@ -276,10 +343,7 @@ class ReportController extends Controller
                 'kol_3' => $visits->where('kolektibilitas', '3')->count(),
                 'kol_4' => $visits->where('kolektibilitas', '4')->count(),
                 'kol_5' => $visits->where('kolektibilitas', '5')->count(),
-                'total_paid' => $visits->sum('jumlah_bayar') + 
-                               CustomerVisit::whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
-                               ->whereHas('user', function($q) { $q->role(['AO', 'Kabag']); })
-                               ->sum('jumlah_bayar_fulfilled'),
+                'total_paid' => $grandDirectSum + $grandFulfilledSum,
             ],
         ]);
     }

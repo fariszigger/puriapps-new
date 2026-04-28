@@ -126,7 +126,17 @@ class PerformanceReport extends Component
                 $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
             }])
             ->withSum(['customerVisits as direct_paid_sum' => function ($query) {
-                $query->whereBetween('created_at', [$this->startDate, $this->endDate]);
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])
+                      ->where('hasil_penagihan', 'bayar')
+                      ->whereNotExists(function ($sub) {
+                          $sub->from('customer_visits as dup')
+                              ->whereColumn('dup.user_id', 'customer_visits.user_id')
+                              ->whereColumn('dup.customer_id', 'customer_visits.customer_id')
+                              ->where('dup.janji_bayar_fulfilled', true)
+                              ->whereNotNull('dup.janji_bayar_fulfilled_at')
+                              ->whereRaw('DATE(dup.janji_bayar_fulfilled_at) = DATE(customer_visits.created_at)')
+                              ->whereNull('dup.deleted_at');
+                      });
             }], 'jumlah_bayar')
             ->withSum(['customerVisits as fulfilled_paid_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate]);
@@ -192,37 +202,97 @@ class PerformanceReport extends Component
                 $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
             }])
             ->withSum(['customerVisits as direct_paid_sum' => function ($query) {
-                $query->whereBetween('created_at', [$this->startDate, $this->endDate]);
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])
+                      ->where('hasil_penagihan', 'bayar')
+                      ->whereNotExists(function ($sub) {
+                          $sub->from('customer_visits as dup')
+                              ->whereColumn('dup.user_id', 'customer_visits.user_id')
+                              ->whereColumn('dup.customer_id', 'customer_visits.customer_id')
+                              ->where('dup.janji_bayar_fulfilled', true)
+                              ->whereNotNull('dup.janji_bayar_fulfilled_at')
+                              ->whereRaw('DATE(dup.janji_bayar_fulfilled_at) = DATE(customer_visits.created_at)')
+                              ->whereNull('dup.deleted_at');
+                      });
             }], 'jumlah_bayar')
             ->withSum(['customerVisits as fulfilled_paid_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate]);
             }], 'jumlah_bayar_fulfilled')
             ->withSum(['customerVisits as direct_paid_kol_1_sum' => function ($query) {
-                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '1');
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])
+                      ->where('kolektibilitas', '1')->where('hasil_penagihan', 'bayar')
+                      ->whereNotExists(function ($sub) {
+                          $sub->from('customer_visits as dup')
+                              ->whereColumn('dup.user_id', 'customer_visits.user_id')
+                              ->whereColumn('dup.customer_id', 'customer_visits.customer_id')
+                              ->where('dup.janji_bayar_fulfilled', true)
+                              ->whereNotNull('dup.janji_bayar_fulfilled_at')
+                              ->whereRaw('DATE(dup.janji_bayar_fulfilled_at) = DATE(customer_visits.created_at)')
+                              ->whereNull('dup.deleted_at');
+                      });
             }], 'jumlah_bayar')
             ->withSum(['customerVisits as fulfilled_paid_kol_1_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '1');
             }], 'jumlah_bayar_fulfilled')
             ->withSum(['customerVisits as direct_paid_kol_2_sum' => function ($query) {
-                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '2');
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])
+                      ->where('kolektibilitas', '2')->where('hasil_penagihan', 'bayar')
+                      ->whereNotExists(function ($sub) {
+                          $sub->from('customer_visits as dup')
+                              ->whereColumn('dup.user_id', 'customer_visits.user_id')
+                              ->whereColumn('dup.customer_id', 'customer_visits.customer_id')
+                              ->where('dup.janji_bayar_fulfilled', true)
+                              ->whereNotNull('dup.janji_bayar_fulfilled_at')
+                              ->whereRaw('DATE(dup.janji_bayar_fulfilled_at) = DATE(customer_visits.created_at)')
+                              ->whereNull('dup.deleted_at');
+                      });
             }], 'jumlah_bayar')
             ->withSum(['customerVisits as fulfilled_paid_kol_2_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '2');
             }], 'jumlah_bayar_fulfilled')
             ->withSum(['customerVisits as direct_paid_kol_3_sum' => function ($query) {
-                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '3');
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])
+                      ->where('kolektibilitas', '3')->where('hasil_penagihan', 'bayar')
+                      ->whereNotExists(function ($sub) {
+                          $sub->from('customer_visits as dup')
+                              ->whereColumn('dup.user_id', 'customer_visits.user_id')
+                              ->whereColumn('dup.customer_id', 'customer_visits.customer_id')
+                              ->where('dup.janji_bayar_fulfilled', true)
+                              ->whereNotNull('dup.janji_bayar_fulfilled_at')
+                              ->whereRaw('DATE(dup.janji_bayar_fulfilled_at) = DATE(customer_visits.created_at)')
+                              ->whereNull('dup.deleted_at');
+                      });
             }], 'jumlah_bayar')
             ->withSum(['customerVisits as fulfilled_paid_kol_3_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '3');
             }], 'jumlah_bayar_fulfilled')
             ->withSum(['customerVisits as direct_paid_kol_4_sum' => function ($query) {
-                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '4');
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])
+                      ->where('kolektibilitas', '4')->where('hasil_penagihan', 'bayar')
+                      ->whereNotExists(function ($sub) {
+                          $sub->from('customer_visits as dup')
+                              ->whereColumn('dup.user_id', 'customer_visits.user_id')
+                              ->whereColumn('dup.customer_id', 'customer_visits.customer_id')
+                              ->where('dup.janji_bayar_fulfilled', true)
+                              ->whereNotNull('dup.janji_bayar_fulfilled_at')
+                              ->whereRaw('DATE(dup.janji_bayar_fulfilled_at) = DATE(customer_visits.created_at)')
+                              ->whereNull('dup.deleted_at');
+                      });
             }], 'jumlah_bayar')
             ->withSum(['customerVisits as fulfilled_paid_kol_4_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '4');
             }], 'jumlah_bayar_fulfilled')
             ->withSum(['customerVisits as direct_paid_kol_5_sum' => function ($query) {
-                $query->whereBetween('created_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])
+                      ->where('kolektibilitas', '5')->where('hasil_penagihan', 'bayar')
+                      ->whereNotExists(function ($sub) {
+                          $sub->from('customer_visits as dup')
+                              ->whereColumn('dup.user_id', 'customer_visits.user_id')
+                              ->whereColumn('dup.customer_id', 'customer_visits.customer_id')
+                              ->where('dup.janji_bayar_fulfilled', true)
+                              ->whereNotNull('dup.janji_bayar_fulfilled_at')
+                              ->whereRaw('DATE(dup.janji_bayar_fulfilled_at) = DATE(customer_visits.created_at)')
+                              ->whereNull('dup.deleted_at');
+                      });
             }], 'jumlah_bayar')
             ->withSum(['customerVisits as fulfilled_paid_kol_5_sum' => function ($query) {
                 $query->whereBetween('janji_bayar_fulfilled_at', [$this->startDate, $this->endDate])->where('kolektibilitas', '5');

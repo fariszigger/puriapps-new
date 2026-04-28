@@ -94,12 +94,13 @@ class ReportController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Build a set of fulfilled-janji-bayar keys (customer_id|date) so we can
-        // detect duplicate "bayar" visits the AO entered for the same customer on
-        // the same day the admin already marked a janji_bayar as fulfilled.
-        $fulfilledKeys = $visits
-            ->where('janji_bayar_fulfilled', true)
-            ->filter(fn($v) => !empty($v->janji_bayar_fulfilled_at))
+        // Build fulfilled-janji-bayar keys (customer_id|date) via a separate query
+        // using janji_bayar_fulfilled_at — NOT from $visits — so it works even when
+        // the original janji_bayar was created outside the viewed period (e.g. daily filter).
+        $fulfilledKeys = CustomerVisit::where('user_id', $user->id)
+            ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+            ->whereNotNull('customer_id')
+            ->get(['customer_id', 'janji_bayar_fulfilled_at'])
             ->map(fn($v) => $v->customer_id . '|' . \Carbon\Carbon::parse($v->janji_bayar_fulfilled_at)->toDateString())
             ->values()
             ->toArray();
@@ -249,11 +250,12 @@ class ReportController extends Controller
         })->map(function ($userVisits) use ($startDate, $endDate) {
             $user = $userVisits->first()->user;
 
-            // Build fulfilled-janji-bayar keys for this user's visits:
-            // key = customer_id|fulfilled_date — used to detect duplicate "bayar" entries
-            $userFulfilledKeys = $userVisits
-                ->where('janji_bayar_fulfilled', true)
-                ->filter(fn($v) => !empty($v->janji_bayar_fulfilled_at))
+            // Build fulfilled-janji-bayar keys via separate query using janji_bayar_fulfilled_at
+            // so it works even when the original janji_bayar was created outside the viewed period.
+            $userFulfilledKeys = CustomerVisit::where('user_id', $user->id)
+                ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+                ->whereNotNull('customer_id')
+                ->get(['customer_id', 'janji_bayar_fulfilled_at'])
                 ->map(fn($v) => $v->customer_id . '|' . \Carbon\Carbon::parse($v->janji_bayar_fulfilled_at)->toDateString())
                 ->values()
                 ->toArray();
@@ -313,10 +315,12 @@ class ReportController extends Controller
             ];
         })->values(); // Reset keys for clean looping in view
 
-        // Overall grand-total: also exclude duplicate bayar across all users
-        $allFulfilledKeys = $visits
-            ->where('janji_bayar_fulfilled', true)
-            ->filter(fn($v) => !empty($v->janji_bayar_fulfilled_at))
+        // Overall grand-total: build fulfilled keys via separate query (not from $visits)
+        // so it works for daily/weekly filters where the original janji_bayar may be outside the period.
+        $allFulfilledKeys = CustomerVisit::whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+            ->whereNotNull('customer_id')
+            ->whereHas('user', fn($q) => $q->role(['AO', 'Kabag']))
+            ->get(['user_id', 'customer_id', 'janji_bayar_fulfilled_at'])
             ->map(fn($v) => $v->user_id . '|' . $v->customer_id . '|' . \Carbon\Carbon::parse($v->janji_bayar_fulfilled_at)->toDateString())
             ->values()
             ->toArray();

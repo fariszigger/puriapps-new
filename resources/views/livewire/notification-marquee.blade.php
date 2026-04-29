@@ -1,4 +1,4 @@
-<div wire:poll.10s>
+<div wire:poll.5m>
     @if($notifications->count() > 0)
         @php $notification = $notifications->first(); @endphp
         <div x-cloak

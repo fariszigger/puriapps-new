@@ -373,6 +373,24 @@
         });
     </script>
     @livewireScripts
+    <script>
+        // Handle Livewire session expiry gracefully.
+        // When the session expires, Laravel redirects the Livewire AJAX poll to the
+        // login page, which returns an empty body (status 200, body: "").
+        // Livewire fails to parse it → "Unexpected end of JSON input" → black overlay.
+        // Instead, we detect this and redirect the user to login cleanly.
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('request', ({ fail }) => {
+                fail(({ status, content, preventDefault }) => {
+                    // Empty body with 200 = session expired / auth redirect
+                    if (status === 200 && (!content || content.trim() === '')) {
+                        preventDefault();
+                        window.location.href = '{{ route('login') }}';
+                    }
+                });
+            });
+        });
+    </script>
     @stack('scripts')
 </body>
 

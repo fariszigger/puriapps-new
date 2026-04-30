@@ -285,15 +285,27 @@
                                                 <span class="font-bold text-green-700">BAYAR</span> — Rp
                                                 {{ number_format($visit->jumlah_bayar ?? 0, 0, ',', '.') }}
                                             @elseif($visit->hasil_penagihan === 'janji_bayar')
-                                                <span class="font-bold text-orange-600">JANJI BAYAR : Rp
-                                                    {{ number_format($visit->jumlah_pembayaran ?? 0, 0, ',', '.') }}</span> —
-                                                Tanggal:
-                                                {{ $visit->tanggal_janji_bayar ? formatIndonesianDate($visit->tanggal_janji_bayar) : '-' }}
-                                                @if($visit->janji_bayar_fulfilled)
-                                                    <br><span class="text-xs text-gray-700 font-normal ml-2"><span
-                                                            class="font-bold text-green-700">SUDAH BAYAR</span> — Rp
-                                                        {{ number_format($visit->jumlah_bayar_fulfilled ?? 0, 0, ',', '.') }} pd.
-                                                        {{ $visit->janji_bayar_fulfilled_at ? formatIndonesianDate($visit->janji_bayar_fulfilled_at) : '-' }}</span>
+                                                @if($visit->janji_bayar_tidak_bayar)
+                                                    <span class="font-bold text-red-600 line-through">JANJI BAYAR : Rp
+                                                        {{ number_format($visit->jumlah_pembayaran ?? 0, 0, ',', '.') }}</span> —
+                                                    <span class="font-bold text-red-600">✗ TIDAK BAYAR</span>
+                                                    @if($visit->janji_bayar_tidak_bayar_at)
+                                                        <br><span class="text-[10px] text-red-700 ml-2">pd. {{ formatIndonesianDate($visit->janji_bayar_tidak_bayar_at) }}</span>
+                                                    @endif
+                                                    @if($visit->janji_bayar_tidak_bayar_reason)
+                                                        <br><span class="text-[10px] text-gray-600 italic ml-2">Alasan: {{ $visit->janji_bayar_tidak_bayar_reason }}</span>
+                                                    @endif
+                                                @else
+                                                    <span class="font-bold text-orange-600">JANJI BAYAR : Rp
+                                                        {{ number_format($visit->jumlah_pembayaran ?? 0, 0, ',', '.') }}</span> —
+                                                    Tanggal:
+                                                    {{ $visit->tanggal_janji_bayar ? formatIndonesianDate($visit->tanggal_janji_bayar) : '-' }}
+                                                    @if($visit->janji_bayar_fulfilled)
+                                                        <br><span class="text-xs text-gray-700 font-normal ml-2"><span
+                                                                class="font-bold text-green-700">SUDAH BAYAR</span> — Rp
+                                                            {{ number_format($visit->jumlah_bayar_fulfilled ?? 0, 0, ',', '.') }} pd.
+                                                            {{ $visit->janji_bayar_fulfilled_at ? formatIndonesianDate($visit->janji_bayar_fulfilled_at) : '-' }}</span>
+                                                    @endif
                                                 @endif
                                             @elseif($visit->hasil_penagihan === 'tidak_ada_janji')
                                                 <span class="font-bold text-red-600">TIDAK ADA JANJI</span>

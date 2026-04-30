@@ -182,13 +182,28 @@
                                     {{ number_format($visit->jumlah_bayar, 0, ',', '.') }}</span>
                             @elseif($visit->hasil_penagihan === 'janji_bayar')
                                 <div class="flex flex-col gap-1">
-                                    <span class="text-yellow-600 font-semibold">Janji
+                                    <span class="{{ $visit->janji_bayar_tidak_bayar ? 'text-gray-400 line-through' : 'text-yellow-600' }} font-semibold">Janji
                                         {{ $visit->tanggal_janji_bayar ? \Carbon\Carbon::parse($visit->tanggal_janji_bayar)->format('d/m/Y') : '-' }}</span>
                                     @if($visit->jumlah_pembayaran)
-                                        <span class="text-xs text-gray-500">Rp
+                                        <span class="text-xs {{ $visit->janji_bayar_tidak_bayar ? 'text-gray-400 line-through' : 'text-gray-500' }}">Rp
                                             {{ number_format($visit->jumlah_pembayaran, 0, ',', '.') }}</span>
                                     @endif
-                                    @if($visit->janji_bayar_fulfilled)
+                                    @if($visit->janji_bayar_tidak_bayar)
+                                        <span class="inline-flex flex-col gap-0.5 px-2 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-800 w-fit shadow-sm mt-1">
+                                            <span class="flex items-center gap-1">
+                                                <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                        d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                Tidak Bayar
+                                            </span>
+                                            @if($visit->janji_bayar_tidak_bayar_reason)
+                                                <span class="text-[9px] font-medium text-red-700 italic max-w-[150px] truncate" title="{{ $visit->janji_bayar_tidak_bayar_reason }}">
+                                                    {{ $visit->janji_bayar_tidak_bayar_reason }}
+                                                </span>
+                                            @endif
+                                        </span>
+                                    @elseif($visit->janji_bayar_fulfilled)
                                         <span class="inline-flex flex-col gap-0.5 px-2 py-1 rounded-lg text-xs font-bold bg-green-100 text-green-800 w-fit shadow-sm mt-1">
                                             <span class="flex items-center gap-1">
                                                 <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

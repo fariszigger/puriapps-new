@@ -489,6 +489,7 @@
         const paydayEvents = @json($paydayEvents);
         const csrfToken = '{{ csrf_token() }}';
         const userInitials = '{{ auth()->user()->initials() ?? substr(auth()->user()->username, 0, 2) }}';
+        const isAO = {{ $isAO ? 'true' : 'false' }};
 
         const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
         const MONTHS_FULL = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -774,10 +775,18 @@
                 }
             } else if (event.type === 'janji_bayar') {
                 detail = event.jumlah ? `Rp ${Number(event.jumlah).toLocaleString('id-ID')}` : '';
-                extra = `<button onclick="event.stopPropagation();togglePromise(${event.visit_id},'${event.id}')" class="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:shadow-sm" style="background:${c.text}15;color:${c.text}">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    Tandai Lunas
-                </button>`;
+                if (!isAO) {
+                    extra = `<div class="flex gap-1.5 mt-2">
+                        <button onclick="event.stopPropagation();togglePromise(${event.visit_id},'${event.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:shadow-sm" style="background:${c.text}15;color:${c.text}">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            Tandai Lunas
+                        </button>
+                        <button onclick="event.stopPropagation();tidakBayar(${event.visit_id},'${event.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:shadow-sm" style="background:#fee2e2;color:#dc2626">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                            Tidak Bayar
+                        </button>
+                    </div>`;
+                }
             }
 
             const typeName = event.type === 'dob' ? 'Ulang Tahun' : (event.type === 'visit' ? 'Kunjungan' : (event.type === 'sp' ? 'Follow Up SP' : (event.type === 'payday' ? 'Jadwal Bayar' : 'Janji Bayar')));
@@ -814,9 +823,16 @@
                 }
             } else if (event.type === 'janji_bayar') {
                 detail = event.jumlah ? `Rp ${Number(event.jumlah).toLocaleString('id-ID')}` : '';
-                checkBtn = `<button onclick="event.stopPropagation();togglePromise(${event.visit_id},'${event.id}')" class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all shadow-sm hover:scale-110" style="background:${c.text}20;color:${c.text}" title="Tandai Lunas">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                </button>`;
+                if (!isAO) {
+                    checkBtn = `<div class="flex gap-1 shrink-0">
+                        <button onclick="event.stopPropagation();togglePromise(${event.visit_id},'${event.id}')" class="w-5 h-5 rounded-full flex items-center justify-center transition-all shadow-sm hover:scale-110" style="background:${c.text}20;color:${c.text}" title="Tandai Lunas">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button onclick="event.stopPropagation();tidakBayar(${event.visit_id},'${event.id}')" class="w-5 h-5 rounded-full flex items-center justify-center transition-all shadow-sm hover:scale-110" style="background:#fee2e220;color:#dc2626" title="Tidak Bayar">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>`;
+                }
             }
 
             return `
@@ -950,13 +966,7 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    // Update UI: if fulfilled, hide. If rescheduled, refresh calendar.
                     if (data.fulfilled || data.rescheduled) {
-                        // For simplicity in rescheduling (date might change), we reload or re-render 
-                        // But for UI smoothness, let's just reload page or fetch new data
-                        // Since this is a complex UI, window.location.reload() is safest to ensure all 
-                        // views (weekly/monthly/agenda) are consistent.
-                        
                         if (data.fulfilled) {
                              const el = document.getElementById('pill-' + eventCardId) || document.getElementById('detail-' + eventCardId);
                              if (el) {
@@ -981,6 +991,74 @@
                 }
             } catch (err) {
                 console.error('Toggle error:', err);
+                if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Gagal', text: 'Tidak dapat memproses permintaan.' });
+            }
+        }
+
+        // ─── Tidak Bayar ───
+        async function tidakBayar(visitId, eventCardId) {
+            const evt = janjiBayarEvents.find(e => e.visit_id === visitId);
+            const custName = evt ? evt.name : '';
+
+            const result = await Swal.fire({
+                title: 'Tidak Bayar',
+                html: `<div class="text-left">
+                    <p class="text-gray-600 mb-2">Tandai nasabah <b>tidak dapat membayar</b> janji bayar ini?</p>
+                    <div class="bg-red-50 rounded-lg p-3 mb-3 border border-red-200">
+                        <p class="font-bold text-red-800">${custName}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Alasan Tidak Bayar <span class="text-gray-400 font-normal">(opsional)</span></label>
+                        <textarea id="swal-tidak-bayar-reason" rows="3" placeholder="Contoh: Nasabah sedang tidak memiliki dana, usaha sedang sepi, dll."
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"></textarea>
+                    </div>
+                </div>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Tidak Bayar',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                preConfirm: () => {
+                    const reason = document.getElementById('swal-tidak-bayar-reason').value.trim();
+                    return { reason: reason || null };
+                }
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await fetch(`/calendar/toggle-promise/${visitId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify({ 
+                        tidak_bayar: true, 
+                        tidak_bayar_reason: result.value.reason 
+                    }),
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const el = document.getElementById('pill-' + eventCardId) || document.getElementById('detail-' + eventCardId);
+                    if (el) {
+                        el.style.transition = 'all 0.3s ease';
+                        el.style.opacity = '0';
+                        el.style.transform = 'scale(0.9) translateY(10px)';
+                    }
+                    setTimeout(() => {
+                        window.location.reload(); 
+                    }, 300);
+
+                    if (typeof Swal !== 'undefined') {
+                        Swal.mixin({
+                            toast: true, position: 'bottom-start', showConfirmButton: false, timer: 3000, timerProgressBar: true,
+                            customClass: { popup: 'bg-red-500 text-white rounded-lg shadow-lg border border-red-600', timerProgressBar: 'bg-red-700' }
+                        }).fire({ icon: 'success', title: data.message });
+                    }
+                }
+            } catch (err) {
+                console.error('Tidak bayar error:', err);
                 if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Gagal', text: 'Tidak dapat memproses permintaan.' });
             }
         }

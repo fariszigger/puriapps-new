@@ -42,6 +42,8 @@
                 <th>Rencana Penyelesaian</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
+                <th>Tidak Bayar</th>
+                <th>Alasan Tidak Bayar</th>
             </tr>
         </thead>
         <tbody>
@@ -64,6 +66,8 @@
                     <td>{{ strip_tags($visit->rencana_penyelesaian) }}</td>
                     <td>{{ $visit->latitude }}</td>
                     <td>{{ $visit->longitude }}</td>
+                    <td>{{ $visit->janji_bayar_tidak_bayar ? 'Ya' : '' }}</td>
+                    <td>{{ $visit->janji_bayar_tidak_bayar_reason }}</td>
                 </tr>
             @endforeach
         </tbody>

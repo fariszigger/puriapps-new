@@ -259,16 +259,30 @@
                                                 @endif
                                             @endif
                                         @elseif($visit['hasil_penagihan'] === 'janji_bayar')
-                                            <span style="color:#ea580c;font-weight:bold">Janji Bayar</span>
-                                            @if($visit['tanggal_janji_bayar'])
-                                                — {{ formatIndonesianDate(\Carbon\Carbon::parse($visit['tanggal_janji_bayar'])) }}
-                                            @endif
-                                            @if($visit['jumlah_pembayaran'])
-                                                <br><span class="text-[9px]">Rp
-                                                    {{ number_format($visit['jumlah_pembayaran'], 0, ',', '.') }}</span>
-                                            @endif
-                                            @if($visit['janji_bayar_fulfilled'])
-                                                <br><span style="color:#16a34a;font-weight:bold;font-size:9px">✓ SUDAH BAYAR Rp {{ number_format($visit['jumlah_bayar_fulfilled'] ?? 0, 0, ',', '.') }} pd. {{ $visit['janji_bayar_fulfilled_at'] ? \Carbon\Carbon::parse($visit['janji_bayar_fulfilled_at'])->format('d/m/Y') : '-' }}</span>
+                                            @if(!empty($visit['janji_bayar_tidak_bayar']))
+                                                <span style="color:#9ca3af;font-weight:bold;text-decoration:line-through">Janji Bayar</span>
+                                                @if($visit['tanggal_janji_bayar'])
+                                                    <span style="color:#9ca3af;text-decoration:line-through">— {{ formatIndonesianDate(\Carbon\Carbon::parse($visit['tanggal_janji_bayar'])) }}</span>
+                                                @endif
+                                                @if($visit['jumlah_pembayaran'])
+                                                    <br><span style="color:#9ca3af;text-decoration:line-through;font-size:9px">Rp {{ number_format($visit['jumlah_pembayaran'], 0, ',', '.') }}</span>
+                                                @endif
+                                                <br><span style="color:#dc2626;font-weight:bold;font-size:9px">✗ TIDAK BAYAR pd. {{ $visit['janji_bayar_tidak_bayar_at'] ? \Carbon\Carbon::parse($visit['janji_bayar_tidak_bayar_at'])->format('d/m/Y') : '-' }}</span>
+                                                @if(!empty($visit['janji_bayar_tidak_bayar_reason']))
+                                                    <br><span style="color:#6b7280;font-size:8px;font-style:italic">Alasan: {{ $visit['janji_bayar_tidak_bayar_reason'] }}</span>
+                                                @endif
+                                            @else
+                                                <span style="color:#ea580c;font-weight:bold">Janji Bayar</span>
+                                                @if($visit['tanggal_janji_bayar'])
+                                                    — {{ formatIndonesianDate(\Carbon\Carbon::parse($visit['tanggal_janji_bayar'])) }}
+                                                @endif
+                                                @if($visit['jumlah_pembayaran'])
+                                                    <br><span class="text-[9px]">Rp
+                                                        {{ number_format($visit['jumlah_pembayaran'], 0, ',', '.') }}</span>
+                                                @endif
+                                                @if($visit['janji_bayar_fulfilled'])
+                                                    <br><span style="color:#16a34a;font-weight:bold;font-size:9px">✓ SUDAH BAYAR Rp {{ number_format($visit['jumlah_bayar_fulfilled'] ?? 0, 0, ',', '.') }} pd. {{ $visit['janji_bayar_fulfilled_at'] ? \Carbon\Carbon::parse($visit['janji_bayar_fulfilled_at'])->format('d/m/Y') : '-' }}</span>
+                                                @endif
                                             @endif
                                         @elseif($visit['hasil_penagihan'] === 'tidak_ada_janji')
                                             <span style="color:#ef4444;font-weight:bold">Tidak Ada Janji</span>

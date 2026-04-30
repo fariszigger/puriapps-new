@@ -115,7 +115,8 @@ class CalendarController extends Controller
         $query = CustomerVisit::with(['customer:id,name', 'user:id,name,code'])
             ->select('id', 'customer_id', 'user_id', 'tanggal_janji_bayar', 'jumlah_bayar', 'jumlah_pembayaran', 'janji_bayar_fulfilled', 'created_at')
             ->whereNotNull('tanggal_janji_bayar')
-            ->where('janji_bayar_fulfilled', false);
+            ->where('janji_bayar_fulfilled', false)
+            ->where('janji_bayar_tidak_bayar', false);
 
         if ($isAO) {
             $query->where('user_id', $user->id);
@@ -274,6 +275,21 @@ class CalendarController extends Controller
 
     public function togglePromise(CustomerVisit $customerVisit)
     {
+        // Handle "Tidak Bayar" action
+        if (request()->has('tidak_bayar') && request()->tidak_bayar) {
+            $customerVisit->update([
+                'janji_bayar_tidak_bayar' => true,
+                'janji_bayar_tidak_bayar_reason' => request()->tidak_bayar_reason,
+                'janji_bayar_tidak_bayar_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'tidak_bayar' => true,
+                'message' => 'Janji bayar ditandai tidak bayar.',
+            ]);
+        }
+
         // If a new date is provided, it's a reschedule, not a fulfillment
         if (request()->has('tanggal_janji_baru') && request()->tanggal_janji_baru) {
             $customerVisit->update([

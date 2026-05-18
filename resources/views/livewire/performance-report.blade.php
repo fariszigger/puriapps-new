@@ -15,6 +15,7 @@
                     <option value="daily">Harian (Hari Ini)</option>
                     <option value="weekly">Mingguan (Minggu Ini)</option>
                     <option value="monthly">Bulanan</option>
+                    <option value="period">Periode</option>
                 </select>
             </div>
 
@@ -53,6 +54,17 @@
                     <input type="month" wire:model.live="selectedMonth"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 transition-all">
                 </div>
+            @elseif($filter === 'period')
+                <div class="flex items-center gap-2 border-l border-gray-200 pl-3">
+                    <label class="text-sm font-medium text-gray-600">Dari:</label>
+                    <input type="month" wire:model.live="selectedMonth"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 transition-all">
+                </div>
+                <div class="flex items-center gap-2 pl-3">
+                    <label class="text-sm font-medium text-gray-600">Sampai:</label>
+                    <input type="month" wire:model.live="selectedMonthEnd"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 transition-all">
+                </div>
             @endif
 
             <div wire:loading class="px-2">
@@ -62,7 +74,7 @@
                 </svg>
             </div>
 
-            <a href="{{ route('reports.performance-recap', ['filter' => $filter, 'month' => $selectedMonth, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
+            <a href="{{ route('reports.performance-recap', ['filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
                 target="_blank"
                 class="ml-2 inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +85,7 @@
                 Cetak Rekap Semua AO
             </a>
 
-            <a href="{{ route('reports.performance-export-xls', ['filter' => $filter, 'month' => $selectedMonth, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
+            <a href="{{ route('reports.performance-export-xls', ['filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
                 class="ml-2 inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -195,7 +207,7 @@
 
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <a href="{{ route('reports.performance-detail', ['user' => $ao->id, 'filter' => $filter, 'month' => $selectedMonth, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
+                                        <a href="{{ route('reports.performance-detail', ['user' => $ao->id, 'filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
                                             target="_blank"
                                             class="inline-flex items-center text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors font-bold text-xs uppercase tracking-tight">
                                             Lihat Detail
@@ -362,7 +374,7 @@
 
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <a href="{{ route('reports.performance-detail', ['user' => $ao->id, 'filter' => $filter, 'month' => $selectedMonth, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
+                                        <a href="{{ route('reports.performance-detail', ['user' => $ao->id, 'filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
                                             target="_blank"
                                             class="inline-flex items-center text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors">
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -24,6 +24,7 @@ class ReportController extends Controller
 
         $filter = $request->query('filter', 'monthly');
         $selectedMonth = $request->query('month');
+        $selectedMonthEnd = $request->query('month_end');
         $selectedDate = $request->query('date');
         $selectedWeek = $request->query('week', 1);
         $now = Carbon::now();
@@ -72,6 +73,17 @@ class ReportController extends Controller
             }
 
             $periodLabel = 'Minggu Ke-' . $week . ' Bulan ' . $startOfMonth->translatedFormat('F Y') . ' (' . $startDate->format('d M') . ' - ' . $endDate->format('d M Y') . ')';
+        } elseif ($filter === 'period') {
+            try { $dateStart = $selectedMonth ? Carbon::createFromFormat('Y-m', $selectedMonth) : $now; } catch (\Exception $e) { $dateStart = $now; }
+            try { $dateEnd = $selectedMonthEnd ? Carbon::createFromFormat('Y-m', $selectedMonthEnd) : $now; } catch (\Exception $e) { $dateEnd = $now; }
+            $startDate = $dateStart->copy()->startOfMonth();
+            $endDate = $dateEnd->copy()->endOfMonth();
+            if ($startDate > $endDate) {
+                $temp = $startDate;
+                $startDate = $endDate->copy()->startOfMonth();
+                $endDate = $temp->copy()->endOfMonth();
+            }
+            $periodLabel = 'Periode (' . $startDate->translatedFormat('F Y') . ' - ' . $endDate->translatedFormat('F Y') . ')';
         } else {
             // Monthly
             if ($selectedMonth) {
@@ -175,6 +187,7 @@ class ReportController extends Controller
 
         $filter = $request->query('filter', 'monthly');
         $selectedMonth = $request->query('month');
+        $selectedMonthEnd = $request->query('month_end');
         $selectedDate = $request->query('date');
         $selectedWeek = $request->query('week', 1);
         $now = Carbon::now();
@@ -223,6 +236,17 @@ class ReportController extends Controller
             }
 
             $periodLabel = 'Minggu Ke-' . $week . ' Bulan ' . $startOfMonth->translatedFormat('F Y') . ' (' . $startDate->format('d M') . ' - ' . $endDate->format('d M Y') . ')';
+        } elseif ($filter === 'period') {
+            try { $dateStart = $selectedMonth ? Carbon::createFromFormat('Y-m', $selectedMonth) : $now; } catch (\Exception $e) { $dateStart = $now; }
+            try { $dateEnd = $selectedMonthEnd ? Carbon::createFromFormat('Y-m', $selectedMonthEnd) : $now; } catch (\Exception $e) { $dateEnd = $now; }
+            $startDate = $dateStart->copy()->startOfMonth();
+            $endDate = $dateEnd->copy()->endOfMonth();
+            if ($startDate > $endDate) {
+                $temp = $startDate;
+                $startDate = $endDate->copy()->startOfMonth();
+                $endDate = $temp->copy()->endOfMonth();
+            }
+            $periodLabel = 'Periode (' . $startDate->translatedFormat('F Y') . ' - ' . $endDate->translatedFormat('F Y') . ')';
         } else {
             // Monthly
             if ($selectedMonth) {
@@ -366,6 +390,7 @@ class ReportController extends Controller
 
         $filter = $request->get('filter', 'monthly');
         $monthStr = $request->get('month', Carbon::now()->format('Y-m'));
+        $monthEndStr = $request->get('month_end', Carbon::now()->format('Y-m'));
         $dateStr = $request->get('date', Carbon::now()->format('Y-m-d'));
         $week = $request->get('week', 1);
 
@@ -381,6 +406,16 @@ class ReportController extends Controller
             $endDay = min($week * 7, $startOfMonth->daysInMonth);
             $startDate = $startOfMonth->copy()->addDays($startDay - 1)->startOfDay();
             $endDate = $startOfMonth->copy()->addDays($endDay - 1)->endOfDay();
+        } elseif ($filter === 'period') {
+            try { $dateStart = Carbon::createFromFormat('Y-m', $monthStr); } catch (\Exception $e) { $dateStart = $now; }
+            try { $dateEnd = Carbon::createFromFormat('Y-m', $monthEndStr); } catch (\Exception $e) { $dateEnd = $now; }
+            $startDate = $dateStart->copy()->startOfMonth();
+            $endDate = $dateEnd->copy()->endOfMonth();
+            if ($startDate > $endDate) {
+                $temp = $startDate;
+                $startDate = $endDate->copy()->startOfMonth();
+                $endDate = $temp->copy()->endOfMonth();
+            }
         } else {
             try { $date = Carbon::createFromFormat('Y-m', $monthStr); } catch (\Exception $e) { $date = $now; }
             $startDate = $date->copy()->startOfMonth();

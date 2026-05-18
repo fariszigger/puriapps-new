@@ -10,6 +10,7 @@ class PerformanceReport extends Component
 {
     public $filter = 'monthly';
     public $selectedMonth;
+    public $selectedMonthEnd;
     public $selectedDate;
     public $selectedWeek = 1;
     public $startDate;
@@ -18,6 +19,7 @@ class PerformanceReport extends Component
     public function mount()
     {
         $this->selectedMonth = Carbon::now()->format('Y-m');
+        $this->selectedMonthEnd = Carbon::now()->format('Y-m');
         $this->selectedDate = Carbon::now()->format('Y-m-d');
         $this->selectedWeek = min(5, (int) ceil(Carbon::now()->day / 7));
         $this->updateDateRange();
@@ -29,6 +31,11 @@ class PerformanceReport extends Component
     }
 
     public function updatedSelectedMonth()
+    {
+        $this->updateDateRange();
+    }
+
+    public function updatedSelectedMonthEnd()
     {
         $this->updateDateRange();
     }
@@ -89,6 +96,21 @@ class PerformanceReport extends Component
                 $this->startDate = $startOfMonth->copy()->endOfMonth()->startOfDay();
                 $this->endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
             }
+        } elseif ($this->filter === 'period') {
+            try {
+                $dateStart = Carbon::createFromFormat('Y-m', $this->selectedMonth);
+            } catch (\Exception $e) {
+                $dateStart = Carbon::now();
+                $this->selectedMonth = $dateStart->format('Y-m');
+            }
+            try {
+                $dateEnd = Carbon::createFromFormat('Y-m', $this->selectedMonthEnd);
+            } catch (\Exception $e) {
+                $dateEnd = Carbon::now();
+                $this->selectedMonthEnd = $dateEnd->format('Y-m');
+            }
+            $this->startDate = $dateStart->copy()->startOfMonth();
+            $this->endDate = $dateEnd->copy()->endOfMonth();
         } else {
             // Validate and parse the selected month
             try {
@@ -363,6 +385,8 @@ class PerformanceReport extends Component
             return 'Harian (' . $this->startDate->format('d M Y') . ')';
         } elseif ($this->filter === 'weekly') {
             return 'Minggu Ke-' . $this->selectedWeek . ' Bulan ' . $this->startDate->translatedFormat('F Y') . ' (' . $this->startDate->format('d M') . ' - ' . $this->endDate->format('d M Y') . ')';
+        } elseif ($this->filter === 'period') {
+            return 'Periode (' . $this->startDate->translatedFormat('F Y') . ' - ' . $this->endDate->translatedFormat('F Y') . ')';
         } else {
             return 'Bulan Ini (' . $this->startDate->format('F Y') . ')';
         }

@@ -146,33 +146,100 @@
                     <thead>
                         <tr style="background-color:#dbeafe !important;">
                             <th class="w-[30px]" style="background-color:#dbeafe !important;">No</th>
+                            <th class="w-[90px]" style="background-color:#dbeafe !important;">Tanggal</th>
+                            <th class="w-[50px]" style="background-color:#dbeafe !important;">Jam</th>
                             <th style="background-color:#dbeafe !important;">Nama Nasabah</th>
-                            <th class="w-[110px]" style="background-color:#dbeafe !important;">Tgl Kunjungan</th>
-                            <th class="w-[110px]" style="background-color:#dbeafe !important;">Tgl Janji Bayar</th>
-                            <th class="w-[120px]" style="background-color:#dbeafe !important;">Tgl Konfirmasi Bayar</th>
-                            <th class="w-[130px]" style="background-color:#dbeafe !important;">Jumlah Bayar</th>
+                            <th class="w-[50px]" style="background-color:#dbeafe !important;">Kol</th>
+                            <th class="w-[100px]" style="background-color:#dbeafe !important;">Ketemu</th>
+                            <th class="w-[160px]" style="background-color:#dbeafe !important;">Hasil Penagihan</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($crossPeriodFulfilled as $i => $cp)
                             <tr>
                                 <td class="text-center">{{ $i + 1 }}</td>
-                                <td class="font-semibold">{{ $cp->customer->name ?? '-' }}</td>
-                                <td class="text-center">{{ \Carbon\Carbon::parse($cp->created_at)->format('d M Y') }}</td>
+                                <td class="text-center font-semibold align-middle" style="background-color: #eff6ff !important;">
+                                    {{ \Carbon\Carbon::parse($cp->created_at)->format('d M Y') }}
+                                    <br>
+                                    <span class="text-[9px] text-gray-500 font-normal">{{ \Carbon\Carbon::parse($cp->created_at)->locale('id')->isoFormat('dddd') }}</span>
+                                </td>
+                                <td class="text-center text-gray-600">{{ \Carbon\Carbon::parse($cp->created_at)->format('H:i') }}</td>
+                                <td class="font-semibold">
+                                    <div class="flex items-start gap-0 w-full">
+                                        <div class="w-[28%] shrink-0 pr-2">
+                                            <span class="leading-tight">{{ $cp->customer->name ?? '-' }}</span>
+                                            @if($cp->address)
+                                                <br>
+                                                <span class="text-[8px] text-gray-500 font-normal leading-tight inline-block mt-0.5" style="white-space: normal;">{{ $cp->address }}</span>
+                                            @endif
+                                        </div>
+
+                                        <div class="flex-1 px-2 border-l border-gray-100">
+                                            @if(!empty($cp->kondisi_saat_ini))
+                                                <div class="mb-1">
+                                                    <span class="text-[7px] uppercase font-bold text-gray-400 block leading-none">Kondisi:</span>
+                                                    <div class="text-[8px] font-normal leading-tight text-gray-700">{!! Str::limit(strip_tags($cp->kondisi_saat_ini), 100) !!}</div>
+                                                </div>
+                                            @endif
+                                            @if(!empty($cp->rencana_penyelesaian))
+                                                <div>
+                                                    <span class="text-[7px] uppercase font-bold text-gray-400 block leading-none">Rencana:</span>
+                                                    <div class="text-[8px] font-normal leading-tight text-gray-700">{!! Str::limit(strip_tags($cp->rencana_penyelesaian), 100) !!}</div>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <div class="w-[130px] shrink-0 ml-2">
+                                            @php
+                                                $photos = [
+                                                    ['path' => $cp->photo_path, 'label' => 'Lokasi'],
+                                                    ['path' => $cp->photo_rumah_path, 'label' => 'Rumah'],
+                                                    ['path' => $cp->photo_orang_path, 'label' => 'Orang'],
+                                                ];
+                                                $availablePhotos = array_filter($photos, fn($p) => !empty($p['path']));
+                                            @endphp
+                                            @if(count($availablePhotos) > 0)
+                                                <div class="flex gap-1.5 flex-nowrap justify-end">
+                                                    @foreach($availablePhotos as $photo)
+                                                        @php
+                                                            $pathParts = explode('/', $photo['path']);
+                                                            $type = count($pathParts) >= 2 ? $pathParts[count($pathParts)-2] : 'photos';
+                                                            $filename = end($pathParts);
+                                                        @endphp
+                                                        <div class="text-center relative group">
+                                                            <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" alt="{{ $photo['label'] }}" class="w-8 h-8 md:w-10 md:h-10 object-cover rounded border border-gray-300">
+                                                            <div class="hidden group-hover:block absolute top-1/2 right-full -translate-y-1/2 mr-2 z-50">
+                                                                <img src="{{ route('media.customer-visits', ['type' => $type, 'filename' => $filename]) }}" alt="{{ $photo['label'] }}" class="max-w-[200px] md:max-w-[300px] w-auto h-auto object-contain rounded-lg shadow-2xl border border-gray-200 bg-white p-1">
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="text-center">
-                                    {{ $cp->tanggal_janji_bayar ? \Carbon\Carbon::parse($cp->tanggal_janji_bayar)->format('d M Y') : '-' }}
+                                    @php
+                                        $kolColors = ['1' => '', '2' => '', '3' => 'color:#c2410c;font-weight:bold', '4' => 'color:#dc2626;font-weight:bold', '5' => 'color:#dc2626;font-weight:bold'];
+                                    @endphp
+                                    <span style="{{ $kolColors[$cp->kolektibilitas] ?? '' }}">{{ $cp->kolektibilitas }}</span>
                                 </td>
-                                <td class="text-center" style="color:#1d4ed8;font-weight:bold;">
-                                    {{ \Carbon\Carbon::parse($cp->janji_bayar_fulfilled_at)->format('d M Y') }}
-                                </td>
-                                <td style="color:#15803d;font-weight:bold;">
-                                    Rp {{ number_format($cp->jumlah_bayar_fulfilled ?? 0, 0, ',', '.') }}
+                                <td>{{ $cp->ketemu_dengan }}</td>
+                                <td>
+                                    <span style="color:#ea580c;font-weight:bold">Janji Bayar</span>
+                                    @if($cp->tanggal_janji_bayar)
+                                        — {{ \Carbon\Carbon::parse($cp->tanggal_janji_bayar)->format('d/m/Y') }}
+                                    @endif
+                                    @if($cp->jumlah_pembayaran)
+                                        <br><span class="text-[9px]">Rp {{ number_format($cp->jumlah_pembayaran, 0, ',', '.') }}</span>
+                                    @endif
+                                    <br><span style="color:#16a34a;font-weight:bold;font-size:9px">✓ SUDAH BAYAR Rp {{ number_format($cp->jumlah_bayar_fulfilled ?? 0, 0, ',', '.') }} pd. {{ \Carbon\Carbon::parse($cp->janji_bayar_fulfilled_at)->format('d/m/Y') }}</span>
                                 </td>
                             </tr>
                         @endforeach
                         <tr style="background-color:#eff6ff;">
-                            <td colspan="5" class="text-right font-black uppercase text-[10px]" style="color:#1d4ed8;">Subtotal Bayar Luar Periode</td>
-                            <td style="color:#15803d;font-weight:bold;">
+                            <td colspan="6" class="text-right font-black uppercase text-[10px]" style="color:#1d4ed8;">Subtotal Bayar Luar Periode</td>
+                            <td style="color:#15803d;font-weight:bold;font-size:11px;">
                                 Rp {{ number_format($crossPeriodFulfilled->sum('jumlah_bayar_fulfilled'), 0, ',', '.') }}
                             </td>
                         </tr>

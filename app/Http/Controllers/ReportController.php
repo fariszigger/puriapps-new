@@ -169,6 +169,18 @@ class ReportController extends Controller
             })
             ->sum('jumlah_bayar');
 
+        // Cross-period fulfilled: janji_bayar visits created OUTSIDE this period but paid WITHIN it
+        $crossPeriodFulfilled = CustomerVisit::with(['customer:id,name'])
+            ->where('user_id', $user->id)
+            ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->where('created_at', '<', $startDate)
+                  ->orWhere('created_at', '>', $endDate);
+            })
+            ->whereNotNull('janji_bayar_fulfilled_at')
+            ->orderBy('janji_bayar_fulfilled_at', 'asc')
+            ->get();
+
         return view('reports.performance-detail', [
             'aoUser' => $user,
             'dates' => $dates,
@@ -182,6 +194,7 @@ class ReportController extends Controller
                 'kol_5' => $visits->where('kolektibilitas', '5')->count(),
             ],
             'totalPaid' => $directPaidSum + $fulfilledPaidSum,
+            'crossPeriodFulfilled' => $crossPeriodFulfilled,
         ]);
     }
 
@@ -304,6 +317,18 @@ class ReportController extends Controller
                 })
                 ->sum('jumlah_bayar');
 
+            // Cross-period fulfilled: janji_bayar visits created OUTSIDE this period but paid WITHIN it
+            $userCrossPeriod = CustomerVisit::with(['customer:id,name'])
+                ->where('user_id', $user->id)
+                ->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])
+                ->where(function ($q) use ($startDate, $endDate) {
+                    $q->where('created_at', '<', $startDate)
+                      ->orWhere('created_at', '>', $endDate);
+                })
+                ->whereNotNull('janji_bayar_fulfilled_at')
+                ->orderBy('janji_bayar_fulfilled_at', 'asc')
+                ->get();
+
             return [
                 'user' => $user,
                 'counts' => [
@@ -315,6 +340,7 @@ class ReportController extends Controller
                     'kol_5' => $userVisits->where('kolektibilitas', '5')->count(),
                     'total_paid' => $userDirectSum + $userFulfilledSum,
                 ],
+                'cross_period_fulfilled' => $userCrossPeriod,
                 'dates' => $userVisits->groupBy(function ($visit) {
                     return $visit->created_at->format('Y-m-d');
                 })->map(function ($dateVisits) use ($userFulfilledKeys) {

@@ -138,9 +138,8 @@
             <div class="mt-2 mb-4">
                 <div class="flex items-center gap-2 mb-1">
                     <span style="background-color:#eff6ff;color:#1d4ed8;font-weight:bold;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #bfdbfe;">
-                        ℹ Kunjungan Luar Bulan Sebelumnya
+                        ℹ Laporan Bayar Hasil Penagihan Bulan Sebelumnya
                     </span>
-                    <span class="text-[9px] text-gray-500 italic">Jumlah-jumlah di bawah sudah termasuk dalam Total Bayar di atas</span>
                 </div>
                 <table class="recap-table mb-4" style="border-color:#93c5fd;">
                     <thead>

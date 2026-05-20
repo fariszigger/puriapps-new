@@ -154,6 +154,53 @@
                 </div>
             </div>
 
+            @if(!empty($aoData['cross_period_fulfilled']) && $aoData['cross_period_fulfilled']->count() > 0)
+                <div class="mt-2 mb-4">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span style="background-color:#eff6ff;color:#1d4ed8;font-weight:bold;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #bfdbfe;">
+                            ℹ Kunjungan Luar Periode yang Terbayar di Periode Ini
+                        </span>
+                        <span class="text-[9px] text-gray-500 italic">Jumlah-jumlah di bawah sudah termasuk dalam Total Bayar di atas</span>
+                    </div>
+                    <table class="recap-table mb-4" style="border-color:#93c5fd;">
+                        <thead>
+                            <tr style="background-color:#dbeafe !important;">
+                                <th class="w-[30px]" style="background-color:#dbeafe !important;">No</th>
+                                <th style="background-color:#dbeafe !important;">Nama Nasabah</th>
+                                <th class="w-[110px]" style="background-color:#dbeafe !important;">Tgl Kunjungan</th>
+                                <th class="w-[110px]" style="background-color:#dbeafe !important;">Tgl Janji Bayar</th>
+                                <th class="w-[120px]" style="background-color:#dbeafe !important;">Tgl Konfirmasi Bayar</th>
+                                <th class="w-[130px]" style="background-color:#dbeafe !important;">Jumlah Bayar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($aoData['cross_period_fulfilled'] as $i => $cp)
+                                <tr>
+                                    <td class="text-center">{{ $i + 1 }}</td>
+                                    <td class="font-semibold">{{ $cp->customer->name ?? '-' }}</td>
+                                    <td class="text-center">{{ \Carbon\Carbon::parse($cp->created_at)->format('d M Y') }}</td>
+                                    <td class="text-center">
+                                        {{ $cp->tanggal_janji_bayar ? \Carbon\Carbon::parse($cp->tanggal_janji_bayar)->format('d M Y') : '-' }}
+                                    </td>
+                                    <td class="text-center" style="color:#1d4ed8;font-weight:bold;">
+                                        {{ \Carbon\Carbon::parse($cp->janji_bayar_fulfilled_at)->format('d M Y') }}
+                                    </td>
+                                    <td style="color:#15803d;font-weight:bold;">
+                                        Rp {{ number_format($cp->jumlah_bayar_fulfilled ?? 0, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                            <tr style="background-color:#eff6ff;">
+                                <td colspan="5" class="text-right font-black uppercase text-[10px]" style="color:#1d4ed8;">Subtotal Bayar Luar Periode</td>
+                                <td style="color:#15803d;font-weight:bold;">
+                                    Rp {{ number_format($aoData['cross_period_fulfilled']->sum('jumlah_bayar_fulfilled'), 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
             <table class="recap-table mb-6">
                 <thead>
                     <tr>
@@ -309,52 +356,7 @@
                 </tbody>
             </table>
 
-            @if(!empty($aoData['cross_period_fulfilled']) && $aoData['cross_period_fulfilled']->count() > 0)
-                <div class="mt-2 mb-4">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span style="background-color:#eff6ff;color:#1d4ed8;font-weight:bold;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #bfdbfe;">
-                            ℹ Kunjungan Luar Periode yang Terbayar di Periode Ini
-                        </span>
-                        <span class="text-[9px] text-gray-500 italic">Jumlah-jumlah di bawah sudah termasuk dalam Total Bayar di atas</span>
-                    </div>
-                    <table class="recap-table mb-4" style="border-color:#93c5fd;">
-                        <thead>
-                            <tr style="background-color:#dbeafe !important;">
-                                <th class="w-[30px]" style="background-color:#dbeafe !important;">No</th>
-                                <th style="background-color:#dbeafe !important;">Nama Nasabah</th>
-                                <th class="w-[110px]" style="background-color:#dbeafe !important;">Tgl Kunjungan</th>
-                                <th class="w-[110px]" style="background-color:#dbeafe !important;">Tgl Janji Bayar</th>
-                                <th class="w-[120px]" style="background-color:#dbeafe !important;">Tgl Konfirmasi Bayar</th>
-                                <th class="w-[130px]" style="background-color:#dbeafe !important;">Jumlah Bayar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($aoData['cross_period_fulfilled'] as $i => $cp)
-                                <tr>
-                                    <td class="text-center">{{ $i + 1 }}</td>
-                                    <td class="font-semibold">{{ $cp->customer->name ?? '-' }}</td>
-                                    <td class="text-center">{{ \Carbon\Carbon::parse($cp->created_at)->format('d M Y') }}</td>
-                                    <td class="text-center">
-                                        {{ $cp->tanggal_janji_bayar ? \Carbon\Carbon::parse($cp->tanggal_janji_bayar)->format('d M Y') : '-' }}
-                                    </td>
-                                    <td class="text-center" style="color:#1d4ed8;font-weight:bold;">
-                                        {{ \Carbon\Carbon::parse($cp->janji_bayar_fulfilled_at)->format('d M Y') }}
-                                    </td>
-                                    <td style="color:#15803d;font-weight:bold;">
-                                        Rp {{ number_format($cp->jumlah_bayar_fulfilled ?? 0, 0, ',', '.') }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                            <tr style="background-color:#eff6ff;">
-                                <td colspan="5" class="text-right font-black uppercase text-[10px]" style="color:#1d4ed8;">Subtotal Bayar Luar Periode</td>
-                                <td style="color:#15803d;font-weight:bold;">
-                                    Rp {{ number_format($aoData['cross_period_fulfilled']->sum('jumlah_bayar_fulfilled'), 0, ',', '.') }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+
         @empty
             <div class="text-center py-12 text-gray-400">
                 <p class="text-lg font-semibold">Tidak ada data kunjungan sama sekali</p>

@@ -287,7 +287,7 @@
                                         @php
                                             $kolColors = ['1' => '', '2' => '', '3' => 'color:#c2410c;font-weight:bold', '4' => 'color:#dc2626;font-weight:bold', '5' => 'color:#dc2626;font-weight:bold'];
                                         @endphp
-                            <span
+                                        <span
                                             style="{{ $kolColors[$visit['kolektibilitas']] ?? '' }}">{{ $visit['kolektibilitas'] }}</span>
                                     </td>
                                     <td>{{ $visit['ketemu_dengan'] }}</td>
@@ -355,7 +355,6 @@
                     </tr>
                 </tbody>
             </table>
-
 
         @empty
             <div class="text-center py-12 text-gray-400">

@@ -134,9 +134,8 @@
                 </div>
             </div>
         </div>
-
         @if(isset($crossPeriodFulfilled) && $crossPeriodFulfilled->count() > 0)
-            <div class="mt-4 mb-2">
+            <div class="mt-2 mb-4">
                 <div class="flex items-center gap-2 mb-1">
                     <span style="background-color:#eff6ff;color:#1d4ed8;font-weight:bold;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #bfdbfe;">
                         ℹ Kunjungan Luar Bulan Sebelumnya
@@ -269,7 +268,7 @@
                                             @php
                                                 $kolColors = ['1' => '', '2' => '', '3' => 'color:#c2410c;font-weight:bold', '4' => 'color:#dc2626;font-weight:bold', '5' => 'color:#dc2626;font-weight:bold'];
                                             @endphp
-                             <span
+                                            <span
                                                 style="{{ $kolColors[$visit['kolektibilitas']] ?? '' }}">{{ $visit['kolektibilitas'] }}</span>
                                         </td>
                                         <td>{{ $visit['ketemu_dengan'] }}</td>
@@ -343,6 +342,7 @@
                 <p class="text-sm mt-1">Belum ada kunjungan yang tercatat untuk {{ $aoUser->name }} pada periode
                     {{ $periodLabel }}</p>
             </div>
+        @endif
 
 
         <!-- System Verification Note -->

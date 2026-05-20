@@ -237,7 +237,7 @@
                             </tr>
                         @endforeach
                         <tr style="background-color:#eff6ff;">
-                            <td colspan="6" class="text-right font-black uppercase text-[10px]" style="color:#1d4ed8;">Subtotal Bayar Luar Periode</td>
+                            <td colspan="6" class="text-right font-black uppercase text-[10px]" style="color:#1d4ed8;">Subtotal Bayar</td>
                             <td style="color:#15803d;font-weight:bold;font-size:11px;">
                                 Rp {{ number_format($crossPeriodFulfilled->sum('jumlah_bayar_fulfilled'), 0, ',', '.') }}
                             </td>

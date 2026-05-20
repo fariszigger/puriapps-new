@@ -22,4 +22,9 @@ class CustomerVisit extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function manualExcludeBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'manual_exclude_by');
+    }
 }

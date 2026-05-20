@@ -178,8 +178,23 @@
                         <td class="px-6 py-4 whitespace-nowrap">{{ $visit->ketemu_dengan }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($visit->hasil_penagihan === 'bayar')
-                                <span class="text-green-600 font-semibold">Bayar Rp
-                                    {{ number_format($visit->jumlah_bayar, 0, ',', '.') }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-green-600 font-semibold">Bayar Rp
+                                        {{ number_format($visit->jumlah_bayar, 0, ',', '.') }}</span>
+                                    @can('exclude customer-visits')
+                                        <button type="button" onclick="confirmToggleExclude({{ $visit->id }}, '{{ $visit->customer->name ?? '' }}', {{ $visit->is_manual_exclude_bayar ? 'true' : 'false' }})" title="{{ $visit->is_manual_exclude_bayar ? 'Ikutsertakan kembali' : 'Kecualikan dari perhitungan' }}" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                            @if($visit->is_manual_exclude_bayar)
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                            @else
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                            @endif
+                                        </button>
+                                    @endcan
+                                </div>
+                                @if($visit->is_manual_exclude_bayar)
+                                    <div class="mt-1"><span class="text-xs text-blue-600 font-semibold">pembayaran divalidasi manual oleh {{ $visit->manualExcludeBy->name ?? 'User' }}</span></div>
+                                @endif
+
                             @elseif($visit->hasil_penagihan === 'janji_bayar')
                                 <div class="flex flex-col gap-1">
                                     <span class="{{ $visit->janji_bayar_tidak_bayar ? 'text-gray-400 line-through' : 'text-yellow-600' }} font-semibold">Janji
@@ -299,6 +314,27 @@
     </div>
 
     <script>
+        function confirmToggleExclude(id, name, isExcluded) {
+            let titleText = isExcluded ? 'Ikutsertakan kembali kunjungan ' + name + '?' : 'Kecualikan kunjungan ' + name + ' dari perhitungan?';
+            let confirmText = isExcluded ? 'Ya, Ikutsertakan!' : 'Ya, Kecualikan!';
+            let confirmColor = isExcluded ? '#3085d6' : '#d33';
+            
+            Swal.fire({
+                title: titleText,
+                text: "Status perhitungan data bayar ini akan diubah.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: confirmColor,
+                cancelButtonColor: '#aaa',
+                confirmButtonText: confirmText,
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.call('toggleExcludeBayar', id);
+                }
+            })
+        }
+
         function confirmDeleteVisit(id, name) {
             Swal.fire({
                 title: 'Yakin data kunjungan ' + name + ' untuk Dihapus ?',

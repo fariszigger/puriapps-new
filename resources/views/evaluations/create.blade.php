@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('title', 'Buat Evaluasi Baru')
 
@@ -329,6 +329,9 @@
                                                 {{ $ao->name }} - ({{ $ao->code }})
                                             </option>
                                         @endforeach
+                                        <option value="2" {{ ($loggedInAo && $loggedInAo->id == '2') ? 'selected' : (old('user_id') == '2' ? 'selected' : '') }}>
+                                            Mochamad Arif Priyadi - (AR)
+                                        </option>
                                     </select>
                                 </div>
                             </div>
@@ -2858,16 +2861,16 @@
                     </div>
                     <div
                         @update-collateral-address.window="
-                                                                                                                                                            const idx = $event.detail.index;
-                                                                                                                                                            if(collaterals[idx]) {
-                                                                                                                                                                collaterals[idx].latitude = $event.detail.lat;
-                                                                                                                                                                collaterals[idx].longitude = $event.detail.lng;
-                                                                                                                                                                collaterals[idx].village = $event.detail.village;
-                                                                                                                                                                collaterals[idx].district = $event.detail.district;
-                                                                                                                                                                collaterals[idx].regency = $event.detail.regency;
-                                                                                                                                                                collaterals[idx].province = $event.detail.province;
-                                                                                                                                                            }
-                                                                                                                                                        ">
+                                                                                                                                                                                    const idx = $event.detail.index;
+                                                                                                                                                                                    if(collaterals[idx]) {
+                                                                                                                                                                                        collaterals[idx].latitude = $event.detail.lat;
+                                                                                                                                                                                        collaterals[idx].longitude = $event.detail.lng;
+                                                                                                                                                                                        collaterals[idx].village = $event.detail.village;
+                                                                                                                                                                                        collaterals[idx].district = $event.detail.district;
+                                                                                                                                                                                        collaterals[idx].regency = $event.detail.regency;
+                                                                                                                                                                                        collaterals[idx].province = $event.detail.province;
+                                                                                                                                                                                    }
+                                                                                                                                                                                ">
                         <template x-for="(col, index) in collaterals" :key="index">
                             <div
                                 class="border border-gray-200 rounded-xl p-6 mb-6 bg-gray-50/50 relative hover:shadow-md transition-all group">
@@ -6053,7 +6056,7 @@
                             @endif
                         @endforeach
                     @endif
-                                                                                                                                                        });
+                                                                                                                                                                                                        });
             });
         </script>
     @endpush

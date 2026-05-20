@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('title', 'Edit Evaluasi')
 
@@ -347,6 +347,9 @@
                                                 {{ $ao->name }} - ({{ $ao->code }})
                                             </option>
                                         @endforeach
+                                        <option value="2" {{ ($loggedInAo && $loggedInAo->id == '2') ? 'selected' : (old('user_id', $evaluation->user_id) == '2' ? 'selected' : '') }}>
+                                            Mochamad Arif Priyadi - (AR)
+                                        </option>
                                     </select>
                                 </div>
                             </div>

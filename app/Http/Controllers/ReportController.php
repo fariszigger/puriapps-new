@@ -100,7 +100,7 @@ class ReportController extends Controller
             $periodLabel = 'Bulan ' . $startDate->translatedFormat('F Y');
         }
 
-        $visits = CustomerVisit::with(['customer:id,name', 'user:id,name,code'])
+        $visits = CustomerVisit::with(['customer:id,name', 'user:id,name,code', 'manualExcludeBy:id,name'])
             ->where('user_id', $user->id)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->orderBy('created_at', 'asc')
@@ -122,8 +122,9 @@ class ReportController extends Controller
         })->map(function ($dateVisits) use ($fulfilledKeys) {
             return $dateVisits->map(function ($visit) use ($fulfilledKeys) {
                 // Mark whether this bayar visit is a duplicate (shadowed by a fulfilled janji_bayar)
+                // or manually excluded by Admin
                 $isDuplicate = $visit->hasil_penagihan === 'bayar'
-                    && in_array($visit->customer_id . '|' . $visit->created_at->toDateString(), $fulfilledKeys);
+                    && ($visit->is_manual_exclude_bayar || in_array($visit->customer_id . '|' . $visit->created_at->toDateString(), $fulfilledKeys));
                 return [
                     'id' => $visit->id,
                     'customer_name' => $visit->customer->name ?? '-',
@@ -147,6 +148,8 @@ class ReportController extends Controller
                     'rencana_penyelesaian' => $visit->rencana_penyelesaian,
                     'time' => $visit->created_at->format('H:i'),
                     'is_duplicate_bayar' => $isDuplicate,
+                    'is_manual_exclude_bayar' => $visit->is_manual_exclude_bayar,
+                    'manual_exclude_by_name' => $visit->manualExcludeBy->name ?? 'Admin',
                 ];
             });
         });
@@ -160,6 +163,7 @@ class ReportController extends Controller
         $directPaidSum = $visits
             ->filter(function ($v) use ($fulfilledKeys) {
                 if ($v->hasil_penagihan !== 'bayar') return false;
+                if ($v->is_manual_exclude_bayar) return false;
                 $key = $v->customer_id . '|' . $v->created_at->toDateString();
                 return !in_array($key, $fulfilledKeys);
             })
@@ -263,7 +267,7 @@ class ReportController extends Controller
             $periodLabel = 'Bulan ' . $startDate->translatedFormat('F Y');
         }
 
-        $visits = CustomerVisit::with(['customer:id,name', 'user:id,name,code'])
+        $visits = CustomerVisit::with(['customer:id,name', 'user:id,name,code', 'manualExcludeBy:id,name'])
             ->whereBetween('created_at', [$startDate, $endDate])
             ->whereHas('user', function ($query) {
                 $query->role(['AO', 'Kabag']); // Include both AO and Kabag roles
@@ -294,6 +298,7 @@ class ReportController extends Controller
             $userDirectSum = $userVisits
                 ->filter(function ($v) use ($userFulfilledKeys) {
                     if ($v->hasil_penagihan !== 'bayar') return false;
+                    if ($v->is_manual_exclude_bayar) return false;
                     $key = $v->customer_id . '|' . $v->created_at->toDateString();
                     return !in_array($key, $userFulfilledKeys);
                 })
@@ -315,7 +320,7 @@ class ReportController extends Controller
                 })->map(function ($dateVisits) use ($userFulfilledKeys) {
                     return $dateVisits->map(function ($visit) use ($userFulfilledKeys) {
                         $isDuplicate = $visit->hasil_penagihan === 'bayar'
-                            && in_array($visit->customer_id . '|' . $visit->created_at->toDateString(), $userFulfilledKeys);
+                            && ($visit->is_manual_exclude_bayar || in_array($visit->customer_id . '|' . $visit->created_at->toDateString(), $userFulfilledKeys));
                         return [
                             'id' => $visit->id,
                             'customer_name' => $visit->customer->name ?? '-',
@@ -339,6 +344,8 @@ class ReportController extends Controller
                             'rencana_penyelesaian' => $visit->rencana_penyelesaian,
                             'time' => $visit->created_at->format('H:i'),
                             'is_duplicate_bayar' => $isDuplicate,
+                            'is_manual_exclude_bayar' => $visit->is_manual_exclude_bayar,
+                            'manual_exclude_by_name' => $visit->manualExcludeBy->name ?? 'Admin',
                         ];
                     });
                 }),
@@ -358,6 +365,7 @@ class ReportController extends Controller
         $grandDirectSum = $visits
             ->filter(function ($v) use ($allFulfilledKeys) {
                 if ($v->hasil_penagihan !== 'bayar') return false;
+                if ($v->is_manual_exclude_bayar) return false;
                 $key = $v->user_id . '|' . $v->customer_id . '|' . $v->created_at->toDateString();
                 return !in_array($key, $allFulfilledKeys);
             })

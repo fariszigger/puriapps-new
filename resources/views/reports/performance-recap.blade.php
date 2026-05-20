@@ -251,7 +251,11 @@
                                                 @if($visit['jumlah_bayar'])
                                                     <span style="color:#9ca3af;text-decoration:line-through"> Rp {{ number_format($visit['jumlah_bayar'], 0, ',', '.') }}</span>
                                                 @endif
-                                                <br><span style="color:#f59e0b;font-size:8px;font-weight:bold">⚠ Tidak dihitung (sudah tercatat sebagai Sudah Bayar)</span>
+                                                @if(!empty($visit['is_manual_exclude_bayar']))
+                                                    <br><span style="color:#2563eb;font-size:8px;font-weight:bold">⚠ Pembayaran divalidasi manual oleh {{ $visit['manual_exclude_by_name'] ?? 'Admin' }}</span>
+                                                @else
+                                                    <br><span style="color:#f59e0b;font-size:8px;font-weight:bold">⚠ Tidak dihitung (sudah tercatat sebagai Sudah Bayar)</span>
+                                                @endif
                                             @else
                                                 <span style="color:#16a34a;font-weight:bold">Bayar</span>
                                                 @if($visit['jumlah_bayar'])

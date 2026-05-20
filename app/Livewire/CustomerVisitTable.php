@@ -152,11 +152,28 @@ class CustomerVisitTable extends Component
         session()->flash('success', 'Kunjungan berhasil dihapus.');
     }
 
+    public function toggleExcludeBayar($id)
+    {
+        if (!auth()->user()->can('exclude customer-visits')) {
+            abort(403);
+        }
+
+        $visit = CustomerVisit::findOrFail($id);
+        $newExcludeState = !$visit->is_manual_exclude_bayar;
+        $visit->update([
+            'is_manual_exclude_bayar' => $newExcludeState,
+            'manual_exclude_by' => $newExcludeState ? auth()->id() : null
+        ]);
+        
+        $status = $newExcludeState ? 'dikecualikan' : 'diikutsertakan';
+        session()->flash('success', "Data bayar berhasil $status dari perhitungan.");
+    }
+
     public function render()
     {
         [$startDate, $endDate] = $this->getDateRange();
 
-        $query = CustomerVisit::with(['customer', 'user'])
+        $query = CustomerVisit::with(['customer', 'user', 'manualExcludeBy'])
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         if (!auth()->user()->can('view all data')) {

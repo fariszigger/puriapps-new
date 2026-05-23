@@ -3,6 +3,7 @@
 @section('title', 'Edit Kunjungan Nasabah')
 
 @push('styles')
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <style>
         .ql-editor {
@@ -58,6 +59,9 @@
                 @method('PUT')
 
                 {{-- Hidden fields --}}
+                <input type="hidden" name="photo_base64" id="photo_base64" value="{{ old('photo_base64') }}">
+                <input type="hidden" name="photo_rumah_base64" id="photo_rumah_base64" value="{{ old('photo_rumah_base64') }}">
+                <input type="hidden" name="photo_orang_base64" id="photo_orang_base64" value="{{ old('photo_orang_base64') }}">
                 <input type="hidden" id="kondisi_saat_ini_hidden" name="kondisi_saat_ini"
                     value="{{ old('kondisi_saat_ini', $visit->kondisi_saat_ini) }}">
                 <input type="hidden" id="rencana_penyelesaian_hidden" name="rencana_penyelesaian"
@@ -350,82 +354,166 @@
                         </div>
                     </div>
 
+                    {{-- ================= FOTO SECTIONS ================= --}}
+                    @php
+                        $canEditPhotos = auth()->id() === $visit->user_id && $visit->created_at->isToday();
+                        $showMaxDate = $visit->created_at->isoFormat('D MMMM YYYY') . ' 23:59';
+                    @endphp
+
                     {{-- ================= 8. FOTO KUNJUNGAN ================= --}}
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Kunjungan
-                        </h2>
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Kunjungan</h2>
 
                         <div class="flex justify-center">
-                            <div class="w-full max-w-md h-64 border-2 border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative">
-                                @if($visit->photo_path)
-                                    <img class="w-full h-full object-cover"
-                                        src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_path)]) }}"
-                                        alt="Foto Kunjungan">
-                                @else
-                                    <div class="text-center text-gray-400">
-                                        <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <p class="text-xs font-medium">Tidak ada foto kunjungan</p>
-                                    </div>
-                                @endif
-                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
-                                    Hanya Lihat
+                            <div class="w-full max-w-md space-y-3">
+                                {{-- Preview --}}
+                                <div class="h-64 border-2 {{ $canEditPhotos ? 'border-blue-300' : 'border-gray-300' }} rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative" id="preview-wrap-photo">
+                                    @if($visit->photo_path)
+                                        <img class="w-full h-full object-cover" id="img-preview-photo"
+                                            src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_path)]) }}"
+                                            alt="Foto Kunjungan">
+                                    @else
+                                        <div class="text-center text-gray-400" id="placeholder-photo">
+                                            <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <p class="text-xs font-medium">Tidak ada foto kunjungan</p>
+                                        </div>
+                                    @endif
+                                    @if(!$canEditPhotos)
+                                        <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                                            Hanya Lihat
+                                        </div>
+                                    @else
+                                        <div class="absolute top-2 right-2 bg-blue-600/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"/></svg>
+                                            Bisa Diubah
+                                        </div>
+                                    @endif
                                 </div>
+
+                                @if($canEditPhotos)
+                                    {{-- Upload input --}}
+                                    <label for="photo"
+                                        class="flex flex-col items-center justify-center w-full h-20 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors">
+                                        <div class="flex flex-col items-center justify-center gap-1">
+                                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                            </svg>
+                                            <p class="text-xs text-blue-600 font-semibold">Klik untuk ganti foto kunjungan</p>
+                                            <p class="text-xs text-gray-400">JPEG, PNG, GIF — maks. 10MB</p>
+                                        </div>
+                                        <input id="photo" name="photo" type="file" class="hidden photo-input" data-target="photo" accept="image/*" capture="environment">
+                                    </label>
+                                    <p class="text-xs text-amber-600 flex items-center gap-1">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Foto hanya dapat diperbarui maksimum {{ $showMaxDate }}. Lewat waktu ini opsi ini akan terkunci.
+                                    </p>
+                                @endif
                             </div>
                         </div>
                     </div>
 
                     {{-- ================= 9. FOTO RUMAH DEBITUR ================= --}}
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Rumah
-                            Debitur
-                        </h2>
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Rumah Debitur</h2>
 
                         <div class="flex justify-center">
-                            <div class="w-full max-w-md h-64 border-2 border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative">
-                                @if($visit->photo_rumah_path)
-                                    <img class="w-full h-full object-cover"
-                                        src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_rumah_path)]) }}"
-                                        alt="Foto Rumah">
-                                @else
-                                    <div class="text-center text-gray-400">
-                                        <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <p class="text-xs font-medium">Tidak ada foto rumah</p>
-                                    </div>
-                                @endif
-                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
-                                    Hanya Lihat
+                            <div class="w-full max-w-md space-y-3">
+                                <div class="h-64 border-2 {{ $canEditPhotos ? 'border-blue-300' : 'border-gray-300' }} rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative" id="preview-wrap-rumah">
+                                    @if($visit->photo_rumah_path)
+                                        <img class="w-full h-full object-cover" id="img-preview-rumah"
+                                            src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_rumah_path)]) }}"
+                                            alt="Foto Rumah">
+                                    @else
+                                        <div class="text-center text-gray-400" id="placeholder-rumah">
+                                            <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <p class="text-xs font-medium">Tidak ada foto rumah</p>
+                                        </div>
+                                    @endif
+                                    @if(!$canEditPhotos)
+                                        <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                                            Hanya Lihat
+                                        </div>
+                                    @else
+                                        <div class="absolute top-2 right-2 bg-blue-600/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"/></svg>
+                                            Bisa Diubah
+                                        </div>
+                                    @endif
                                 </div>
+
+                                @if($canEditPhotos)
+                                    <label for="photo_rumah"
+                                        class="flex flex-col items-center justify-center w-full h-20 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors">
+                                        <div class="flex flex-col items-center justify-center gap-1">
+                                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                            </svg>
+                                            <p class="text-xs text-blue-600 font-semibold">Klik untuk ganti foto rumah debitur</p>
+                                            <p class="text-xs text-gray-400">JPEG, PNG, GIF — maks. 10MB</p>
+                                        </div>
+                                        <input id="photo_rumah" name="photo_rumah" type="file" class="hidden photo-input" data-target="photo_rumah" accept="image/*" capture="environment">
+                                    </label>
+                                    <p class="text-xs text-amber-600 flex items-center gap-1">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Foto hanya dapat diperbarui maksimum {{ $showMaxDate }}. Lewat waktu ini opsi ini akan terkunci.
+                                    </p>
+                                @endif
                             </div>
                         </div>
                     </div>
 
                     {{-- ================= 10. FOTO ORANG YANG DITEMUI ================= --}}
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Orang yang
-                            Ditemui
-                        </h2>
+                        <h2 class="text-xl font-semibold text-gray-900 border-b-2 border-gray-100 pb-2">Foto Orang yang Ditemui</h2>
 
                         <div class="flex justify-center">
-                            <div class="w-full max-w-md h-64 border-2 border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative">
-                                @if($visit->photo_orang_path)
-                                    <img class="w-full h-full object-cover"
-                                        src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_orang_path)]) }}"
-                                        alt="Foto Orang">
-                                @else
-                                    <div class="text-center text-gray-400">
-                                        <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <p class="text-xs font-medium">Tidak ada foto orang yang ditemui</p>
-                                    </div>
-                                @endif
-                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
-                                    Hanya Lihat
+                            <div class="w-full max-w-md space-y-3">
+                                <div class="h-64 border-2 {{ $canEditPhotos ? 'border-blue-300' : 'border-gray-300' }} rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative" id="preview-wrap-orang">
+                                    @if($visit->photo_orang_path)
+                                        <img class="w-full h-full object-cover" id="img-preview-orang"
+                                            src="{{ route('media.customer-visits', ['type' => 'photos', 'filename' => basename($visit->photo_orang_path)]) }}"
+                                            alt="Foto Orang">
+                                    @else
+                                        <div class="text-center text-gray-400" id="placeholder-orang">
+                                            <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <p class="text-xs font-medium">Tidak ada foto orang yang ditemui</p>
+                                        </div>
+                                    @endif
+                                    @if(!$canEditPhotos)
+                                        <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                                            Hanya Lihat
+                                        </div>
+                                    @else
+                                        <div class="absolute top-2 right-2 bg-blue-600/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm pointer-events-none flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"/></svg>
+                                            Bisa Diubah
+                                        </div>
+                                    @endif
                                 </div>
+
+                                @if($canEditPhotos)
+                                    <label for="photo_orang"
+                                        class="flex flex-col items-center justify-center w-full h-20 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors">
+                                        <div class="flex flex-col items-center justify-center gap-1">
+                                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                            </svg>
+                                            <p class="text-xs text-blue-600 font-semibold">Klik untuk ganti foto orang yang ditemui</p>
+                                            <p class="text-xs text-gray-400">JPEG, PNG, GIF — maks. 10MB</p>
+                                        </div>
+                                        <input id="photo_orang" name="photo_orang" type="file" class="hidden photo-input" data-target="photo_orang" accept="image/*" capture="environment">
+                                    </label>
+                                    <p class="text-xs text-amber-600 flex items-center gap-1">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Foto hanya dapat diperbarui maksimum {{ $showMaxDate }}. Lewat waktu ini opsi ini akan terkunci.
+                                    </p>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -448,6 +536,51 @@
                 </div>
             </form>
 
+        </div>
+
+        {{-- ================= CROPPER MODAL ================= --}}
+        <div id="cropper-modal" class="fixed inset-0 z-[9999] hidden" aria-labelledby="cropper-modal-title" role="dialog"
+            aria-modal="true">
+            <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity"></div>
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <div
+                        class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-2xl transition-all w-full max-w-2xl flex flex-col max-h-[90vh]">
+                        <div
+                            class="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3 sm:px-6 flex justify-between items-center shadow-sm">
+                            <h3 class="text-lg font-semibold leading-6 text-gray-900" id="cropper-modal-title">
+                                Crop Photo (16:10 Ratio)
+                            </h3>
+                            <div class="flex space-x-2">
+                                <button type="button" id="cancel-crop-btn"
+                                    class="inline-flex justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Cancel
+                                </button>
+                                <button type="button" id="crop-btn"
+                                    class="inline-flex justify-center rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="-ml-0.5 mr-1.5 h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Crop & Save
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-4 sm:p-6 bg-gray-50 flex-grow overflow-y-auto flex items-center justify-center">
+                            <div class="relative w-full" style="height: 500px; max-height: 60vh;">
+                                <img id="cropper-image" src="" alt="Crop Preview"
+                                    class="block max-w-full h-full object-contain mx-auto">
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 text-center border-t border-gray-200">
+                            <p class="text-xs text-gray-500">
+                                Drag to adjust. The selection is locked to the required report format.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- ================= TEMPLATE MODAL ================= --}}
@@ -509,6 +642,7 @@
     </div>
 
     @push('scripts')
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
         <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
         <script>
             function editForm() {
@@ -612,6 +746,124 @@
                     theme: 'snow',
                     modules: {
                         toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
+                    }
+                });
+
+                // ---- CropperJS Logic ----
+                const cropperModal = document.getElementById('cropper-modal');
+                const cropperImage = document.getElementById('cropper-image');
+                const cropBtn = document.getElementById('crop-btn');
+                const cancelCropBtn = document.getElementById('cancel-crop-btn');
+                let cropper = null;
+                let activeTarget = null;
+
+                document.querySelectorAll('.photo-input').forEach(input => {
+                    input.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+                        activeTarget = this.dataset.target;
+
+                        if (file) {
+                            if (!file.type.match('image.*')) {
+                                Swal.fire('Error', 'Pilih file gambar.', 'error');
+                                return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                cropperModal.classList.remove('hidden');
+                                cropperImage.src = e.target.result;
+                                if (cropper) cropper.destroy();
+                                cropper = new Cropper(cropperImage, {
+                                    aspectRatio: 16 / 10,
+                                    viewMode: 1,
+                                    dragMode: 'move',
+                                    autoCropArea: 1,
+                                    background: false
+                                });
+                            }
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                });
+
+                cancelCropBtn.addEventListener('click', function () {
+                    cropperModal.classList.add('hidden');
+                    if (cropper) { cropper.destroy(); cropper = null; }
+                    if (activeTarget) {
+                        const input = document.getElementById(activeTarget);
+                        input.value = '';
+                    }
+                    activeTarget = null;
+                });
+
+                cropBtn.addEventListener('click', function () {
+                    if (cropper && activeTarget) {
+                        const canvas = cropper.getCroppedCanvas();
+                        const input = document.getElementById(activeTarget);
+                        const suffix = activeTarget === 'photo_rumah' ? 'rumah' : (activeTarget === 'photo_orang' ? 'orang' : 'photo');
+                        const wrapper = document.getElementById('preview-wrap-' + suffix);
+                        let preview = document.getElementById('img-preview-' + suffix);
+                        let placeholder = document.getElementById('placeholder-' + suffix);
+                        const base64Input = document.getElementById(activeTarget + '_base64');
+
+                        // Add watermark
+                        const ctx = canvas.getContext('2d');
+                        const aoName = '{{ auth()->user()->name }}';
+                        const now = new Date();
+                        const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                        const watermarkText = aoName + ' — ' + dateStr;
+
+                        const fontSize = Math.max(14, Math.floor(canvas.width / 40));
+                        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'bottom';
+
+                        const textWidth = ctx.measureText(watermarkText).width;
+                        const padding = 10;
+                        const stripHeight = fontSize + padding * 2;
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                        ctx.fillRect(canvas.width - textWidth - padding * 3, canvas.height - stripHeight, textWidth + padding * 3, stripHeight);
+
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                        ctx.fillText(watermarkText, canvas.width - padding, canvas.height - padding);
+
+                        canvas.toBlob(function (blob) {
+                            const croppedFile = new File([blob], `cropped_${activeTarget}.jpg`, { type: 'image/jpeg' });
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(croppedFile);
+                            input.files = dataTransfer.files;
+
+                            const dataUrl = canvas.toDataURL("image/jpeg");
+                            if (!preview) {
+                                preview = document.createElement('img');
+                                preview.id = 'img-preview-' + suffix;
+                                preview.className = 'w-full h-full object-cover';
+                                wrapper.prepend(preview);
+                            }
+                            preview.src = dataUrl;
+                            if (base64Input) base64Input.value = dataUrl;
+                            if (placeholder) placeholder.classList.add('hidden');
+
+                            cropperModal.classList.add('hidden');
+                            cropper.destroy();
+                            cropper = null;
+                            activeTarget = null;
+                        }, 'image/jpeg');
+                    }
+                });
+
+                // Load old photo base64 values if exist
+                ['photo', 'photo_rumah', 'photo_orang'].forEach(id => {
+                    const base64Input = document.getElementById(id + '_base64');
+                    const base64 = base64Input ? base64Input.value : null;
+                    if (base64) {
+                        const suffix = id === 'photo_rumah' ? 'rumah' : (id === 'photo_orang' ? 'orang' : 'photo');
+                        const preview = document.getElementById('img-preview-' + suffix);
+                        const placeholder = document.getElementById('placeholder-' + suffix);
+                        if (preview) {
+                            preview.src = base64;
+                            preview.classList.remove('hidden');
+                        }
+                        if (placeholder) placeholder.classList.add('hidden');
                     }
                 });
 

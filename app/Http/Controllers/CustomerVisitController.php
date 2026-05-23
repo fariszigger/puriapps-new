@@ -202,32 +202,37 @@ class CustomerVisitController extends Controller
         $visit->janji_lainnya_desc = $request->hasil_penagihan === 'janji_lainnya' ? $request->janji_lainnya_desc : null;
         $visit->spk_number = $request->spk_number;
 
-        // Handle Photo Upload
-        if ($request->hasFile('photo')) {
-            // Delete old photo
-            if ($visit->photo_path) {
-                Storage::disk('local')->delete($visit->photo_path);
-            }
-            $path = $request->file('photo')->store('customer-visits/photos', 'local');
-            $visit->photo_path = $path;
-        }
+        // Handle Photo Uploads — only allowed by the creator, on the same day
+        $canEditPhotos = auth()->id() === $visit->user_id && $visit->created_at->isToday();
 
-        // Handle Photo Rumah Debitur
-        if ($request->hasFile('photo_rumah')) {
-            if ($visit->photo_rumah_path) {
-                Storage::disk('local')->delete($visit->photo_rumah_path);
+        if ($canEditPhotos) {
+            // Handle Photo Upload
+            if ($request->hasFile('photo')) {
+                // Delete old photo
+                if ($visit->photo_path) {
+                    Storage::disk('local')->delete($visit->photo_path);
+                }
+                $path = $request->file('photo')->store('customer-visits/photos', 'local');
+                $visit->photo_path = $path;
             }
-            $path = $request->file('photo_rumah')->store('customer-visits/photos', 'local');
-            $visit->photo_rumah_path = $path;
-        }
 
-        // Handle Foto Orang yang Ditemui
-        if ($request->hasFile('photo_orang')) {
-            if ($visit->photo_orang_path) {
-                Storage::disk('local')->delete($visit->photo_orang_path);
+            // Handle Photo Rumah Debitur
+            if ($request->hasFile('photo_rumah')) {
+                if ($visit->photo_rumah_path) {
+                    Storage::disk('local')->delete($visit->photo_rumah_path);
+                }
+                $path = $request->file('photo_rumah')->store('customer-visits/photos', 'local');
+                $visit->photo_rumah_path = $path;
             }
-            $path = $request->file('photo_orang')->store('customer-visits/photos', 'local');
-            $visit->photo_orang_path = $path;
+
+            // Handle Foto Orang yang Ditemui
+            if ($request->hasFile('photo_orang')) {
+                if ($visit->photo_orang_path) {
+                    Storage::disk('local')->delete($visit->photo_orang_path);
+                }
+                $path = $request->file('photo_orang')->store('customer-visits/photos', 'local');
+                $visit->photo_orang_path = $path;
+            }
         }
 
         $visit->save();

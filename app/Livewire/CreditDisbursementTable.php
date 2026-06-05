@@ -93,7 +93,12 @@ class CreditDisbursementTable extends Component
 
         // AO filter
         if ($this->filterAo) {
-            $query->where('user_id', $this->filterAo);
+            if ($this->filterAo === 'hrd') {
+                $hrdUserIds = User::role('HRD')->pluck('id');
+                $query->whereIn('user_id', $hrdUserIds);
+            } else {
+                $query->where('user_id', $this->filterAo);
+            }
         }
 
         // Search
@@ -121,16 +126,24 @@ class CreditDisbursementTable extends Component
             $summaryQuery->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$this->filterMonth]);
         }
 
-        $aoUsers = User::role(['AO', 'Kabag'])->orderBy('name')->get(['id', 'name', 'code', 'disbursement_target']);
+        $aoUsers = User::role(['AO', 'Kabag', 'HRD'])->with('roles')->orderBy('name')->get(['id', 'name', 'code', 'disbursement_target']);
 
-        // Build a map of user targets
-        $targetMap = $aoUsers->pluck('disbursement_target', 'id');
+        // Separate HRD users from regular AO/Kabag
+        $nonHrdUsers = $aoUsers->filter(fn($u) => !$u->roles->contains('name', 'HRD'));
+        $hrdUsers = $aoUsers->filter(fn($u) => $u->roles->contains('name', 'HRD'));
+
+        // Build a map of user targets (only non-HRD)
+        $targetMap = $nonHrdUsers->pluck('disbursement_target', 'id');
 
         $aoSummary = $summaryQuery
             ->selectRaw('user_id, SUM(amount) as total_amount, COUNT(*) as total_count')
             ->groupBy('user_id')
             ->with('user:id,name,code,disbursement_target')
-            ->get()
+            ->get();
+
+        // Separate HRD disbursements from regular ones
+        $hrdUserIds = $hrdUsers->pluck('id')->toArray();
+        $regularSummary = $aoSummary->filter(fn($item) => !in_array($item->user_id, $hrdUserIds))
             ->map(function ($item) use ($targetMap) {
                 $baseTarget = $targetMap->get($item->user_id, 400000000);
                 
@@ -153,12 +166,32 @@ class CreditDisbursementTable extends Component
                     'total_count' => $item->total_count,
                     'limit' => $target,
                     'percentage' => $target > 0 ? round(($item->total_amount / $target) * 100, 1) : 0,
+                    'is_hrd' => false,
                 ];
             });
 
+        // Merge HRD users into a single summary card
+        $hrdSummaryItems = $aoSummary->filter(fn($item) => in_array($item->user_id, $hrdUserIds));
+        if ($hrdSummaryItems->count() > 0 || ($this->filterAo === 'hrd')) {
+            $hrdTotalAmount = $hrdSummaryItems->sum('total_amount');
+            $hrdTotalCount = $hrdSummaryItems->sum('total_count');
+            $regularSummary->push([
+                'user_id' => 'hrd',
+                'name' => 'Karyawan Perusahaan',
+                'code' => 'HRD',
+                'total_amount' => $hrdTotalAmount,
+                'total_count' => $hrdTotalCount,
+                'limit' => 0,
+                'percentage' => 0,
+                'is_hrd' => true,
+            ]);
+        }
+
+        $aoSummary = $regularSummary;
+
         $grandTotal = $aoSummary->sum('total_amount');
-        $aoCount = $aoUsers->count();
-        $baseTotalTarget = $aoUsers->sum('disbursement_target');
+        $aoCount = $nonHrdUsers->count();
+        $baseTotalTarget = $nonHrdUsers->sum('disbursement_target');
         
         $totalMultiplier = 1;
         if ($this->viewMode === 'yearly') {

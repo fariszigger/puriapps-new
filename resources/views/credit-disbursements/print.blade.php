@@ -120,20 +120,24 @@
 
         <!-- Summary -->
         <div class="flex justify-between bg-gray-100 rounded px-4 py-3 border border-gray-300 mb-6">
-            <div>
-                <span class="block text-gray-600 text-xs uppercase font-bold tracking-wider mb-1">Total Target Realisasi</span>
-                <span class="text-lg font-black font-mono">Rp {{ number_format($totalTarget, 0, ',', '.') }}</span>
-            </div>
-            <div class="text-right">
+            @if(!($isHrdFilter ?? false))
+                <div>
+                    <span class="block text-gray-600 text-xs uppercase font-bold tracking-wider mb-1">Total Target Realisasi</span>
+                    <span class="text-lg font-black font-mono">Rp {{ number_format($totalTarget, 0, ',', '.') }}</span>
+                </div>
+            @endif
+            <div class="{{ ($isHrdFilter ?? false) ? '' : 'text-right' }}">
                 <span class="block text-gray-600 text-xs uppercase font-bold tracking-wider mb-1">Total Capaian Realisasi</span>
-                <span class="text-lg font-black font-mono {{ $totalAmount >= $totalTarget ? 'text-green-700' : 'text-gray-900' }}">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+                <span class="text-lg font-black font-mono {{ !($isHrdFilter ?? false) && $totalAmount >= $totalTarget ? 'text-green-700' : 'text-gray-900' }}">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
             </div>
-            <div class="text-right">
-                <span class="block text-gray-600 text-xs uppercase font-bold tracking-wider mb-1">Persentase</span>
-                <span class="text-lg font-black font-mono {{ $totalAmount >= $totalTarget ? 'text-green-700' : 'text-orange-600' }}">
-                    {{ $totalTarget > 0 ? round(($totalAmount / $totalTarget) * 100, 1) : 0 }}%
-                </span>
-            </div>
+            @if(!($isHrdFilter ?? false))
+                <div class="text-right">
+                    <span class="block text-gray-600 text-xs uppercase font-bold tracking-wider mb-1">Persentase</span>
+                    <span class="text-lg font-black font-mono {{ $totalAmount >= $totalTarget ? 'text-green-700' : 'text-orange-600' }}">
+                        {{ $totalTarget > 0 ? round(($totalAmount / $totalTarget) * 100, 1) : 0 }}%
+                    </span>
+                </div>
+            @endif
         </div>
 
         @php $globalNo = 1; @endphp
@@ -183,6 +187,7 @@
                     <tfoot>
                         @php 
                             $baseTarget = $items->first()->user->disbursement_target ?? 400000000;
+                            $userIsHrd = $items->first()->user->roles->contains('name', 'HRD') ?? false;
                             
                             $aoMultiplier = 1;
                             if ($viewMode === 'yearly') {
@@ -194,7 +199,7 @@
                                 $aoMultiplier = max(1, $aoMultiplier);
                             }
                             
-                            $aoTarget = $baseTarget * $aoMultiplier;
+                            $aoTarget = $userIsHrd ? 0 : ($baseTarget * $aoMultiplier);
                             $realization = $items->sum('amount');
                             $diff = $aoTarget - $realization;
                         @endphp
@@ -204,14 +209,21 @@
                                 <span class="block text-[8px] text-gray-500 font-normal">REALISASI</span>
                                 Rp {{ number_format($realization, 0, ',', '.') }}
                             </th>
-                            <th colspan="2" class="text-center py-2 text-[10px] font-black font-mono border-x border-gray-400">
-                                <span class="block text-[8px] text-gray-500 font-normal">{{ $viewMode === 'yearly' ? 'TARGET TAHUNAN' : ($viewMode === 'period' ? 'TARGET PERIODE' : 'TARGET BULANAN') }}</span>
-                                Rp {{ number_format($aoTarget, 0, ',', '.') }}
-                            </th>
-                            <th class="text-right py-2 text-[10px] font-black font-mono border-l border-gray-400 {{ $diff > 0 ? 'text-red-700 bg-red-50' : 'text-emerald-700 bg-emerald-50' }}">
-                                <span class="block text-[8px] text-gray-500 font-normal uppercase">{{ $diff > 0 ? 'KEKURANGAN' : 'SURPLUS' }}</span>
-                                Rp {{ number_format(abs($diff), 0, ',', '.') }}
-                            </th>
+                            @if($userIsHrd)
+                                <th colspan="3" class="text-center py-2 text-[10px] font-black font-mono border-l border-gray-400 bg-purple-50 text-purple-700">
+                                    <span class="block text-[8px] text-purple-500 font-normal">KARYAWAN PERUSAHAAN</span>
+                                    Tanpa Target
+                                </th>
+                            @else
+                                <th colspan="2" class="text-center py-2 text-[10px] font-black font-mono border-x border-gray-400">
+                                    <span class="block text-[8px] text-gray-500 font-normal">{{ $viewMode === 'yearly' ? 'TARGET TAHUNAN' : ($viewMode === 'period' ? 'TARGET PERIODE' : 'TARGET BULANAN') }}</span>
+                                    Rp {{ number_format($aoTarget, 0, ',', '.') }}
+                                </th>
+                                <th class="text-right py-2 text-[10px] font-black font-mono border-l border-gray-400 {{ $diff > 0 ? 'text-red-700 bg-red-50' : 'text-emerald-700 bg-emerald-50' }}">
+                                    <span class="block text-[8px] text-gray-500 font-normal uppercase">{{ $diff > 0 ? 'KEKURANGAN' : 'SURPLUS' }}</span>
+                                    Rp {{ number_format(abs($diff), 0, ',', '.') }}
+                                </th>
+                            @endif
                         </tr>
                     </tfoot>
                 </table>

@@ -25,7 +25,7 @@ class CreditDisbursementController extends Controller
             abort(403);
         }
 
-        $aoUsers = User::role(['AO', 'Kabag'])->orderBy('name')->get();
+        $aoUsers = User::role(['AO', 'Kabag', 'HRD'])->with('roles')->orderBy('name')->get();
 
         return view('credit-disbursements.create', compact('aoUsers'));
     }
@@ -66,7 +66,7 @@ class CreditDisbursementController extends Controller
         }
 
         $disbursement = CreditDisbursement::findOrFail($id);
-        $aoUsers = User::role(['AO', 'Kabag'])->orderBy('name')->get();
+        $aoUsers = User::role(['AO', 'Kabag', 'HRD'])->with('roles')->orderBy('name')->get();
 
         return view('credit-disbursements.edit', compact('disbursement', 'aoUsers'));
     }
@@ -113,7 +113,7 @@ class CreditDisbursementController extends Controller
         $filterAo = $request->query('ao');
         $viewMode = $request->query('view_mode', 'monthly');
 
-        $query = CreditDisbursement::with('user:id,name,code,disbursement_target,office_branch')->orderBy('disbursement_date', 'asc');
+        $query = CreditDisbursement::with(['user:id,name,code,disbursement_target,office_branch', 'user.roles'])->orderBy('disbursement_date', 'asc');
 
         if ($viewMode === 'yearly' && $filterMonth) {
             $year = date('Y', strtotime($filterMonth));
@@ -126,7 +126,13 @@ class CreditDisbursementController extends Controller
             $query->whereRaw("DATE_FORMAT(disbursement_date, '%Y-%m') = ?", [$filterMonth]);
         }
          if ($filterAo) {
-            $query->where('user_id', $filterAo);
+            // If filterAo is 'hrd', filter by all HRD users
+            if ($filterAo === 'hrd') {
+                $hrdUserIds = User::role('HRD')->pluck('id');
+                $query->whereIn('user_id', $hrdUserIds);
+            } else {
+                $query->where('user_id', $filterAo);
+            }
         }
 
         $disbursements = $query->get();
@@ -138,11 +144,15 @@ class CreditDisbursementController extends Controller
         // Calculate totals for print
         $totalAmount = $disbursements->sum('amount');
         
-        $aoUsers = User::role('AO')->get(['id', 'name', 'disbursement_target']);
+        // Get AO users (excluding HRD for target calculation)
+        $aoUsers = User::role(['AO', 'Kabag'])->get(['id', 'name', 'disbursement_target']);
         $targetMap = $aoUsers->pluck('disbursement_target', 'id');
 
         // Target total logic depends on filtered AO and view mode
-        if ($filterAo) {
+        // HRD has no target
+        if ($filterAo === 'hrd') {
+            $baseTarget = 0;
+        } elseif ($filterAo) {
             $baseTarget = $targetMap->get($filterAo, 400000000);
         } else {
             $baseTarget = $aoUsers->sum('disbursement_target');
@@ -160,7 +170,10 @@ class CreditDisbursementController extends Controller
         
         $totalTarget = $baseTarget * $multiplier;
 
-        return view('credit-disbursements.print', compact('disbursements', 'groupedDisbursements', 'filterMonth', 'filterMonthEnd', 'filterAo', 'totalAmount', 'totalTarget', 'viewMode'));
+        // Check if filtering HRD
+        $isHrdFilter = ($filterAo === 'hrd');
+
+        return view('credit-disbursements.print', compact('disbursements', 'groupedDisbursements', 'filterMonth', 'filterMonthEnd', 'filterAo', 'totalAmount', 'totalTarget', 'viewMode', 'isHrdFilter'));
     }
 
     public function export(Request $request)
@@ -232,7 +245,7 @@ class CreditDisbursementController extends Controller
         $filterMonth2 = $request->query('month2');
         $filterAo = $request->query('ao');
 
-        $aoUsers = User::role(['AO', 'Kabag'])->orderBy('name')->get(['id', 'name', 'code', 'disbursement_target']);
+        $aoUsers = User::role(['AO', 'Kabag', 'HRD'])->with('roles')->orderBy('name')->get(['id', 'name', 'code', 'disbursement_target']);
 
         if ($request->query('json')) {
             $period1 = $this->getPeriodData($viewMode, $filterMonth, $filterAo, $aoUsers);
@@ -272,7 +285,11 @@ class CreditDisbursementController extends Controller
         $disbursements = $query->with('user:id,name,code')->get();
 
         $multiplier = $viewMode === 'yearly' ? 12 : 1;
-        $targetMap = $aoUsers->pluck('disbursement_target', 'id');
+
+        // Separate HRD users from regular AO/Kabag for target calculations
+        $nonHrdUsers = $aoUsers->filter(fn($u) => !$u->roles->contains('name', 'HRD'));
+        $hrdUsers = $aoUsers->filter(fn($u) => $u->roles->contains('name', 'HRD'));
+        $targetMap = $nonHrdUsers->pluck('disbursement_target', 'id');
 
         $aoGrouped = $disbursements->groupBy('user_id');
         $aoLabels = [];
@@ -282,7 +299,7 @@ class CreditDisbursementController extends Controller
 
         $relevantUsers = $filterAo
             ? $aoUsers->where('id', $filterAo)
-            : $aoUsers;
+            : $nonHrdUsers;
 
         foreach ($relevantUsers as $aoUser) {
             $aoLabels[] = $aoUser->code ?: $aoUser->name;
@@ -293,6 +310,20 @@ class CreditDisbursementController extends Controller
             $aoRealization[] = $total;
             $aoTargets[] = $target;
             $aoPercentages[] = $target > 0 ? round(($total / $target) * 100, 1) : 0;
+        }
+
+        // Add merged HRD entry if not filtering by specific AO
+        if (!$filterAo && $hrdUsers->count() > 0) {
+            $hrdTotal = 0;
+            foreach ($hrdUsers as $hrdUser) {
+                $hrdTotal += isset($aoGrouped[$hrdUser->id])
+                    ? $aoGrouped[$hrdUser->id]->sum('amount')
+                    : 0;
+            }
+            $aoLabels[] = 'HRD';
+            $aoRealization[] = $hrdTotal;
+            $aoTargets[] = 0;
+            $aoPercentages[] = 0;
         }
 
         if ($viewMode === 'yearly') {
@@ -312,9 +343,10 @@ class CreditDisbursementController extends Controller
                 $cumulativeData[$i] = $cumulative;
             }
 
+            // Exclude HRD from target line
             $monthlyTarget = $filterAo
                 ? ($targetMap->get((int) $filterAo, 400000000))
-                : $aoUsers->sum('disbursement_target');
+                : $nonHrdUsers->sum('disbursement_target');
             $targetLine = [];
             for ($i = 0; $i < 12; $i++) {
                 $targetLine[] = $monthlyTarget * ($i + 1);
@@ -340,16 +372,18 @@ class CreditDisbursementController extends Controller
                 $cumulativeData[$i] = $cumulative;
             }
 
-            $totalTarget = $filterAo
+            // Exclude HRD from target
+            $totalTargetForLine = $filterAo
                 ? ($targetMap->get((int) $filterAo, 400000000))
-                : $aoUsers->sum('disbursement_target');
-            $targetLine = array_fill(0, (int) $daysInMonth, $totalTarget);
+                : $nonHrdUsers->sum('disbursement_target');
+            $targetLine = array_fill(0, (int) $daysInMonth, $totalTargetForLine);
         }
 
         $totalRealization = $disbursements->sum('amount');
+        // Exclude HRD from total target
         $totalTarget = $filterAo
             ? ($targetMap->get((int) $filterAo, 400000000)) * $multiplier
-            : $aoUsers->sum('disbursement_target') * $multiplier;
+            : $nonHrdUsers->sum('disbursement_target') * $multiplier;
         $totalCount = $disbursements->count();
         $achievement = $totalTarget > 0 ? round(($totalRealization / $totalTarget) * 100, 1) : 0;
 

@@ -340,6 +340,9 @@
                 <p class="text-sm mt-1">Belum ada kunjungan dari Account Officer manapun untuk periode {{ $periodLabel }}</p>
             </div>
         @endif
+        <div class="mt-1 pt-1 text-red-500 text-center italic">
+            *Nominal Pembayaran ini adalah pembayaran pada saat dilakukan kunjungan dan dilaporkan melalui aplikasi atau setelah dilakukan kunjungan.    
+        </div>
 
         <!-- System Verification Note -->
         <div class="mt-8 pt-4 border-t border-gray-300 text-[10px] text-gray-500 text-center italic">

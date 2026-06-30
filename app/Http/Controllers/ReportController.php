@@ -416,6 +416,224 @@ class ReportController extends Controller
         ]);
     }
 
+    public function summary(Request $request)
+    {
+        $this->authorize('view performance reports');
+
+        $filter = $request->query('filter', 'monthly');
+        $selectedMonth = $request->query('month');
+        $selectedMonthEnd = $request->query('month_end');
+        $selectedDate = $request->query('date');
+        $selectedWeek = $request->query('week', 1);
+        $now = Carbon::now();
+
+        if ($filter === 'daily') {
+            try {
+                $date = $selectedDate ? Carbon::parse($selectedDate) : $now;
+            } catch (\Exception $e) {
+                $date = $now;
+            }
+            $startDate = $date->copy()->startOfDay();
+            $endDate = $date->copy()->endOfDay();
+            $periodLabel = 'Harian (' . $startDate->format('d M Y') . ')';
+        } elseif ($filter === 'weekly') {
+            try {
+                $date = $selectedMonth ? Carbon::createFromFormat('Y-m', $selectedMonth) : $now;
+            } catch (\Exception $e) {
+                $date = $now;
+            }
+            $startOfMonth = $date->copy()->startOfMonth();
+            
+            $daysInMonth = $startOfMonth->daysInMonth;
+            $maxWeeks = (int) ceil($daysInMonth / 7);
+
+            $week = (int) $selectedWeek;
+            if ($week < 1) $week = 1;
+            if ($week > $maxWeeks) $week = $maxWeeks;
+
+            $startDay = ($week - 1) * 7 + 1;
+            $endDay = $week * 7;
+            
+            $startDate = $startOfMonth->copy()->addDays($startDay - 1)->startOfDay();
+            
+            if ($week == $maxWeeks) {
+                $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            } else {
+                $potentialEndDate = $startOfMonth->copy()->addDays($endDay - 1)->endOfDay();
+                $endDate = $potentialEndDate > $startOfMonth->copy()->endOfMonth() 
+                                ? $startOfMonth->copy()->endOfMonth()->endOfDay() 
+                                : $potentialEndDate;
+            }
+            
+            if ($startDate > $startOfMonth->copy()->endOfMonth()) {
+                $startDate = $startOfMonth->copy()->endOfMonth()->startOfDay();
+                $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
+            }
+
+            $periodLabel = 'Minggu Ke-' . $week . ' Bulan ' . $startOfMonth->translatedFormat('F Y') . ' (' . $startDate->format('d M') . ' - ' . $endDate->format('d M Y') . ')';
+        } elseif ($filter === 'period') {
+            try { $dateStart = $selectedMonth ? Carbon::createFromFormat('Y-m', $selectedMonth) : $now; } catch (\Exception $e) { $dateStart = $now; }
+            try { $dateEnd = $selectedMonthEnd ? Carbon::createFromFormat('Y-m', $selectedMonthEnd) : $now; } catch (\Exception $e) { $dateEnd = $now; }
+            $startDate = $dateStart->copy()->startOfMonth();
+            $endDate = $dateEnd->copy()->endOfMonth();
+            if ($startDate > $endDate) {
+                $temp = $startDate;
+                $startDate = $endDate->copy()->startOfMonth();
+                $endDate = $temp->copy()->endOfMonth();
+            }
+            $periodLabel = 'Periode (' . $startDate->translatedFormat('F Y') . ' - ' . $endDate->translatedFormat('F Y') . ')';
+        } else {
+            if ($selectedMonth) {
+                try {
+                    $date = Carbon::createFromFormat('Y-m', $selectedMonth);
+                } catch (\Exception $e) {
+                    $date = $now;
+                }
+            } else {
+                $date = $now;
+            }
+            $startDate = $date->copy()->startOfMonth();
+            $endDate = $date->copy()->endOfMonth();
+            $periodLabel = 'Bulan ' . $startDate->translatedFormat('F Y');
+        }
+
+        // Helper closure to build summary data for a user query
+        $buildSummary = function ($role) use ($startDate, $endDate) {
+            $dupSubquery = function ($sub) {
+                $sub->from('customer_visits as dup')
+                    ->whereColumn('dup.user_id', 'customer_visits.user_id')
+                    ->whereColumn('dup.customer_id', 'customer_visits.customer_id')
+                    ->where('dup.janji_bayar_fulfilled', true)
+                    ->whereNotNull('dup.janji_bayar_fulfilled_at')
+                    ->whereRaw('DATE(dup.janji_bayar_fulfilled_at) = DATE(customer_visits.created_at)')
+                    ->whereNull('dup.deleted_at');
+            };
+
+            return User::role($role)
+                ->withCount(['customerVisits as visits_count' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('created_at', [$startDate, $endDate]);
+                }])
+                ->withCount(['customerVisits as visits_kol_1_count' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '1');
+                }])
+                ->withCount(['customerVisits as visits_kol_2_count' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '2');
+                }])
+                ->withCount(['customerVisits as visits_kol_3_count' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '3');
+                }])
+                ->withCount(['customerVisits as visits_kol_4_count' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '4');
+                }])
+                ->withCount(['customerVisits as visits_kol_5_count' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '5');
+                }])
+                ->withSum(['customerVisits as direct_paid_sum' => function ($query) use ($startDate, $endDate, $dupSubquery) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])
+                          ->where('hasil_penagihan', 'bayar')
+                          ->whereNotExists($dupSubquery);
+                }], 'jumlah_bayar')
+                ->withSum(['customerVisits as fulfilled_paid_sum' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate]);
+                }], 'jumlah_bayar_fulfilled')
+                ->withSum(['customerVisits as direct_paid_kol_1_sum' => function ($query) use ($startDate, $endDate, $dupSubquery) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '1')->where('hasil_penagihan', 'bayar')->whereNotExists($dupSubquery);
+                }], 'jumlah_bayar')
+                ->withSum(['customerVisits as fulfilled_paid_kol_1_sum' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])->where('kolektibilitas', '1');
+                }], 'jumlah_bayar_fulfilled')
+                ->withSum(['customerVisits as direct_paid_kol_2_sum' => function ($query) use ($startDate, $endDate, $dupSubquery) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '2')->where('hasil_penagihan', 'bayar')->whereNotExists($dupSubquery);
+                }], 'jumlah_bayar')
+                ->withSum(['customerVisits as fulfilled_paid_kol_2_sum' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])->where('kolektibilitas', '2');
+                }], 'jumlah_bayar_fulfilled')
+                ->withSum(['customerVisits as direct_paid_kol_3_sum' => function ($query) use ($startDate, $endDate, $dupSubquery) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '3')->where('hasil_penagihan', 'bayar')->whereNotExists($dupSubquery);
+                }], 'jumlah_bayar')
+                ->withSum(['customerVisits as fulfilled_paid_kol_3_sum' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])->where('kolektibilitas', '3');
+                }], 'jumlah_bayar_fulfilled')
+                ->withSum(['customerVisits as direct_paid_kol_4_sum' => function ($query) use ($startDate, $endDate, $dupSubquery) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '4')->where('hasil_penagihan', 'bayar')->whereNotExists($dupSubquery);
+                }], 'jumlah_bayar')
+                ->withSum(['customerVisits as fulfilled_paid_kol_4_sum' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])->where('kolektibilitas', '4');
+                }], 'jumlah_bayar_fulfilled')
+                ->withSum(['customerVisits as direct_paid_kol_5_sum' => function ($query) use ($startDate, $endDate, $dupSubquery) {
+                    $query->whereBetween('created_at', [$startDate, $endDate])->where('kolektibilitas', '5')->where('hasil_penagihan', 'bayar')->whereNotExists($dupSubquery);
+                }], 'jumlah_bayar')
+                ->withSum(['customerVisits as fulfilled_paid_kol_5_sum' => function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('janji_bayar_fulfilled_at', [$startDate, $endDate])->where('kolektibilitas', '5');
+                }], 'jumlah_bayar_fulfilled')
+                ->orderBy('name')
+                ->get();
+        };
+
+        // Build summary arrays
+        $mapToSummary = function ($user) {
+            return [
+                'name' => $user->name,
+                'code' => $user->code ?? null,
+                'branch' => trim($user->office_branch) ?: 'Kantor Pusat',
+                'kol_1' => $user->visits_kol_1_count,
+                'kol_2' => $user->visits_kol_2_count,
+                'kol_3' => $user->visits_kol_3_count,
+                'kol_4' => $user->visits_kol_4_count,
+                'kol_5' => $user->visits_kol_5_count,
+                'kol_1_paid' => ($user->direct_paid_kol_1_sum ?? 0) + ($user->fulfilled_paid_kol_1_sum ?? 0),
+                'kol_2_paid' => ($user->direct_paid_kol_2_sum ?? 0) + ($user->fulfilled_paid_kol_2_sum ?? 0),
+                'kol_3_paid' => ($user->direct_paid_kol_3_sum ?? 0) + ($user->fulfilled_paid_kol_3_sum ?? 0),
+                'kol_4_paid' => ($user->direct_paid_kol_4_sum ?? 0) + ($user->fulfilled_paid_kol_4_sum ?? 0),
+                'kol_5_paid' => ($user->direct_paid_kol_5_sum ?? 0) + ($user->fulfilled_paid_kol_5_sum ?? 0),
+                'total_visits' => $user->visits_count,
+                'total_paid' => ($user->direct_paid_sum ?? 0) + ($user->fulfilled_paid_sum ?? 0),
+            ];
+        };
+
+        $kabagUsers = $buildSummary('Kabag');
+        $aoUsers = $buildSummary('AO');
+
+        $kabagSummary = $kabagUsers->map($mapToSummary)->values()->toArray();
+
+        $aosByBranch = $aoUsers->map($mapToSummary)
+            ->groupBy('branch')
+            ->sortBy(function ($group, $key) {
+                if ($key === 'Kantor Pusat') return 0;
+                if ($key === 'Kantor Kas Mojosari') return 1;
+                return 2;
+            })
+            ->toArray();
+
+        $summaryData = $kabagSummary;
+        foreach ($aosByBranch as $branchAos) {
+            $summaryData = array_merge($summaryData, $branchAos);
+        }
+
+        $grandTotals = [
+            'kol_1' => collect($summaryData)->sum('kol_1'),
+            'kol_2' => collect($summaryData)->sum('kol_2'),
+            'kol_3' => collect($summaryData)->sum('kol_3'),
+            'kol_4' => collect($summaryData)->sum('kol_4'),
+            'kol_5' => collect($summaryData)->sum('kol_5'),
+            'kol_1_paid' => collect($summaryData)->sum('kol_1_paid'),
+            'kol_2_paid' => collect($summaryData)->sum('kol_2_paid'),
+            'kol_3_paid' => collect($summaryData)->sum('kol_3_paid'),
+            'kol_4_paid' => collect($summaryData)->sum('kol_4_paid'),
+            'kol_5_paid' => collect($summaryData)->sum('kol_5_paid'),
+            'visits' => collect($summaryData)->sum('total_visits'),
+            'total_paid' => collect($summaryData)->sum('total_paid'),
+        ];
+
+        return view('reports.performance-summary', [
+            'kabagSummary' => $kabagSummary,
+            'aosByBranch' => $aosByBranch,
+            'summaryData' => $summaryData,
+            'grandTotals' => $grandTotals,
+            'periodLabel' => $periodLabel,
+        ]);
+    }
+
     public function exportXls(Request $request)
     {
         if (auth()->user()->cannot('view performance reports')) {

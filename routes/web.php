@@ -47,6 +47,7 @@ Route::middleware(['authentication'])->group(function () {
 
     Route::get('/reports/performance', [ReportController::class, 'performance'])->name('reports.performance');
     Route::get('/reports/performance/recap', [ReportController::class, 'recap'])->name('reports.performance-recap');
+    Route::get('/reports/performance/summary', [ReportController::class, 'summary'])->name('reports.performance-summary');
     Route::get('/reports/performance/export-xls', [ReportController::class, 'exportXls'])->name('reports.performance-export-xls');
     Route::get('/reports/performance/{user}/detail', [ReportController::class, 'detail'])->name('reports.performance-detail');
 

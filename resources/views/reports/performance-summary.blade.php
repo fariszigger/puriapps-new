@@ -18,7 +18,7 @@
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 font-family: Arial, Helvetica, sans-serif;
-                font-size: 10px;
+                font-size: 12px;
                 color: #000;
             }
 
@@ -41,7 +41,7 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 10px;
+            font-size: 12px;
             color: #000;
             line-height: 1.4;
             background-color: #f3f4f6;
@@ -74,13 +74,13 @@
             background-color: #d1d5db !important;
             font-weight: bold;
             text-align: center;
-            font-size: 10px;
+            font-size: 12px;
         }
 
         .summary-table .section-header {
             background-color: #e5e7eb !important;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 13px;
             text-align: left;
             padding: 6px 10px;
         }
@@ -94,7 +94,7 @@
             background-color: #312e81 !important;
             color: white !important;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 13px;
         }
 
         .summary-table .grand-total-row td {
@@ -154,7 +154,6 @@
                     <tr>
                         <th class="w-[30px]">No</th>
                         <th class="text-left" style="min-width: 160px;">Account Officer</th>
-                        <th class="text-left" style="min-width: 120px;">Kantor Cabang</th>
                         <th class="w-[80px]" style="background-color:#bbf7d0 !important; color:#166534;">Lancar<br><span class="text-[8px] font-normal">(Kol 1)</span></th>
                         <th class="w-[80px]" style="background-color:#fef08a !important; color:#854d0e;">DPK<br><span class="text-[8px] font-normal">(Kol 2)</span></th>
                         <th class="w-[80px]" style="background-color:#fed7aa !important; color:#9a3412;">KL<br><span class="text-[8px] font-normal">(Kol 3)</span></th>
@@ -170,7 +169,7 @@
                     {{-- Kabag / Pejabat Eksekutif Section --}}
                     @if(count($kabagSummary) > 0)
                         <tr>
-                            <td colspan="10" class="section-header">
+                            <td colspan="9" class="section-header">
                                 <div class="flex items-center gap-1">
                                     <span>👤</span> Pejabat Eksekutif
                                 </div>
@@ -185,7 +184,6 @@
                                         <div class="text-[9px] text-gray-500">{{ $ao['code'] }}</div>
                                     @endif
                                 </td>
-                                <td class="text-[10px]">{{ $ao['branch'] }}</td>
                                 <td class="text-center">
                                     <div class="{{ $ao['kol_1'] > 0 ? 'font-bold' : 'text-gray-400' }}">{{ $ao['kol_1'] }}</div>
                                     @if($ao['kol_1_paid'] > 0)<div class="text-[8px] text-green-700 font-semibold">{{ number_format($ao['kol_1_paid'], 0, ',', '.') }}</div>@endif
@@ -212,7 +210,7 @@
                         @endforeach
                         {{-- Kabag Subtotal --}}
                         <tr class="subtotal-row">
-                            <td colspan="3" class="text-right text-[10px] uppercase font-bold text-indigo-800">Sub Total Pejabat Eksekutif</td>
+                            <td colspan="2" class="text-right text-[10px] uppercase font-bold text-indigo-800">Sub Total Pejabat Eksekutif</td>
                             <td class="text-center">
                                 <div>{{ collect($kabagSummary)->sum('kol_1') }}</div>
                                 @if(collect($kabagSummary)->sum('kol_1_paid') > 0)<div class="text-[8px] text-green-700">{{ number_format(collect($kabagSummary)->sum('kol_1_paid'), 0, ',', '.') }}</div>@endif
@@ -241,7 +239,7 @@
                     {{-- AO per Branch Sections --}}
                     @foreach($aosByBranch as $branch => $branchAos)
                         <tr>
-                            <td colspan="10" class="section-header">
+                            <td colspan="9" class="section-header">
                                 <div class="flex items-center gap-1">
                                     <span>🏢</span> {{ $branch }}
                                 </div>
@@ -256,7 +254,6 @@
                                         <div class="text-[9px] text-gray-500">{{ $ao['code'] }}</div>
                                     @endif
                                 </td>
-                                <td class="text-[10px]">{{ $ao['branch'] }}</td>
                                 <td class="text-center">
                                     <div class="{{ $ao['kol_1'] > 0 ? 'font-bold' : 'text-gray-400' }}">{{ $ao['kol_1'] }}</div>
                                     @if($ao['kol_1_paid'] > 0)<div class="text-[8px] text-green-700 font-semibold">{{ number_format($ao['kol_1_paid'], 0, ',', '.') }}</div>@endif
@@ -283,7 +280,7 @@
                         @endforeach
                         {{-- Branch Subtotal --}}
                         <tr class="subtotal-row">
-                            <td colspan="3" class="text-right text-[10px] uppercase font-bold text-indigo-800">Sub Total {{ $branch }}</td>
+                            <td colspan="2" class="text-right text-[10px] uppercase font-bold text-indigo-800">Sub Total {{ $branch }}</td>
                             <td class="text-center">
                                 <div>{{ collect($branchAos)->sum('kol_1') }}</div>
                                 @if(collect($branchAos)->sum('kol_1_paid') > 0)<div class="text-[8px] text-green-700">{{ number_format(collect($branchAos)->sum('kol_1_paid'), 0, ',', '.') }}</div>@endif
@@ -311,7 +308,7 @@
 
                     {{-- Grand Total --}}
                     <tr class="grand-total-row">
-                        <td colspan="3" class="text-right uppercase text-[11px]" style="color: white !important;">Grand Total Keseluruhan</td>
+                        <td colspan="2" class="text-right uppercase text-[11px]" style="color: white !important;">Grand Total Keseluruhan</td>
                         <td class="text-center" style="color: white !important;">
                             <div>{{ $grandTotals['kol_1'] }}</div>
                             @if($grandTotals['kol_1_paid'] > 0)<div class="text-[8px]" style="color: #86efac !important;">{{ number_format($grandTotals['kol_1_paid'], 0, ',', '.') }}</div>@endif

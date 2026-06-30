@@ -74,37 +74,64 @@
                 </svg>
             </div>
 
-            <a href="{{ route('reports.performance-recap', ['filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
-                target="_blank"
-                class="ml-2 inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
-                    </path>
-                </svg>
-                Cetak Rekap Semua AO
-            </a>
-
-            <a href="{{ route('reports.performance-summary', ['filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
-                target="_blank"
-                class="ml-2 inline-flex items-center px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                    </path>
-                </svg>
-                Cetak Ringkasan
-            </a>
-
-            <a href="{{ route('reports.performance-export-xls', ['filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
-                class="ml-2 inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                    </path>
-                </svg>
-                XLS
-            </a>
+            <div x-data="{ openExport: false }" class="relative ml-2">
+                <button @click="openExport = !openExport" @click.outside="openExport = false"
+                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    Export / Cetak
+                    <svg class="w-4 h-4 ml-2 transition-transform" :class="{ 'rotate-180': openExport }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div x-show="openExport" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                    class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden" style="display: none;">
+                    <div class="py-1">
+                        <a href="{{ route('reports.performance-recap', ['filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
+                            target="_blank"
+                            class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50 transition-colors group">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 mr-3 shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                </svg>
+                            </span>
+                            <div>
+                                <div class="font-semibold">Cetak Rekap Semua AO</div>
+                                <div class="text-xs text-gray-400">Detail kunjungan per AO</div>
+                            </div>
+                        </a>
+                        <a href="{{ route('reports.performance-summary', ['filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
+                            target="_blank"
+                            class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-violet-50 transition-colors group">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-100 text-violet-600 group-hover:bg-violet-200 mr-3 shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </span>
+                            <div>
+                                <div class="font-semibold">Cetak Ringkasan</div>
+                                <div class="text-xs text-gray-400">Ringkasan kinerja semua AO</div>
+                            </div>
+                        </a>
+                        <div class="border-t border-gray-100 mx-3"></div>
+                        <a href="{{ route('reports.performance-export-xls', ['filter' => $filter, 'month' => $selectedMonth, 'month_end' => $selectedMonthEnd, 'date' => $selectedDate, 'week' => $selectedWeek]) }}"
+                            class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 transition-colors group">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200 mr-3 shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </span>
+                            <div>
+                                <div class="font-semibold">Export XLS</div>
+                                <div class="text-xs text-gray-400">Download file Excel</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

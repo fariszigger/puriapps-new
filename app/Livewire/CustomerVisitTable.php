@@ -17,6 +17,7 @@ class CustomerVisitTable extends Component
     public $selectedMonth;
     public $selectedDate;
     public $selectedWeek = 1;
+    public $selectedYear;
 
     public $aoCodeFilter = '';
     public $penagihanFilter = '';
@@ -28,6 +29,7 @@ class CustomerVisitTable extends Component
         'selectedMonth' => ['except' => ''],
         'selectedDate' => ['except' => ''],
         'selectedWeek' => ['except' => 1],
+        'selectedYear' => ['except' => ''],
         'aoCodeFilter' => ['except' => ''],
         'penagihanFilter' => ['except' => ''],
     ];
@@ -40,6 +42,9 @@ class CustomerVisitTable extends Component
         }
         if (!$this->selectedDate) {
             $this->selectedDate = Carbon::now()->format('Y-m-d');
+        }
+        if (!$this->selectedYear) {
+            $this->selectedYear = Carbon::now()->format('Y');
         }
         // If not set by query string, calculate default week
         if ($this->selectedWeek == 1 && !request()->has('selectedWeek')) {
@@ -63,6 +68,11 @@ class CustomerVisitTable extends Component
     }
 
     public function updatedSelectedWeek()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSelectedYear()
     {
         $this->resetPage();
     }
@@ -121,6 +131,15 @@ class CustomerVisitTable extends Component
                 $startDate = $startOfMonth->copy()->endOfMonth()->startOfDay();
                 $endDate = $startOfMonth->copy()->endOfMonth()->endOfDay();
             }
+        } elseif ($this->filter === 'yearly') {
+            try {
+                $year = intval($this->selectedYear ?: Carbon::now()->format('Y'));
+                $date = Carbon::create($year, 1, 1)->startOfYear();
+            } catch (\Exception $e) {
+                $date = Carbon::now()->startOfYear();
+            }
+            $startDate = $date->copy()->startOfYear();
+            $endDate = $date->copy()->endOfYear();
         } else {
             try {
                 $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
@@ -171,10 +190,12 @@ class CustomerVisitTable extends Component
 
     public function render()
     {
-        [$startDate, $endDate] = $this->getDateRange();
+        $query = CustomerVisit::with(['customer', 'user', 'manualExcludeBy']);
 
-        $query = CustomerVisit::with(['customer', 'user', 'manualExcludeBy'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
+        if ($this->filter !== 'all') {
+            [$startDate, $endDate] = $this->getDateRange();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
 
         if (!auth()->user()->can('view all data')) {
             $query->where('user_id', auth()->id());

@@ -43,6 +43,8 @@
                 <option value="daily">Harian</option>
                 <option value="weekly">Mingguan</option>
                 <option value="monthly">Bulanan</option>
+                <option value="yearly">Tahunan</option>
+                <option value="all">Semua</option>
             </select>
         </div>
 
@@ -80,6 +82,19 @@
                 <label class="text-sm font-medium text-gray-600">Bulan:</label>
                 <input type="month" wire:model.live="selectedMonth"
                     class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-all shadow-sm">
+            </div>
+        @elseif($filter === 'yearly')
+            <div class="flex items-center gap-2 pl-3 border-l border-white/60">
+                <label class="text-sm font-medium text-gray-600">Tahun:</label>
+                <select wire:model.live="selectedYear"
+                    class="bg-white/70 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-all shadow-sm">
+                    @php
+                        $currentYear = (int) \Carbon\Carbon::now()->format('Y');
+                    @endphp
+                    @for ($y = $currentYear + 1; $y >= $currentYear - 5; $y--)
+                        <option value="{{ $y }}">{{ $y }}</option>
+                    @endfor
+                </select>
             </div>
         @endif
 

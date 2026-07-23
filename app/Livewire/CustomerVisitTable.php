@@ -219,6 +219,7 @@ class CustomerVisitTable extends Component
                 $q->whereHas('customer', function ($cq) {
                     $cq->where('name', 'like', '%' . $this->search . '%');
                 })
+                ->orWhere('spk_number', 'like', '%' . $this->search . '%')
                 ->orWhere('address', 'like', '%' . $this->search . '%')
                 ->orWhere('kolektibilitas', 'like', '%' . $this->search . '%')
                 ->orWhere('ketemu_dengan', 'like', '%' . $this->search . '%')

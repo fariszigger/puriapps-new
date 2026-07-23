@@ -11,7 +11,7 @@
                 </div>
                 <input wire:model.live.debounce.300ms="search" type="search" id="visit-search"
                     class="block w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white/50 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
-                    placeholder="Cari Nasabah, Alamat, Kolektibilitas, atau AO...">
+                    placeholder="Cari SPK, Nasabah, Alamat, Kolektibilitas, atau AO...">
             </div>
         </div>
 
